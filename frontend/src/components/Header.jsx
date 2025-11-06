@@ -15,14 +15,14 @@ export default function Header() {
           <img 
             src={logo} 
             alt="Educore AI Logo" 
-            className="h-8 mr-3"
+            className="logo-image"
             onError={(e) => {
               e.target.style.display = 'none'
               e.target.nextSibling.style.display = 'block'
             }}
           />
           <span style={{ display: 'none' }}>Educore AI</span>
-          <span className="text-xl font-bold" style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span className="logo-text">
             Course Builder
           </span>
         </Link>
@@ -30,33 +30,45 @@ export default function Header() {
         <nav className="nav-links">
           <Link to="/courses">
             <i className="fas fa-book"></i>
-            Courses
+            <span className="nav-link-text">Courses</span>
           </Link>
           {userRole === 'learner' && (
             <>
               <Link to="/learner/dashboard">
                 <i className="fas fa-user-graduate"></i>
-                My Dashboard
+                <span className="nav-link-text">My Dashboard</span>
               </Link>
               <Link to="/learner/personalized">
                 <i className="fas fa-magic"></i>
-                Personalized
+                <span className="nav-link-text">Personalized</span>
               </Link>
             </>
           )}
           {userRole === 'trainer' && (
             <Link to="/trainer/dashboard">
               <i className="fas fa-chalkboard-teacher"></i>
-              Trainer Dashboard
+              <span className="nav-link-text">Trainer Dashboard</span>
             </Link>
           )}
           {userRole === 'admin' && (
             <Link to="/admin/dashboard">
               <i className="fas fa-cog"></i>
-              Admin
+              <span className="nav-link-text">Admin</span>
             </Link>
           )}
         </nav>
+        
+        {/* Mobile Menu Toggle */}
+        <button 
+          className="mobile-menu-toggle"
+          aria-label="Toggle menu"
+          onClick={() => {
+            document.querySelector('.nav-links')?.classList.toggle('mobile-open')
+            document.querySelector('.header-controls')?.classList.toggle('mobile-open')
+          }}
+        >
+          <i className="fas fa-bars"></i>
+        </button>
 
         <div className="header-controls">
           {/* User Profile */}
