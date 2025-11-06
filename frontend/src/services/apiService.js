@@ -1,7 +1,17 @@
 import axios from 'axios'
 
+// Ensure baseURL always ends with /api/v1
+const getBaseURL = () => {
+  const envURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+  // If URL doesn't end with /api/v1, append it
+  if (!envURL.endsWith('/api/v1')) {
+    return envURL.endsWith('/') ? `${envURL}api/v1` : `${envURL}/api/v1`
+  }
+  return envURL
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
+  baseURL: getBaseURL(),
   headers: { 'Content-Type': 'application/json' }
 })
 
