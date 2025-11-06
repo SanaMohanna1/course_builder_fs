@@ -1,20 +1,23 @@
-FROM node:18-alpine AS runtime
+FROM node:18-alpine
 
 # System settings
 ENV NODE_ENV=production \
-    NPM_CONFIG_LOGLEVEL=warn \
-    NPM_CONFIG_CACHE=/tmp/npm-cache
+    NPM_CONFIG_LOGLEVEL=warn
 
-WORKDIR /app/backend
+WORKDIR /app
 
-# Install backend dependencies first (better layer caching)
+# Copy package files
 COPY backend/package*.json ./
-RUN npm ci --omit=dev --no-audit --no-fund
 
-# Copy backend source
+# Install dependencies (production only)
+RUN npm ci --omit=dev --no-audit --no-fund --prefer-offline
+
+# Copy backend source code
 COPY backend/ ./
 
 EXPOSE 3000
+
+# Start the server
 CMD ["npm", "start"]
 
 
