@@ -379,6 +379,298 @@ export const updateCourse = async (courseId, updates) => {
   }
 };
 
+/**
+ * Publish course immediately
+ */
+export const publishCourse = async (courseId) => {
+  try {
+    // Check if course exists
+    const course = await db.oneOrNone(
+      'SELECT course_id, status FROM courses WHERE course_id = $1',
+      [courseId]
+    );
+
+    if (!course) {
+      const error = new Error('Course not found');
+      error.status = 404;
+      throw error;
+    }
+
+    // Update course status to live and visibility to public
+    await db.none(
+      `UPDATE courses 
+       SET status = 'live', visibility = 'public', published_at = NOW(), updated_at = NOW()
+       WHERE course_id = $1`,
+      [courseId]
+    );
+
+    // Update latest version status to published
+    await db.none(
+      `UPDATE versions 
+       SET status = 'published', published_at = NOW()
+       WHERE course_id = $1 AND version_no = (
+         SELECT MAX(version_no) FROM versions WHERE course_id = $1
+       )`,
+      [courseId]
+    );
+
+    return {
+      course_id: courseId,
+      status: 'live',
+      published_at: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error publishing course:', error);
+    throw error;
+  }
+};
+
+/**
+ * Schedule course publishing
+ */
+export const schedulePublishing = async (courseId, publishAt) => {
+  try {
+    // Check if course exists
+    const course = await db.oneOrNone(
+      'SELECT course_id FROM courses WHERE course_id = $1',
+      [courseId]
+    );
+
+    if (!course) {
+      const error = new Error('Course not found');
+      error.status = 404;
+      throw error;
+    }
+
+    // Validate publish_at is in the future
+    const publishDate = new Date(publishAt);
+    if (publishDate <= new Date()) {
+      const error = new Error('Publish date must be in the future');
+      error.status = 400;
+      throw error;
+    }
+
+    // Update course status to scheduled
+    await db.none(
+      `UPDATE courses 
+       SET status = 'scheduled', visibility = 'scheduled', updated_at = NOW()
+       WHERE course_id = $1`,
+      [courseId]
+    );
+
+    // Store scheduled publish time in metadata (or create a scheduled_publish_at column)
+    await db.none(
+      `UPDATE courses 
+       SET metadata = jsonb_set(
+         COALESCE(metadata, '{}'::jsonb),
+         '{scheduled_publish_at}',
+         to_jsonb($1::text)
+       )
+       WHERE course_id = $2`,
+      [publishAt, courseId]
+    );
+
+    return {
+      course_id: courseId,
+      status: 'scheduled',
+      scheduled_at: publishAt
+    };
+  } catch (error) {
+    console.error('Error scheduling course:', error);
+    throw error;
+  }
+};
+
+/**
+ * Unpublish/archive course
+ */
+export const unpublishCourse = async (courseId) => {
+  try {
+    // Check if course exists
+    const course = await db.oneOrNone(
+      'SELECT course_id, status FROM courses WHERE course_id = $1',
+      [courseId]
+    );
+
+    if (!course) {
+      const error = new Error('Course not found');
+      error.status = 404;
+      throw error;
+    }
+
+    // Update course status to archived
+    await db.none(
+      `UPDATE courses 
+       SET status = 'archived', visibility = 'private', updated_at = NOW()
+       WHERE course_id = $1`,
+      [courseId]
+    );
+
+    // Update latest version status to archived
+    await db.none(
+      `UPDATE versions 
+       SET status = 'archived'
+       WHERE course_id = $1 AND version_no = (
+         SELECT MAX(version_no) FROM versions WHERE course_id = $1
+       )`,
+      [courseId]
+    );
+
+    return {
+      course_id: courseId,
+      status: 'archived',
+      unpublished_at: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error unpublishing course:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get course version history
+ */
+export const getCourseVersions = async (courseId) => {
+  try {
+    const versions = await db.any(
+      `SELECT 
+        version_no,
+        status,
+        created_at,
+        published_at
+      FROM versions
+      WHERE course_id = $1
+      ORDER BY version_no DESC`,
+      [courseId]
+    );
+
+    return {
+      course_id: courseId,
+      versions: versions.map(v => ({
+        version_no: v.version_no,
+        status: v.status,
+        created_at: v.created_at.toISOString(),
+        published_at: v.published_at ? v.published_at.toISOString() : null
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting course versions:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get lesson details with full content
+ */
+export const getLessonDetails = async (lessonId) => {
+  try {
+    const lesson = await db.oneOrNone(
+      `SELECT 
+        l.lesson_id as id,
+        l.lesson_name as title,
+        l.content_type,
+        l.content_data,
+        l.micro_skills,
+        l.nano_skills,
+        l.enrichment_data,
+        l.order,
+        m.module_id as module_id,
+        m.name as module_name,
+        c.course_id as course_id,
+        c.course_name as course_name
+      FROM lessons l
+      JOIN modules m ON m.module_id = l.module_id
+      JOIN courses c ON c.course_id = m.course_id
+      WHERE l.lesson_id = $1`,
+      [lessonId]
+    );
+
+    if (!lesson) {
+      return null;
+    }
+
+    return {
+      id: lesson.id,
+      title: lesson.title,
+      content_type: lesson.content_type,
+      content_data: lesson.content_data || {},
+      micro_skills: lesson.micro_skills || [],
+      nano_skills: lesson.nano_skills || [],
+      enrichment_data: lesson.enrichment_data || {},
+      order: lesson.order,
+      module: {
+        id: lesson.module_id,
+        name: lesson.module_name
+      },
+      course: {
+        id: lesson.course_id,
+        name: lesson.course_name
+      }
+    };
+  } catch (error) {
+    console.error('Error getting lesson details:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get learner progress for enrolled courses
+ */
+export const getLearnerProgress = async (learnerId) => {
+  try {
+    const registrations = await db.any(
+      `SELECT 
+        r.course_id,
+        c.course_name as title,
+        r.progress,
+        r.status,
+        r.created_at as enrolled_at,
+        c.level,
+        c.average_rating as rating
+      FROM registrations r
+      JOIN courses c ON c.course_id = r.course_id
+      WHERE r.learner_id = $1
+      ORDER BY r.created_at DESC`,
+      [learnerId]
+    );
+
+    return registrations.map(r => ({
+      course_id: r.course_id,
+      title: r.title,
+      progress: parseFloat(r.progress) || 0,
+      status: r.status,
+      enrolled_at: r.enrolled_at.toISOString(),
+      level: r.level,
+      rating: parseFloat(r.rating) || 0
+    }));
+  } catch (error) {
+    console.error('Error getting learner progress:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get available filter values
+ */
+export const getCourseFilters = async () => {
+  try {
+    const [levels, categories, tags] = await Promise.all([
+      db.any(`SELECT DISTINCT level FROM courses WHERE visibility = 'public' AND status = 'live' ORDER BY level`),
+      db.any(`SELECT DISTINCT metadata->>'category' as category FROM courses WHERE visibility = 'public' AND status = 'live' AND metadata->>'category' IS NOT NULL`),
+      db.any(`SELECT DISTINCT jsonb_array_elements_text(metadata->'tags') as tag FROM courses WHERE visibility = 'public' AND status = 'live' AND metadata->'tags' IS NOT NULL`)
+    ]);
+
+    return {
+      levels: levels.map(l => l.level).filter(Boolean),
+      categories: categories.map(c => c.category).filter(Boolean),
+      tags: tags.map(t => t.tag).filter(Boolean)
+    };
+  } catch (error) {
+    console.error('Error getting course filters:', error);
+    throw error;
+  }
+};
+
 export const coursesService = {
   browseCourses,
   getAllCourses,
@@ -386,6 +678,13 @@ export const coursesService = {
   getCourseById,
   createCourse,
   updateCourse,
-  registerLearner
+  registerLearner,
+  publishCourse,
+  schedulePublishing,
+  unpublishCourse,
+  getCourseVersions,
+  getCourseFilters,
+  getLessonDetails,
+  getLearnerProgress
 };
 

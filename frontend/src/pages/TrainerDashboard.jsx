@@ -34,15 +34,27 @@ export default function TrainerDashboard() {
 
   const submit = async (e) => {
     e.preventDefault()
+    
+    // Validation
+    if (!form.name || form.name.trim().length < 3) {
+      showToast('Course name must be at least 3 characters', 'error')
+      return
+    }
+    
+    if (!form.description || form.description.trim().length < 10) {
+      showToast('Course description must be at least 10 characters', 'error')
+      return
+    }
+    
     setLoading(true)
     try {
       const payload = {
-        course_name: form.name,
-        course_description: form.description,
+        course_name: form.name.trim(),
+        course_description: form.description.trim(),
         level: form.level,
         trainer_id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
         trainer_name: 'Trainer',
-        skills: form.skills.split(',').map(s => s.trim()).filter(Boolean)
+        skills: form.skills ? form.skills.split(',').map(s => s.trim()).filter(Boolean) : []
       }
       const res = await createCourse(payload)
       setCreatedCourseId(res.course_id)
@@ -51,20 +63,26 @@ export default function TrainerDashboard() {
       setShowCreateForm(false)
       loadCourses()
     } catch (err) {
-      showToast('Failed to create course', 'error')
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to create course'
+      showToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const onPublish = async (courseId) => {
+    if (!window.confirm('Are you sure you want to publish this course? It will be visible in the marketplace.')) {
+      return
+    }
+    
     setLoading(true)
     try {
       await publishCourse(courseId)
       showToast('Course published successfully!', 'success')
       loadCourses()
-    } catch {
-      showToast('Publish failed', 'error')
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to publish course'
+      showToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }

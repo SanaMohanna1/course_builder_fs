@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { getCourseById, publishCourse } from '../services/apiService.js'
+import { getCourseById, publishCourse, scheduleCourse } from '../services/apiService.js'
 import PublishControls from '../components/PublishControls.jsx'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
@@ -49,8 +49,7 @@ export default function TrainerPublish() {
   const handleSchedule = async ({ scheduled_at }) => {
     setPublishing(true)
     try {
-      // In real app, this would call schedule endpoint
-      // await scheduleCourse(id, { scheduled_at })
+      await scheduleCourse(id, { publish_at: scheduled_at })
       showToast(`Course scheduled for ${new Date(scheduled_at).toLocaleString()}`, 'success')
       setTimeout(() => {
         navigate('/trainer/dashboard')

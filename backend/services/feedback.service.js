@@ -161,10 +161,131 @@ export const getFeedbackSummary = async (courseId) => {
   return getAggregatedFeedback(courseId);
 };
 
+/**
+ * Get feedback analytics for trainers
+ * Returns detailed analytics with rating trends, version breakdown, and date filtering
+ */
+export const getFeedbackAnalytics = async (courseId, { from, to, version } = {}) => {
+  try {
+    // Check if course exists
+    const course = await db.oneOrNone(
+      'SELECT course_id FROM courses WHERE course_id = $1',
+      [courseId]
+    );
+
+    if (!course) {
+      const error = new Error('Course not found');
+      error.status = 404;
+      throw error;
+    }
+
+    // Build date filter
+    let dateFilter = '';
+    const params = [courseId];
+    if (from) {
+      dateFilter += ` AND f.created_at >= $${params.length + 1}`;
+      params.push(new Date(from));
+    }
+    if (to) {
+      dateFilter += ` AND f.created_at <= $${params.length + 1}`;
+      params.push(new Date(to));
+    }
+
+    // Get overall stats
+    const stats = await db.oneOrNone(
+      `SELECT 
+        AVG(f.rating) as average_rating,
+        COUNT(*) as total_feedback
+      FROM feedback f
+      WHERE f.course_id = $1 ${dateFilter}`,
+      params
+    );
+
+    // Get rating trend (daily averages)
+    const ratingTrend = await db.any(
+      `SELECT 
+        DATE(f.created_at) as date,
+        AVG(f.rating) as avg_rating
+      FROM feedback f
+      WHERE f.course_id = $1 ${dateFilter}
+      GROUP BY DATE(f.created_at)
+      ORDER BY date ASC`,
+      params
+    );
+
+    // Get tag breakdown
+    const tagBreakdown = await db.any(
+      `SELECT 
+        tag,
+        AVG(f.rating) as avg_rating
+      FROM feedback f, jsonb_array_elements_text(f.tags) as tag
+      WHERE f.course_id = $1 ${dateFilter}
+      GROUP BY tag`,
+      params
+    );
+
+    const tagsBreakdownObj = {};
+    tagBreakdown.forEach(item => {
+      tagsBreakdownObj[item.tag] = parseFloat(item.avg_rating);
+    });
+
+    // Get version breakdown (if version filtering is not applied)
+    let versions = [];
+    if (!version) {
+      const versionStats = await db.any(
+        `SELECT 
+          v.version_no,
+          AVG(f.rating) as avg_rating
+        FROM versions v
+        LEFT JOIN feedback f ON f.course_id = v.course_id 
+          AND f.created_at >= v.created_at
+          AND (v.published_at IS NULL OR f.created_at <= v.published_at + INTERVAL '30 days')
+        WHERE v.course_id = $1
+        GROUP BY v.version_no
+        ORDER BY v.version_no DESC`,
+        [courseId]
+      );
+
+      versions = versionStats.map(v => ({
+        version_no: v.version_no,
+        avg_rating: parseFloat(v.avg_rating) || 0
+      }));
+    } else {
+      // If specific version requested, get stats for that version only
+      const versionInfo = await db.oneOrNone(
+        `SELECT version_no FROM versions WHERE course_id = $1 AND version_no = $2`,
+        [courseId, parseInt(version, 10)]
+      );
+      if (versionInfo) {
+        versions = [{
+          version_no: versionInfo.version_no,
+          avg_rating: parseFloat(stats?.average_rating) || 0
+        }];
+      }
+    }
+
+    return {
+      course_id: courseId,
+      average_rating: parseFloat(stats?.average_rating) || 0,
+      total_feedback: parseInt(stats?.total_feedback || 0, 10),
+      rating_trend: ratingTrend.map(t => ({
+        date: t.date.toISOString().split('T')[0],
+        avg_rating: parseFloat(t.avg_rating)
+      })),
+      tags_breakdown: tagsBreakdownObj,
+      versions: versions
+    };
+  } catch (error) {
+    console.error('Error getting feedback analytics:', error);
+    throw error;
+  }
+};
+
 export const feedbackService = {
   submitFeedback,
   addFeedback: submitFeedback, // Alias
   getAggregatedFeedback,
-  getFeedbackSummary
+  getFeedbackSummary,
+  getFeedbackAnalytics
 };
 

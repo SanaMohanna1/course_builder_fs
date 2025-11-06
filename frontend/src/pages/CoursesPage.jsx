@@ -4,6 +4,7 @@ import { getCourses } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import Toast from '../components/Toast.jsx'
 import { useApp } from '../context/AppContext'
+import { getContextualErrorMessage } from '../utils/errorHandler.js'
 
 export default function CoursesPage() {
   const { showToast } = useApp()
@@ -32,8 +33,12 @@ export default function CoursesPage() {
       setCourses(data.courses || [])
       setTotal(data.total || 0)
     } catch (err) {
-      setError(err.message || 'Failed to load courses')
-      showToast('Failed to load courses', 'error')
+      const errorMsg = getContextualErrorMessage(err, {
+        network: 'Unable to connect. Please check your internet connection.',
+        default: 'Failed to load courses'
+      })
+      setError(errorMsg)
+      showToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }

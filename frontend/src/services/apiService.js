@@ -55,8 +55,28 @@ export function getCourseVersions(courseId) {
   return api.get(`/courses/${courseId}/versions`).then(r => r.data)
 }
 
-export function getFeedbackAnalytics(courseId) {
-  return api.get(`/courses/${courseId}/feedback/analytics`).then(r => r.data)
+export function getFeedbackAnalytics(courseId, params = {}) {
+  return api.get(`/courses/${courseId}/feedback/analytics`, { params }).then(r => r.data)
+}
+
+export function getCourseFilters() {
+  return api.get('/courses/filters').then(r => r.data)
+}
+
+export function unpublishCourse(courseId) {
+  return api.post(`/courses/${courseId}/unpublish`).then(r => r.data)
+}
+
+export function triggerPersonalizedCourse(payload) {
+  return api.post('/ai/trigger-personalized-course', payload).then(r => r.data)
+}
+
+export function getLessonById(lessonId) {
+  return api.get(`/lessons/${lessonId}`).then(r => r.data)
+}
+
+export function getLearnerProgress(learnerId) {
+  return api.get(`/courses/learners/${learnerId}/progress`).then(r => r.data)
 }
 
 export default {
@@ -70,7 +90,12 @@ export default {
   scheduleCourse,
   updateCourse,
   getCourseVersions,
-  getFeedbackAnalytics
+  getFeedbackAnalytics,
+  getCourseFilters,
+  unpublishCourse,
+  triggerPersonalizedCourse,
+  getLessonById,
+  getLearnerProgress
 }
 
 

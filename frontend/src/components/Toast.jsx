@@ -5,12 +5,27 @@ export default function Toast() {
 
   if (!toast) return null
 
-  const bgColor = toast.type === 'success' 
-    ? 'var(--accent-green)' 
-    : '#EF4444'
-  const icon = toast.type === 'success' 
-    ? 'fas fa-check-circle' 
-    : 'fas fa-times-circle'
+  const getToastStyle = () => {
+    switch (toast.type) {
+      case 'success':
+        return {
+          bgColor: 'var(--accent-green)',
+          icon: 'fas fa-check-circle'
+        }
+      case 'info':
+        return {
+          bgColor: 'var(--primary-cyan)',
+          icon: 'fas fa-info-circle'
+        }
+      default:
+        return {
+          bgColor: '#EF4444',
+          icon: 'fas fa-times-circle'
+        }
+    }
+  }
+  
+  const { bgColor, icon } = getToastStyle()
 
   return (
     <div style={{

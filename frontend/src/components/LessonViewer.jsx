@@ -1,6 +1,118 @@
 import { useState } from 'react'
 import Button from './Button.jsx'
 
+/**
+ * Render lesson content based on content_data structure
+ * Supports Content Studio JSON format
+ */
+function renderContent(lesson) {
+  if (!lesson.content_data || Object.keys(lesson.content_data).length === 0) {
+    return (
+      <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--spacing-xl)' }}>
+        <i className="fas fa-file-alt" style={{ fontSize: '3rem', marginBottom: 'var(--spacing-md)' }}></i>
+        <p>No content available for this lesson.</p>
+      </div>
+    )
+  }
+
+  const contentData = lesson.content_data
+
+  // If content_data has a content_ref, display it
+  if (contentData.content_ref) {
+    return (
+      <div>
+        <div style={{ marginBottom: 'var(--spacing-md)' }}>
+          <strong>Content Reference:</strong> {contentData.content_ref}
+        </div>
+        {contentData.text && (
+          <div style={{ whiteSpace: 'pre-wrap' }}>{contentData.text}</div>
+        )}
+        {contentData.html && (
+          <div dangerouslySetInnerHTML={{ __html: contentData.html }} />
+        )}
+      </div>
+    )
+  }
+
+  // If content_data has text directly
+  if (contentData.text) {
+    return <div style={{ whiteSpace: 'pre-wrap' }}>{contentData.text}</div>
+  }
+
+  // If content_data has HTML
+  if (contentData.html) {
+    return <div dangerouslySetInnerHTML={{ __html: contentData.html }} />
+  }
+
+  // If content_data is an array (Content Studio format)
+  if (Array.isArray(contentData)) {
+    return (
+      <div>
+        {contentData.map((item, idx) => {
+          if (item.type === 'text' || item.type === 'paragraph') {
+            return (
+              <p key={idx} style={{ marginBottom: 'var(--spacing-md)' }}>
+                {item.content || item.text}
+              </p>
+            )
+          }
+          if (item.type === 'heading' || item.type === 'h1' || item.type === 'h2' || item.type === 'h3') {
+            const HeadingTag = item.level ? `h${item.level}` : 'h2'
+            return (
+              <HeadingTag key={idx} style={{ marginTop: 'var(--spacing-lg)', marginBottom: 'var(--spacing-md)' }}>
+                {item.content || item.text}
+              </HeadingTag>
+            )
+          }
+          if (item.type === 'list' || item.type === 'ul' || item.type === 'ol') {
+            const ListTag = item.ordered ? 'ol' : 'ul'
+            return (
+              <ListTag key={idx} style={{ marginBottom: 'var(--spacing-md)', paddingLeft: 'var(--spacing-lg)' }}>
+                {(item.items || []).map((listItem, listIdx) => (
+                  <li key={listIdx}>{listItem}</li>
+                ))}
+              </ListTag>
+            )
+          }
+          if (item.type === 'code' || item.type === 'codeblock') {
+            return (
+              <pre key={idx} style={{
+                background: 'var(--bg-primary)',
+                padding: 'var(--spacing-md)',
+                borderRadius: 'var(--radius-sm)',
+                overflow: 'auto',
+                marginBottom: 'var(--spacing-md)'
+              }}>
+                <code>{item.content || item.code}</code>
+              </pre>
+            )
+          }
+          return (
+            <div key={idx} style={{ marginBottom: 'var(--spacing-md)' }}>
+              {item.content || JSON.stringify(item)}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Fallback: display as JSON
+  return (
+    <div>
+      <pre style={{
+        background: 'var(--bg-primary)',
+        padding: 'var(--spacing-md)',
+        borderRadius: 'var(--radius-sm)',
+        overflow: 'auto',
+        fontSize: '0.9rem'
+      }}>
+        {JSON.stringify(contentData, null, 2)}
+      </pre>
+    </div>
+  )
+}
+
 export default function LessonViewer({ lesson, onNext, onPrevious, onComplete }) {
   const [completed, setCompleted] = useState(false)
 
@@ -78,22 +190,7 @@ export default function LessonViewer({ lesson, onNext, onPrevious, onComplete })
         lineHeight: 1.8,
         color: 'var(--text-primary)'
       }}>
-        {lesson.content_data ? (
-          <div>
-            {typeof lesson.content_data === 'string' ? (
-              <p>{lesson.content_data}</p>
-            ) : (
-              <div>
-                {lesson.content_data.content_ref && (
-                  <p>Content Reference: {lesson.content_data.content_ref}</p>
-                )}
-                <p>This is a preview lesson. Full Content Studio JSON rendering will be integrated in a later stage.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p>This is a mock lesson view. Content Studio JSON rendering will be integrated in a later stage.</p>
-        )}
+        {renderContent(lesson)}
 
         {/* Enrichment Data */}
         {lesson.enrichment_data && (

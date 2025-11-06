@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { getLessonById } from '../services/apiService.js'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import LessonViewer from '../components/LessonViewer.jsx'
@@ -14,20 +15,21 @@ export default function LessonPage() {
   const [lesson, setLesson] = useState(null)
 
   useEffect(() => {
-    // Simulate loading lesson content
-    setTimeout(() => {
-      setLesson({
-        id,
-        title: 'Introduction to Course Concepts',
-        content: 'This is a mock lesson view. Content Studio JSON rendering will be integrated in a later stage.',
-        content_type: 'text',
-        duration: 15,
-        micro_skills: ['Understanding basics', 'Applying concepts'],
-        nano_skills: ['Learn fundamentals', 'Practice exercises']
-      })
-      setLoading(false)
-    }, 1000)
+    loadLesson()
   }, [id])
+
+  const loadLesson = async () => {
+    setLoading(true)
+    try {
+      const data = await getLessonById(id)
+      setLesson(data)
+    } catch (err) {
+      showToast('Failed to load lesson', 'error')
+      console.error('Error loading lesson:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -60,19 +62,6 @@ export default function LessonPage() {
           }}
         />
 
-        {/* Note */}
-        <div style={{
-          marginTop: 'var(--spacing-lg)',
-          padding: 'var(--spacing-md)',
-          background: 'var(--bg-secondary)',
-          borderRadius: 'var(--radius-md)',
-          color: 'var(--text-muted)',
-          fontSize: '0.9rem',
-          textAlign: 'center'
-        }}>
-          <i className="fas fa-info-circle mr-2"></i>
-          This is a preview lesson. Full Content Studio JSON rendering will be integrated in a later stage.
-        </div>
       </div>
       <Toast />
     </div>

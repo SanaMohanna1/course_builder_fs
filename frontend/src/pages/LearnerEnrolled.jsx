@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getCourses } from '../services/apiService.js'
+import { getLearnerProgress } from '../services/apiService.js'
 import CourseCard from '../components/CourseCard.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import Toast from '../components/Toast.jsx'
@@ -13,22 +13,27 @@ export default function LearnerEnrolled() {
   const [filter, setFilter] = useState('all') // 'all', 'in_progress', 'completed'
 
   useEffect(() => {
-    loadCourses()
+    loadProgress()
   }, [])
 
-  const loadCourses = async () => {
+  const loadProgress = async () => {
     setLoading(true)
     try {
-      const data = await getCourses({ limit: 50 })
-      const allCourses = data.courses || []
-      // Simulate enrolled courses with progress
-      setCourses(allCourses.slice(0, 10).map(course => ({
-        ...course,
-        progress: Math.floor(Math.random() * 100),
-        status: Math.random() > 0.7 ? 'completed' : 'in_progress'
+      // Mock learner ID - in production, get from auth context
+      const learnerId = 'a1b2c3d4-e5f6-7890-1234-567890abcdef'
+      const progressData = await getLearnerProgress(learnerId)
+      setCourses(progressData.map(course => ({
+        id: course.course_id,
+        title: course.title,
+        level: course.level,
+        rating: course.rating,
+        progress: course.progress,
+        status: course.status
       })))
     } catch (err) {
       showToast('Failed to load enrolled courses', 'error')
+      // Fallback to empty array if no progress data
+      setCourses([])
     } finally {
       setLoading(false)
     }
@@ -36,8 +41,8 @@ export default function LearnerEnrolled() {
 
   const filteredCourses = courses.filter(course => {
     if (filter === 'all') return true
-    if (filter === 'completed') return course.progress === 100
-    if (filter === 'in_progress') return course.progress < 100
+    if (filter === 'completed') return course.status === 'completed' || course.progress === 100
+    if (filter === 'in_progress') return course.status === 'in_progress' && course.progress < 100
     return true
   })
 

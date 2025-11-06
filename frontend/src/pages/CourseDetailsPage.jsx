@@ -35,6 +35,11 @@ export default function CourseDetailsPage() {
   }
 
   const handleRegister = async () => {
+    if (enrolled) {
+      showToast('You are already enrolled in this course', 'info')
+      return
+    }
+    
     setRegistering(true)
     try {
       await registerLearner(id, { 
@@ -43,8 +48,9 @@ export default function CourseDetailsPage() {
       setEnrolled(true)
       showToast('Successfully enrolled in course!', 'success')
     } catch (err) {
-      setError('Registration failed')
-      showToast('Registration failed', 'error')
+      const errorMsg = err.response?.data?.message || err.message || 'Registration failed'
+      setError(errorMsg)
+      showToast(errorMsg, 'error')
     } finally {
       setRegistering(false)
     }

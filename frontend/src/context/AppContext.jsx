@@ -7,7 +7,7 @@ export function AppProvider({ children }) {
   const [userRole, setUserRole] = useState('learner') // 'learner', 'trainer', 'admin', 'public'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [toast, setToast] = useState(null) // { message, type: 'success' | 'error' }
+  const [toast, setToast] = useState(null) // { message, type: 'success' | 'error' | 'info' }
   
   // Accessibility features
   const [accessibility, setAccessibility] = useState({

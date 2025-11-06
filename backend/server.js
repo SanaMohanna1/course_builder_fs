@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import coursesRoutes from './routes/courses.routes.js';
 import feedbackRoutes from './routes/feedback.routes.js';
 import inputRoutes from './routes/input.routes.js';
+import lessonsRoutes from './routes/lessons.routes.js';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/courses', coursesRoutes);
 app.use('/api/v1', feedbackRoutes);
 app.use('/api/v1', inputRoutes);
+app.use('/api/v1/lessons', lessonsRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -80,9 +80,39 @@ export const getAggregatedFeedback = async (req, res, next) => {
   }
 };
 
+/**
+ * Get feedback analytics for trainers
+ * GET /api/v1/courses/:id/feedback/analytics
+ */
+export const getFeedbackAnalytics = async (req, res, next) => {
+  try {
+    const { id: courseId } = req.params;
+    const { from, to, version } = req.query;
+
+    if (!courseId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Course ID is required'
+      });
+    }
+
+    const result = await feedbackService.getFeedbackAnalytics(courseId, { from, to, version });
+    res.status(200).json(result);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: error.message
+      });
+    }
+    next(error);
+  }
+};
+
 export const feedbackController = {
   submitFeedback,
-  getAggregatedFeedback
+  getAggregatedFeedback,
+  getFeedbackAnalytics
 };
 
 

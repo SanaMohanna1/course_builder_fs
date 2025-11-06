@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { getCourseById, getFeedback } from '../services/apiService.js'
+import { getCourseById, getFeedbackAnalytics } from '../services/apiService.js'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import Toast from '../components/Toast.jsx'
@@ -21,12 +21,12 @@ export default function TrainerFeedbackAnalytics() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [courseData, feedbackData] = await Promise.all([
+      const [courseData, analyticsData] = await Promise.all([
         getCourseById(id),
-        getFeedback(id).catch(() => null) // Feedback might not exist
+        getFeedbackAnalytics(id).catch(() => null) // Analytics might not exist
       ])
       setCourse(courseData)
-      setFeedback(feedbackData)
+      setFeedback(analyticsData)
     } catch (err) {
       showToast('Failed to load data', 'error')
     } finally {
@@ -42,20 +42,13 @@ export default function TrainerFeedbackAnalytics() {
     )
   }
 
-  // Mock feedback data structure
+  // Use real analytics data or fallback to empty structure
   const analytics = feedback || {
-    average_rating: 4.6,
-    total_ratings: 128,
-    tags_breakdown: {
-      Clarity: 4.8,
-      Usefulness: 4.7,
-      Difficulty: 3.9,
-      Engagement: 4.5
-    },
-    recent_comments: [
-      { learner_name: 'Learner A', rating: 5, comment: 'Very clear and engaging!', timestamp: new Date().toISOString() },
-      { learner_name: 'Learner B', rating: 4, comment: 'Great content, but could use more examples.', timestamp: new Date().toISOString() }
-    ]
+    average_rating: 0,
+    total_feedback: 0,
+    rating_trend: [],
+    tags_breakdown: {},
+    versions: []
   }
 
   return (
@@ -111,10 +104,10 @@ export default function TrainerFeedbackAnalytics() {
               color: 'var(--primary-cyan)',
               marginBottom: 'var(--spacing-xs)'
             }}>
-              {analytics.total_ratings || 0}
+              {analytics.total_feedback || 0}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Total Ratings
+              Total Feedback
             </div>
           </div>
 
@@ -125,10 +118,10 @@ export default function TrainerFeedbackAnalytics() {
               color: 'var(--primary-cyan)',
               marginBottom: 'var(--spacing-xs)'
             }}>
-              {analytics.recent_comments?.length || 0}
+              {analytics.versions?.length || 0}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Comments
+              Versions
             </div>
           </div>
         </div>
@@ -182,78 +175,75 @@ export default function TrainerFeedbackAnalytics() {
           </div>
         </div>
 
-        {/* Recent Comments */}
-        <div className="card">
-          <h3 style={{
-            fontSize: '1.5rem',
-            fontWeight: 600,
-            marginBottom: 'var(--spacing-lg)',
-            color: 'var(--text-primary)'
-          }}>
-            Recent Comments
-          </h3>
-          {analytics.recent_comments && analytics.recent_comments.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-              {analytics.recent_comments.map((comment, idx) => (
+        {/* Rating Trend */}
+        {analytics.rating_trend && analytics.rating_trend.length > 0 && (
+          <div className="card" style={{ marginBottom: 'var(--spacing-xl)' }}>
+            <h3 style={{
+              fontSize: '1.5rem',
+              fontWeight: 600,
+              marginBottom: 'var(--spacing-lg)',
+              color: 'var(--text-primary)'
+            }}>
+              Rating Trend
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+              {analytics.rating_trend.map((trend, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: 'var(--spacing-sm)',
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-sm)'
+                  }}
+                >
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    {new Date(trend.date).toLocaleDateString()}
+                  </span>
+                  <span style={{ fontWeight: 600, color: 'var(--primary-cyan)' }}>
+                    {trend.avg_rating.toFixed(1)} ★
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Version Breakdown */}
+        {analytics.versions && analytics.versions.length > 0 && (
+          <div className="card">
+            <h3 style={{
+              fontSize: '1.5rem',
+              fontWeight: 600,
+              marginBottom: 'var(--spacing-lg)',
+              color: 'var(--text-primary)'
+            }}>
+              Ratings by Version
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 'var(--spacing-md)' }}>
+              {analytics.versions.map((v, idx) => (
                 <div
                   key={idx}
                   style={{
                     padding: 'var(--spacing-md)',
                     background: 'var(--bg-secondary)',
                     borderRadius: 'var(--radius-md)',
-                    borderLeft: '4px solid var(--primary-cyan)'
+                    textAlign: 'center'
                   }}
                 >
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--spacing-sm)'
-                  }}>
-                    <div style={{
-                      fontWeight: 600,
-                      color: 'var(--text-primary)'
-                    }}>
-                      {comment.learner_name || 'Anonymous Learner'}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-xs)',
-                      color: '#FACC15'
-                    }}>
-                      {'★'.repeat(comment.rating)}
-                    </div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: 'var(--spacing-xs)' }}>
+                    Version {v.version_no}
                   </div>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    lineHeight: 1.6,
-                    marginBottom: 'var(--spacing-xs)'
-                  }}>
-                    {comment.comment}
-                  </p>
-                  {comment.timestamp && (
-                    <div style={{
-                      fontSize: '0.85rem',
-                      color: 'var(--text-muted)'
-                    }}>
-                      {new Date(comment.timestamp).toLocaleDateString()}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>
+                    {v.avg_rating.toFixed(1)}
+                  </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-xl)',
-              color: 'var(--text-muted)'
-            }}>
-              <i className="fas fa-comments" style={{ fontSize: '3rem', marginBottom: 'var(--spacing-md)' }}></i>
-              <p>No comments yet. Encourage learners to leave feedback!</p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <Toast />
     </div>
