@@ -1,12 +1,11 @@
 FROM node:18-alpine
 
-# System settings
 ENV NODE_ENV=production \
     NPM_CONFIG_LOGLEVEL=warn
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files from backend
 COPY backend/package*.json ./
 
 # Install dependencies (production only)
@@ -19,5 +18,4 @@ EXPOSE 3000
 
 # Start the server
 CMD ["npm", "start"]
-
 

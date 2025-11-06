@@ -1,18 +1,32 @@
+# Frontend (not needed for backend build)
 frontend/
+
+# Dependencies (will be installed in Docker)
 node_modules/
 **/node_modules/
+
+# Build artifacts
 npm-debug.log*
-Dockerfile*
-.dockerignore
+*.log
+
+# Git
 .git
 .gitignore
+
+# Documentation (not needed in Docker)
 *.md
-scripts/
 Main_Development_Plan/
-START_HERE.md
-README.md
+scripts/
+
+# IDE
 .vscode/
 .idea/
+
+# Environment files (use Railway env vars instead)
 **/.env
 **/.env.*
+
+# Docker files (don't copy into Docker)
+.dockerignore
+Dockerfile*
 
