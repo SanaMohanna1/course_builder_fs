@@ -1,5 +1,5 @@
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useRole } from '../hooks/useRole.js'
 import logoLight from '../assets/logo-light.png'
@@ -7,23 +7,16 @@ import logoDark from '../assets/logo-dark.png'
 
 export default function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { theme, toggleTheme } = useApp()
   const { userRole, switchRole, isLearner, isTrainer, availableRoles } = useRole()
   const [isMenuOpen, setMenuOpen] = useState(false)
-  const location = useLocation()
 
   const logo = theme === 'day-mode' ? logoLight : logoDark
 
   useEffect(() => {
     setMenuOpen(false)
   }, [location.pathname])
-
-  useEffect(() => {
-    // Redirect base url to the correct dashboard when role changes
-    if (typeof window !== 'undefined') {
-      navigate(userRole === 'trainer' ? '/trainer/dashboard' : '/learner/dashboard', { replace: true })
-    }
-  }, [userRole, navigate])
 
   const learnerNav = [
     { to: '/learner/dashboard', label: 'Home', icon: 'fa-solid fa-house' },
@@ -39,23 +32,28 @@ export default function Header() {
 
   const navLinks = isLearner ? learnerNav : trainerNav
 
+  const handleRoleChange = (role) => {
+    switchRole(role)
+    navigate(role === 'trainer' ? '/trainer/dashboard' : '/learner/dashboard', { replace: true })
+  }
+
   return (
-    <header className="fixed top-0 w-full z-50">
-      <nav className="flex w-full items-center justify-between bg-white/70 backdrop-blur-lg shadow-md px-4 md:px-8 py-4 dark:bg-slate-900/70 dark:shadow-slate-900/40">
+    <header className="fixed top-0 z-50 w-full">
+      <nav className="flex w-full items-center justify-between bg-white/70 px-4 py-4 shadow-md backdrop-blur-lg md:px-8 dark:bg-slate-900/70 dark:shadow-slate-900/40">
         <Link
           to={userRole === 'trainer' ? '/trainer/dashboard' : '/learner/dashboard'}
-          className="flex items-center gap-3 group"
+          className="group flex items-center gap-3"
         >
           <div className="flex items-center gap-2">
             <img
               src={logo}
               alt="Educore AI Logo"
               className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
               }}
             />
-            <span className="hidden font-bold text-xl text-indigo-600 md:inline-block dark:text-indigo-300">
+            <span className="hidden text-xl font-bold text-indigo-600 md:inline-block dark:text-indigo-300">
               Course Builder
             </span>
           </div>
@@ -64,7 +62,7 @@ export default function Header() {
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/80 p-2 text-slate-600 shadow-sm transition md:hidden dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
-          onClick={() => setMenuOpen(prev => !prev)}
+          onClick={() => setMenuOpen((prev) => !prev)}
           aria-expanded={isMenuOpen}
           aria-controls="primary-navigation"
         >
@@ -78,7 +76,7 @@ export default function Header() {
           } absolute left-0 right-0 top-[72px] flex-col gap-4 bg-white/95 px-4 py-6 shadow-xl md:static md:flex md:flex-row md:items-center md:gap-6 md:bg-transparent md:p-0 md:shadow-none dark:bg-slate-900/95`}
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2">
-            {navLinks.map(link => (
+            {navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -116,10 +114,10 @@ export default function Header() {
 
             <select
               value={userRole}
-              onChange={(e) => switchRole(e.target.value)}
+              onChange={(event) => handleRoleChange(event.target.value)}
               className="rounded-xl border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200 dark:focus:border-indigo-300"
             >
-              {availableRoles.map(role => (
+              {availableRoles.map((role) => (
                 <option key={role.value} value={role.value}>
                   {role.label}
                 </option>
