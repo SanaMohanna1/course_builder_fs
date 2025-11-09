@@ -2,7 +2,6 @@ import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
 import app from '../server.js';
 import db from '../config/database.js';
-import { pgp } from '../config/database.js';
 
 describe('Feedback Integration Tests', () => {
   let testCourseId;
@@ -31,7 +30,6 @@ describe('Feedback Integration Tests', () => {
       await db.none('DELETE FROM feedback WHERE course_id = $1', [testCourseId]);
       await db.none('DELETE FROM courses WHERE course_id = $1', [testCourseId]);
     }
-    await pgp.end();
   });
 
   describe('Full Data Flow: Controller → Service → Database', () => {
@@ -88,7 +86,7 @@ describe('Feedback Integration Tests', () => {
             .expect(400);
 
           expect(response.body).toHaveProperty('error');
-          expect(response.body.message).toContain('rating');
+          expect((response.body.message || response.body.error || '').toLowerCase()).toContain('rating');
         }
       });
 

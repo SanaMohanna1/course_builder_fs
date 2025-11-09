@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../server.js';
-import db, { pgp } from '../config/database.js';
+import db from '../config/database.js';
 
 const samplePayload = {
   learner_id: 'learner-xyz',
@@ -27,7 +27,6 @@ describe('InputService + CourseStructureService Integration', () => {
       await db.none('DELETE FROM versions WHERE course_id = $1', [createdCourseId]);
       await db.none('DELETE FROM courses WHERE course_id = $1', [createdCourseId]);
     }
-    await pgp.end();
   });
 
   it('should validate payload and create a course with structure', async () => {

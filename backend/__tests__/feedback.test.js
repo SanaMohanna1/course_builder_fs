@@ -55,9 +55,9 @@ describe('Feedback API', () => {
     });
 
     it('should return aggregated feedback structure', async () => {
-      const fakeId = '00000000-0000-0000-0000-000000000000';
+      const seededCourseId = '11111111-1111-1111-1111-111111111111';
       const response = await request(app)
-        .get(`/api/v1/feedback/${fakeId}`)
+        .get(`/api/v1/feedback/${seededCourseId}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('course_id');

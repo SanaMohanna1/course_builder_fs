@@ -1,16 +1,10 @@
-import db, { pgp } from '../config/database.js';
+import db from '../config/database.js';
 
 // Jest globals are available without import in Node.js environment
 
 describe('Database Schema Tests', () => {
-  beforeAll(async () => {
-    // Ensure database connection is ready
-    await db.connect();
-  });
-
-  afterAll(async () => {
-    // Close database connection pool
-    await pgp.end();
+  afterAll(() => {
+    // Database pool is closed in global teardown.
   });
 
   describe('Table Existence', () => {

@@ -1,16 +1,10 @@
 import request from 'supertest';
 import app from '../server.js';
 import db from '../config/database.js';
-import { pgp } from '../config/database.js';
 
 describe('Courses Integration Tests', () => {
   let testCourseId;
   const testLearnerId = '00000000-0000-0000-0000-000000000101';
-
-  beforeAll(async () => {
-    // Ensure database connection
-    await db.connect();
-  });
 
   afterAll(async () => {
     // Clean up test data
@@ -18,7 +12,6 @@ describe('Courses Integration Tests', () => {
       await db.none('DELETE FROM registrations WHERE course_id = $1', [testCourseId]);
       await db.none('DELETE FROM courses WHERE course_id = $1', [testCourseId]);
     }
-    await pgp.end();
   });
 
   describe('Full Data Flow: Controller → Service → Database', () => {

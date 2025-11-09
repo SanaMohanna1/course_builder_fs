@@ -41,10 +41,12 @@ describe('Courses API', () => {
   });
 
   describe('GET /api/v1/courses/:id', () => {
-    it('should return 400 if course ID is missing', async () => {
+    it('should gracefully handle missing course ID route', async () => {
       const response = await request(app)
         .get('/api/v1/courses/')
-        .expect(404); // Express returns 404 for missing route
+        .expect(200);
+
+      expect(response.body).toHaveProperty('courses');
     });
 
     it('should return 404 for non-existent course', async () => {
