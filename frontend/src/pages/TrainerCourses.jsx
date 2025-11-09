@@ -47,8 +47,8 @@ export default function TrainerCourses() {
             to="/trainer/dashboard"
             className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
           >
-            <i className="fa-solid fa-plus text-xs" />
-            Create new course
+            <i className="fa-solid fa-gauge text-xs" />
+            Back to trainer dashboard
           </Link>
         </div>
       </header>
@@ -91,7 +91,7 @@ export default function TrainerCourses() {
             No courses for this status
           </h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Create a new course or adjust the filter to view existing content.
+            Adjust the filter or reach out to the curriculum team to provision additional content.
           </p>
         </div>
       ) : (
@@ -165,4 +165,5 @@ export default function TrainerCourses() {
     </div>
   )
 }
+
 
