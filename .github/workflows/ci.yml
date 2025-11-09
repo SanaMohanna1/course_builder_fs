@@ -7,7 +7,7 @@ on:
     branches: [ "master", "main" ]
 
 jobs:
-  backend:
+  backend-tests:
     name: Backend Tests
     runs-on: ubuntu-latest
     services:
@@ -24,37 +24,53 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/coursebuilder
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_NAME: coursebuilder
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      NODE_ENV: test
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Prepare cache path
+        run: mkdir -p backend/node_modules
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: |
-            backend/package-lock.json
+          node-version: 20
 
-      - name: Install dependencies
-        working-directory: backend
+      - name: Cache backend node_modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-npm-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-npm-
+
+      - name: Install backend dependencies
+        working-directory: ./backend
         run: npm ci
 
-      - name: Run migrations
-        working-directory: backend
+      - name: Run backend migrations
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/coursebuilder
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: coursebuilder
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          NODE_ENV: test
         run: npm run migrate
 
       - name: Run backend tests
-        working-directory: backend
-        run: npm test -- --runInBand
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/coursebuilder
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: coursebuilder
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          NODE_ENV: test
+        run: npm test -- --runInBand --coverage
 
   frontend:
     name: Frontend Tests and Build
