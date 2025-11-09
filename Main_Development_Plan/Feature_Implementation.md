@@ -29,8 +29,9 @@ Implementation tracker for Course Builder v1 MVP. Use this table during developm
 | 16 | Lesson Viewer | Display lessons + AI-generated content | ⬜ Not Started | |
 | 17 | Feedback Form UI | Rating slider + tags + comment submission | ✅ Complete | Frontend validation, loading and success/error toasts, connected to backend |
 | 18 | Testing Setup | Jest + Supertest + Cypress base config | 🟡 In Progress | Jest + Supertest configured; basic test files created for courses and feedback endpoints (Cypress pending) |
-| 19 | CI/CD Pipeline | GitHub Actions workflow for lint, test, deploy | ⬜ Not Started | |
+| 19 | CI/CD Pipeline | GitHub Actions workflow for lint, test, deploy | ✅ Complete | Backend `test.yml` workflow runs Node 20 with Postgres 15, caches deps, enforces 80%+ coverage, and uploads artifacts |
 | 20 | Deployment | Backend → Railway, Frontend → Vercel | ⬜ Not Started | |
+| 21 | Integration Gateway Endpoint | Unified /api/v1/integrations route dispatching microservice payloads | ✅ Complete | Controller, route, service stubs, unified response schema, and integration tests added |
 
 **Status Options:** ⬜ Not Started | 🟡 In Progress | ✅ Complete | ⚙️ Blocked
 
