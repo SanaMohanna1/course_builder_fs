@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import Toast from '../components/Toast.jsx'
 import { getCourseById } from '../services/apiService.js'
 import { useApp } from '../context/AppContext'
 
@@ -32,14 +31,8 @@ export default function AssessmentPage() {
 
   const handleStartAssessment = () => {
     setRedirecting(true)
-    // In real app, this would redirect to Assessment microservice
-    // For now, simulate the redirect
     showToast('Redirecting to Assessment microservice...', 'success')
-    
-    // Simulate redirect to Assessment service
     setTimeout(() => {
-      // In production, this would be:
-      // window.location.href = `${ASSESSMENT_SERVICE_URL}/start?course_id=${id}&learner_id=${learnerId}`
       showToast('Assessment service integration coming soon', 'success')
       navigate(`/courses/${id}`)
     }, 2000)
@@ -47,165 +40,64 @@ export default function AssessmentPage() {
 
   if (loading) {
     return (
-      <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading assessment..." />
       </div>
     )
   }
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh', padding: 'var(--spacing-2xl) var(--spacing-lg)' }}>
-      <div className="microservices-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <Button
-          variant="secondary"
-          onClick={() => navigate(`/courses/${id}`)}
-          style={{ marginBottom: 'var(--spacing-lg)' }}
-        >
-          <i className="fas fa-arrow-left mr-2"></i>
-          Back to Course
+    <div className="personalized-dashboard">
+      <section className="section-panel" style={{ maxWidth: '820px', margin: '0 auto', marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
+        <Button variant="secondary" onClick={() => navigate(`/courses/${id}`)}>
+          <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to course
         </Button>
 
-        <div className="card">
-          <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-xl)' }}>
-            <div className="card-icon" style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto var(--spacing-lg)',
-              background: 'var(--gradient-brand)'
-            }}>
-              <i className="fas fa-clipboard-check" style={{ fontSize: '2rem' }}></i>
-            </div>
-            <h1 style={{
-              fontSize: '2.5rem',
-              fontWeight: 600,
-              marginBottom: 'var(--spacing-md)',
-              color: 'var(--text-primary)'
-            }}>
-              Course Assessment
-            </h1>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '1.1rem',
-              marginBottom: 'var(--spacing-lg)'
-            }}>
-              {course?.title || course?.course_name || 'Course'}
-            </p>
+        <article className="course-card" style={{ textAlign: 'center' }}>
+          <div className="dashboard-icon" style={{ width: '80px', height: '80px', margin: '0 auto var(--spacing-md)' }}>
+            <i className="fas fa-clipboard-check" style={{ fontSize: '2rem' }} />
           </div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Course assessment</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: 'var(--spacing-xs)' }}>
+            {course?.title || course?.course_name || 'Course'}
+          </p>
+        </article>
 
-          <div style={{
-            background: 'var(--bg-secondary)',
-            padding: 'var(--spacing-lg)',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: 'var(--spacing-xl)'
-          }}>
-            <h3 style={{
-              fontSize: '1.3rem',
-              fontWeight: 600,
-              marginBottom: 'var(--spacing-md)',
-              color: 'var(--text-primary)'
-            }}>
-              Assessment Details
-            </h3>
-            <ul style={{
-              listStyle: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-sm)',
-              color: 'var(--text-secondary)'
-            }}>
-              <li>
-                <i className="fas fa-check-circle mr-2" style={{ color: 'var(--accent-green)' }}></i>
-                Covers all course modules and lessons
-              </li>
-              <li>
-                <i className="fas fa-check-circle mr-2" style={{ color: 'var(--accent-green)' }}></i>
-                Multiple choice and practical questions
-              </li>
-              <li>
-                <i className="fas fa-check-circle mr-2" style={{ color: 'var(--accent-green)' }}></i>
-                Passing score: 70% or higher
-              </li>
-              <li>
-                <i className="fas fa-check-circle mr-2" style={{ color: 'var(--accent-green)' }}></i>
-                Time limit: 60 minutes
-              </li>
-            </ul>
-          </div>
+        <section className="course-card">
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Assessment details</h2>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-md)', color: 'var(--text-muted)' }}>
+            <li><i className="fas fa-check-circle" style={{ color: '#047857', marginRight: '8px' }} /> Covers all course modules and lessons</li>
+            <li><i className="fas fa-check-circle" style={{ color: '#047857', marginRight: '8px' }} /> Multiple choice and practical questions</li>
+            <li><i className="fas fa-check-circle" style={{ color: '#047857', marginRight: '8px' }} /> Passing score: 70% or higher</li>
+            <li><i className="fas fa-check-circle" style={{ color: '#047857', marginRight: '8px' }} /> Time limit: 60 minutes</li>
+          </ul>
+        </section>
 
-          <div style={{
-            padding: 'var(--spacing-lg)',
-            background: 'rgba(245, 158, 11, 0.1)',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: 'var(--spacing-xl)',
-            border: '1px solid rgba(245, 158, 11, 0.3)'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-sm)',
-              marginBottom: 'var(--spacing-sm)',
-              color: 'var(--text-primary)',
-              fontWeight: 600
-            }}>
-              <i className="fas fa-exclamation-triangle" style={{ color: '#f59e0b' }}></i>
-              Important Notes
-            </div>
-            <ul style={{
-              listStyle: 'none',
-              color: 'var(--text-secondary)',
-              fontSize: '0.9rem',
-              lineHeight: 1.8
-            }}>
-              <li>• Make sure you've completed all course lessons before taking the assessment</li>
-              <li>• You can only take the assessment once per course</li>
-              <li>• Results will be shared with Learning Analytics and HR</li>
-              <li>• Upon passing, you'll receive a digital credential via Credly</li>
-            </ul>
+        <section className="course-card" style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245,158,11,0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)', color: '#b45309', fontWeight: 600 }}>
+            <i className="fas fa-exclamation-triangle" /> Important notes
           </div>
+          <ul style={{ listStyle: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <li>• Ensure all lessons are complete before starting the assessment.</li>
+            <li>• You can only take the assessment once per course.</li>
+            <li>• Results are shared with Learning Analytics and HR.</li>
+            <li>• Upon passing, you&apos;ll receive a digital credential via Credly.</li>
+          </ul>
+        </section>
 
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center' }}>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleStartAssessment}
-              disabled={redirecting}
-            >
-              {redirecting ? (
-                <>
-                  <i className="fas fa-spinner fa-spin mr-2"></i>
-                  Redirecting...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-play mr-2"></i>
-                  Start Assessment
-                </>
-              )}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => navigate(`/courses/${id}`)}
-              disabled={redirecting}
-            >
-              Cancel
-            </Button>
-          </div>
-
-          <div style={{
-            marginTop: 'var(--spacing-xl)',
-            padding: 'var(--spacing-md)',
-            background: 'var(--bg-secondary)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-            textAlign: 'center'
-          }}>
-            <i className="fas fa-info-circle mr-2"></i>
-            You will be redirected to the Assessment microservice to complete your exam.
-          </div>
+        <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center' }}>
+          <Button variant="primary" size="lg" onClick={handleStartAssessment} disabled={redirecting}>
+            {redirecting ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }} /> Redirecting...</> : <><i className="fas fa-play" style={{ marginRight: '8px' }} /> Start assessment</>}
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(`/courses/${id}`)} disabled={redirecting}>
+            Cancel
+          </Button>
         </div>
-      </div>
-      <Toast />
+
+        <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <i className="fas fa-info-circle" style={{ marginRight: '6px' }} /> You will be redirected to the Assessment microservice to complete your exam.
+        </p>
+      </section>
     </div>
   )
 }

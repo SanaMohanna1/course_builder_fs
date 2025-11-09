@@ -1,13 +1,44 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getCourses } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import Toast from '../components/Toast.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import { useCourseProgress } from '../hooks/useCourseProgress.js'
 
 const defaultCourseState = {
   completedStages: [],
   completedLessons: 0
+}
+
+const stageMeta = {
+  lessons: {
+    label: 'Take lesson',
+    description: 'Complete guided lessons tailored for you',
+    icon: 'fa-solid fa-play',
+    accent: 'rgba(15,118,110,0.12)',
+    accentBorder: 'rgba(15,118,110,0.45)'
+  },
+  exercises: {
+    label: 'Do exercise',
+    description: 'Practice skills with adaptive assessments',
+    icon: 'fa-solid fa-dumbbell',
+    accent: 'rgba(79,70,229,0.12)',
+    accentBorder: 'rgba(79,70,229,0.4)'
+  },
+  exam: {
+    label: 'Exam',
+    description: 'Unlock after finishing lessons and exercises',
+    icon: 'fa-solid fa-clipboard-check',
+    accent: 'rgba(14,165,233,0.12)',
+    accentBorder: 'rgba(14,165,233,0.4)'
+  },
+  feedback: {
+    label: 'Feedback',
+    description: 'Share reflections to improve future recommendations',
+    icon: 'fa-solid fa-comments',
+    accent: 'rgba(236,72,153,0.12)',
+    accentBorder: 'rgba(236,72,153,0.4)'
+  }
 }
 
 function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
@@ -22,128 +53,79 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
     completedLessons: state.completedLessons
   })
 
-  const handleClick = (stage) => () => {
+  const handleStageComplete = (stage) => () => {
     onCompleteStage(courseId, stage, totalLessons)
     notify(`Marked ${stage} as complete.`, 'success')
   }
-  const completeClass =
-    'border-emerald-200 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300'
-  const disabledClass =
-    'border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500'
-  const lessonReadyClass =
-    'border-indigo-200 bg-white hover:border-indigo-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-  const exerciseReadyClass =
-    'border-purple-200 bg-white hover:border-purple-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-  const examReadyClass =
-    'border-sky-200 bg-white hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-  const feedbackReadyClass =
-    'border-rose-200 bg-white hover:border-rose-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
+
+  const stages = ['lessons', 'exercises', 'exam', 'feedback']
 
   return (
-    <div className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg transition hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-800/60">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <article className="course-card" style={{ gap: 'var(--spacing-lg)' }}>
+      <header style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 'var(--spacing-md)' }}>
         <div>
-          <span className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase text-indigo-600 dark:text-indigo-300">
-            Personalized
+          <span className="tag-chip" style={{ marginBottom: 'var(--spacing-sm)', background: 'rgba(99,102,241,0.12)', color: '#4338ca' }}>
+            <i className="fa-solid fa-sparkles" /> Personalized
           </span>
-          <h3 className="mt-3 text-xl font-semibold text-slate-800 dark:text-slate-100">
-            {course.title || course.course_name}
-          </h3>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            {course.description || course.course_description || 'AI generated pathway based on your goals.'}
+          <h3 style={{ fontSize: '1.35rem', fontWeight: 600 }}>{course.title || course.course_name}</h3>
+          <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
+            {course.description || course.course_description || 'AI-generated pathway based on your goals.'}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-300">
-            <i className="fa-solid fa-layer-group text-xs" />
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span className="status-chip" style={{ background: 'rgba(16,185,129,0.12)', color: '#047857' }}>
+            <i className="fa-solid fa-layer-group" />
             {modules.length || 3} modules
           </span>
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
-            <i className="fa-solid fa-book text-xs text-indigo-400" />
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <i className="fa-solid fa-book" style={{ marginRight: '6px' }} />
             {totalLessons} lessons
           </span>
         </div>
+      </header>
+
+      <div className="stage-grid">
+        {stages.map((stageKey) => {
+          const metadata = stageMeta[stageKey]
+          const complete = isStageComplete(stageKey)
+          const accessible =
+            stageKey === 'exam'
+              ? canAccessStage(stageKey) && isLastLessonCompleted
+              : canAccessStage(stageKey)
+          const disabled = !accessible || complete
+
+          return (
+            <button
+              key={stageKey}
+              type="button"
+              onClick={handleStageComplete(stageKey)}
+              disabled={disabled}
+              className={`stage-button ${complete ? 'complete' : ''}`}
+              style={
+                !complete && accessible
+                  ? { background: metadata.accent, borderColor: metadata.accentBorder }
+                  : undefined
+              }
+            >
+              <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{metadata.label}</span>
+                <i className={metadata.icon} style={{ color: 'var(--text-muted)' }} />
+              </div>
+              <small>{metadata.description}</small>
+            </button>
+          )
+        })}
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <button
-          type="button"
-          onClick={handleClick('lessons')}
-          disabled={!canAccessStage('lessons') || isStageComplete('lessons')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('lessons') ? completeClass : canAccessStage('lessons') ? lessonReadyClass : disabledClass
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Take Lesson</span>
-            <i className="fa-solid fa-play text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">Complete guided lessons tailored for you</p>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleClick('exercises')}
-          disabled={!canAccessStage('exercises') || isStageComplete('exercises')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('exercises') ? completeClass : canAccessStage('exercises') ? exerciseReadyClass : disabledClass
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Do Exercise</span>
-            <i className="fa-solid fa-dumbbell text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">Practice skills with adaptive assessments</p>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleClick('exam')}
-          disabled={!canAccessStage('exam') || isStageComplete('exam')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('exam')
-              ? completeClass
-              : isLastLessonCompleted && canAccessStage('exam')
-                ? examReadyClass
-                : disabledClass
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Exam</span>
-            <i className="fa-solid fa-clipboard-check text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Unlock after finishing lessons and exercises
-          </p>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleClick('feedback')}
-          disabled={!canAccessStage('feedback') || isStageComplete('feedback')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('feedback') ? completeClass : canAccessStage('feedback') ? feedbackReadyClass : disabledClass
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Feedback</span>
-            <i className="fa-solid fa-comments text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Share reflections to improve future recommendations
-          </p>
-        </button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-slate-50/70 px-4 py-3 text-xs font-semibold text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
-        <span className="inline-flex items-center gap-2">
-          <i className="fa-solid fa-seedling text-emerald-500" /> Adaptive difficulty enabled
+      <footer style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+        <span className="status-chip" style={{ background: 'rgba(16,185,129,0.12)', color: '#047857' }}>
+          <i className="fa-solid fa-seedling" /> Adaptive difficulty enabled
         </span>
-        <span className="inline-flex items-center gap-2">
-          <i className="fa-solid fa-robot text-indigo-500" /> AI trainer synced
+        <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
+          <i className="fa-solid fa-robot" /> AI trainer synced
         </span>
-      </div>
-    </div>
+      </footer>
+    </article>
   )
 }
 
@@ -161,8 +143,8 @@ export default function LearnerForYou() {
     setLoading(true)
     try {
       const data = await getCourses({ limit: 24 })
-      const personalized = (data.courses || []).filter((_, idx) => idx % 2 === 0)
-      setCourses(personalized)
+      const personalised = (data.courses || []).filter((_, idx) => idx % 2 === 0)
+      setCourses(personalised)
     } catch (err) {
       showToast('Failed to load personalized recommendations', 'error')
     } finally {
@@ -175,10 +157,10 @@ export default function LearnerForYou() {
   const updateCourseState = (courseId, updater) => {
     setCourseState(prev => {
       const current = prev[courseId] || defaultCourseState
-      const nextState = typeof updater === 'function' ? updater(current) : { ...current, ...updater }
+      const next = typeof updater === 'function' ? updater(current) : { ...current, ...updater }
       return {
         ...prev,
-        [courseId]: nextState
+        [courseId]: next
       }
     })
   }
@@ -197,43 +179,72 @@ export default function LearnerForYou() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading AI recommendations..." />
       </div>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-      <header className="rounded-3xl bg-gradient-to-r from-purple-100 via-indigo-100 to-sky-100 p-8 shadow-lg ring-1 ring-purple-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-purple-500 dark:text-purple-300">
-          Personalized Journey
-        </p>
-        <h1 className="mt-4 text-3xl font-bold text-slate-800 md:text-4xl dark:text-slate-100">
-          Courses curated just for you
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm text-slate-600 md:text-base dark:text-slate-300">
-          These learning paths adapt to your progress. Complete lessons, unlock exercises, then take the exam before sharing feedback for deeper insights.
-        </p>
-      </header>
+    <div className="personalized-dashboard">
+      <section className="hero">
+        <div className="hero-container">
+          <div className="hero-content">
+            <p className="subtitle">Personalised journey</p>
+            <h1>Courses curated just for you</h1>
+            <p className="subtitle">
+              These learning paths adapt to your progress. Complete lessons, unlock exercises, then take the exam before sharing feedback for deeper insights.
+            </p>
+            <div className="hero-actions">
+              <Link to="/learner/library" className="btn btn-primary">
+                View my library
+              </Link>
+              <Link to="/learner/marketplace" className="btn btn-secondary">
+                Add more interests
+              </Link>
+            </div>
+          </div>
+          <div className="hero-visual">
+            <div className="floating-card">
+              <div className="card-header">
+                <div className="card-icon">
+                  <i className="fa-solid fa-lightbulb" />
+                </div>
+                <span className="card-title">Next milestone</span>
+              </div>
+              <p className="progress-text">Unlock advanced AI toolkit</p>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: '58%' }} />
+              </div>
+              <p className="progress-text" style={{ marginTop: 'var(--spacing-sm)' }}>
+                Complete 1 more exam to refresh recommendations
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {courses.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-md dark:border-slate-700 dark:bg-slate-900/60">
-          <i className="fa-solid fa-sparkles text-4xl text-indigo-400" />
-          <h2 className="mt-4 text-2xl font-semibold text-slate-800 dark:text-slate-100">
-            No personalized courses yet
-          </h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
+        <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', textAlign: 'center' }}>
+          <i className="fa-solid fa-sparkles" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
+          <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No personalised courses yet</h2>
+          <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
             Interact with marketplace courses and complete feedback to unlock tailored recommendations.
           </p>
-        </div>
+        </section>
       ) : (
-        <div className="flex flex-col gap-6">
-          {courses.map((course) => renderCourseCard(course))}
-        </div>
+        <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+          {courses.map((course) => (
+            <PersonalizedCourseCard
+              key={course.id || course.course_id}
+              course={course}
+              state={getCourseState(course.id || course.course_id)}
+              onCompleteStage={handleStageCompletion}
+              notify={showToast}
+            />
+          ))}
+        </section>
       )}
-
-      <Toast />
     </div>
   )
 }

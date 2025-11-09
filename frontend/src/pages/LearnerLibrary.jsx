@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getLearnerProgress } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import Toast from '../components/Toast.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import { useCourseProgress } from '../hooks/useCourseProgress.js'
 
@@ -27,115 +26,107 @@ function LibraryCourseCard({ course }) {
     completedLessons
   })
 
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg transition hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-800/60">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-300">
-            Enrolled
-          </p>
-          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">
-            {course.title}
-          </h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-            {`Level: ${course.level || 'beginner'} · Status: ${(course.status || 'in_progress').replace('_', ' ')}`}
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">
-            Progress
-          </span>
-          <div className="text-3xl font-bold text-indigo-500 dark:text-indigo-300">
-            {Math.round(course.progress)}%
+  const stageButtons = [
+    {
+      key: 'lessons-link',
+      component: (
+        <Link to={`/courses/${course.id || course.course_id}`} className="stage-button" style={{ borderColor: 'rgba(79,70,229,0.35)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <span>Go to lessons</span>
+            <i className="fa-solid fa-arrow-up-right-from-square" style={{ color: 'var(--text-muted)' }} />
           </div>
-          <div className="text-xs text-slate-400 dark:text-slate-500">
-            {completedLessons} / {totalLessons} lessons
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all"
-          style={{ width: `${course.progress}%` }}
-        />
-      </div>
-
-      <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <Link
-          to={`/courses/${course.id || course.course_id}`}
-          className="group flex flex-col gap-2 rounded-2xl border border-indigo-200 bg-white px-4 py-4 text-left transition hover:border-indigo-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Go to Lessons</span>
-            <i className="fa-solid fa-arrow-right text-slate-400 transition group-hover:translate-x-1" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Resume content where you left off
-          </p>
+          <small>Resume content where you left off</small>
         </Link>
+      )
+    },
+    {
+      key: 'exercises',
+      stage: 'exercises',
+      label: 'Practice exercises',
+      icon: 'fa-solid fa-dumbbell',
+      description: 'Strengthen retention with adaptive drills',
+      accent: 'rgba(79,70,229,0.12)',
+      border: 'rgba(79,70,229,0.4)'
+    },
+    {
+      key: 'exam',
+      stage: 'exam',
+      label: 'Start exam',
+      icon: 'fa-solid fa-clipboard-check',
+      description: 'Complete all lessons first to unlock the exam',
+      accent: 'rgba(14,165,233,0.12)',
+      border: 'rgba(14,165,233,0.4)',
+      extraCondition: () => isLastLessonCompleted
+    },
+    {
+      key: 'feedback',
+      stage: 'feedback',
+      label: 'Share feedback',
+      icon: 'fa-solid fa-comments',
+      description: 'Provide insights to personalise future paths',
+      accent: 'rgba(236,72,153,0.12)',
+      border: 'rgba(236,72,153,0.4)'
+    }
+  ]
 
-        <button
-          type="button"
-          disabled={!canAccessStage('exercises') || isStageComplete('exercises')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('exercises')
-              ? 'border-emerald-200 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300'
-              : canAccessStage('exercises')
-                ? 'border-purple-200 bg-white hover:border-purple-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-                : 'border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Practice Exercises</span>
-            <i className="fa-solid fa-dumbbell text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Strengthen retention with adaptive drills
+  return (
+    <article className="course-card" style={{ gap: 'var(--spacing-lg)' }}>
+      <header style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 'var(--spacing-md)' }}>
+        <div>
+          <p style={{ fontSize: '0.7rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: 'var(--primary-cyan)', fontWeight: 600 }}>Enrolled</p>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: 'var(--spacing-sm)' }}>{course.title}</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Level: {course.level || 'beginner'} · Status: {(course.status || 'in_progress').replace('_', ' ')}
           </p>
-        </button>
+        </div>
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
+            <i className="fa-solid fa-chart-line" /> Progress
+          </span>
+          <span style={{ fontSize: '2.4rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{Math.round(course.progress)}%</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            {completedLessons} / {totalLessons} lessons
+          </span>
+        </div>
+      </header>
 
-        <button
-          type="button"
-          disabled={!canAccessStage('exam')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('exam')
-              ? 'border-emerald-200 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300'
-              : canAccessStage('exam') && isLastLessonCompleted
-                ? 'border-sky-200 bg-white hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-                : 'border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Start Exam</span>
-            <i className="fa-solid fa-clipboard-check text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Complete all lessons first to unlock the exam
-          </p>
-        </button>
-
-        <button
-          type="button"
-          disabled={!canAccessStage('feedback')}
-          className={`flex flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
-            isStageComplete('feedback')
-              ? 'border-emerald-200 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300'
-              : canAccessStage('feedback')
-                ? 'border-rose-200 bg-white hover:border-rose-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800'
-                : 'border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">Share Feedback</span>
-            <i className="fa-solid fa-comments text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Provide insights to personalize future paths
-          </p>
-        </button>
+      <div className="progress-track">
+        <div className="progress-fill" style={{ width: `${course.progress}%` }} />
       </div>
-    </div>
+
+      <div className="stage-grid">
+        {stageButtons.map((btn) => {
+          if (btn.component) {
+            return <div key={btn.key}>{btn.component}</div>
+          }
+
+          const complete = isStageComplete(btn.stage)
+          const accessibleBase = canAccessStage(btn.stage)
+          const accessible = btn.extraCondition ? accessibleBase && btn.extraCondition() : accessibleBase
+          const disabled = !accessible || complete
+
+          return (
+            <button
+              key={btn.key}
+              type="button"
+              disabled={disabled}
+              className={`stage-button ${complete ? 'complete' : ''}`}
+              style={
+                !complete && accessible
+                  ? { background: btn.accent, borderColor: btn.border }
+                  : undefined
+              }
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>{btn.label}</span>
+                <i className={btn.icon} style={{ color: 'var(--text-muted)' }} />
+              </div>
+              <small>{btn.description}</small>
+            </button>
+          )
+        })}
+      </div>
+    </article>
   )
 }
 
@@ -180,71 +171,75 @@ export default function LearnerLibrary() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading your learning library..." />
       </div>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-      <header className="rounded-3xl bg-gradient-to-r from-emerald-100 via-teal-100 to-sky-100 p-8 shadow-lg ring-1 ring-emerald-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 dark:ring-slate-800">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-500 dark:text-emerald-300">
-          My Library
-        </p>
-        <h1 className="mt-4 text-3xl font-bold text-slate-800 md:text-4xl dark:text-slate-100">
-          Continue where you left off
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm text-slate-600 md:text-base dark:text-slate-300">
-          Access enrolled courses, monitor progress, and complete pending assessments to unlock certificates.
-        </p>
-      </header>
+    <div className="personalized-dashboard">
+      <section className="hero">
+        <div className="hero-container">
+          <div className="hero-content">
+            <p className="subtitle">My library</p>
+            <h1>Continue where you left off</h1>
+            <p className="subtitle">
+              Access enrolled courses, monitor progress, and complete pending assessments to unlock certificates.
+            </p>
+            <div className="hero-actions">
+              <Link to="/learner/marketplace" className="btn btn-primary">
+                Enrol in new course
+              </Link>
+              <button type="button" className="btn btn-secondary" onClick={loadProgress}>
+                Refresh progress
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
           {['all', 'in_progress', 'completed'].map(option => (
             <button
               key={option}
               type="button"
               onClick={() => setFilter(option)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              className="stage-button"
+              style={
                 filter === option
-                  ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
-              }`}
+                  ? { background: 'rgba(6,95,70,0.12)', borderColor: 'rgba(6,95,70,0.45)' }
+                  : { background: 'var(--bg-card)' }
+              }
             >
-              {option === 'all' ? 'All' : option === 'in_progress' ? 'In Progress' : 'Completed'}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <i className="fa-solid fa-circle" style={{ fontSize: '0.6rem' }} />
+                {option === 'all' ? 'All' : option === 'in_progress' ? 'In progress' : 'Completed'}
+              </span>
             </button>
           ))}
         </div>
-        <Link
-          to="/learner/marketplace"
-          className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300"
-        >
-          <i className="fa-solid fa-plus text-xs" />
-          Enroll in new course
-        </Link>
-      </div>
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          {filtered.length} course{filtered.length === 1 ? '' : 's'} visible
+        </span>
+      </section>
 
       {filtered.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-md dark:border-slate-700 dark:bg-slate-900/60">
-          <i className="fa-solid fa-books text-4xl text-indigo-400" />
-          <h2 className="mt-4 text-2xl font-semibold text-slate-800 dark:text-slate-100">
-            No courses found for this filter
-          </h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
+        <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', textAlign: 'center' }}>
+          <i className="fa-solid fa-books" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
+          <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No courses found for this filter</h2>
+          <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
             Browse the marketplace to add new courses to your learning library.
           </p>
-        </div>
+        </section>
       ) : (
-        <div className="flex flex-col gap-6">
+        <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
           {filtered.map(course => (
             <LibraryCourseCard key={course.id} course={course} />
           ))}
-        </div>
+        </section>
       )}
-
-      <Toast />
     </div>
   )
 }

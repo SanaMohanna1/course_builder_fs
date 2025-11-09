@@ -20,15 +20,37 @@ import TrainerFeedbackAnalytics from './pages/TrainerFeedbackAnalytics.jsx'
 import TrainerCourses from './pages/TrainerCourses.jsx'
 import { useRole } from './hooks/useRole.js'
 
+const PARTICLE_CONFIG = Array.from({ length: 24 }, (_, index) => ({
+  left: `${(index * 37) % 100}%`,
+  animationDelay: `${index * 0.65}s`,
+  animationDuration: `${18 + (index % 12)}s`
+}))
+
 function AppShell() {
   const { userRole } = useRole()
   const isLearner = userRole === 'learner'
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-700 dark:from-slate-900 dark:to-slate-950" data-testid="app-root">
+    <div className="app-surface" data-testid="app-root">
+      <div className="bg-animation" />
+      <div className="particles">
+        {PARTICLE_CONFIG.map((particle, idx) => (
+          <span
+            key={idx}
+            className="particle"
+            style={{
+              left: particle.left,
+              animationDelay: particle.animationDelay,
+              animationDuration: particle.animationDuration
+            }}
+          />
+        ))}
+      </div>
+
       <a href="#main" className="skip-link">Skip to main content</a>
       <Header />
-      <main id="main" className="pt-28 px-4 md:px-8 pb-20">
+
+      <main id="main" className="app-main">
         <Routes>
           <Route
             path="/"
@@ -70,6 +92,7 @@ function AppShell() {
           />
         </Routes>
       </main>
+
       <AccessibilityControls />
       <ChatbotWidget />
       <Toast />

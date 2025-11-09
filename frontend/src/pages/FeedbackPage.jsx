@@ -2,14 +2,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import Toast from '../components/Toast.jsx'
 import { submitFeedback, getCourseById, getFeedback } from '../services/apiService.js'
 import { useApp } from '../context/AppContext'
 
 export default function FeedbackPage() {
   const { courseId, id } = useParams()
   const navigate = useNavigate()
-  const actualCourseId = courseId || id // Support both /feedback/:courseId and /course/:id/feedback
+  const actualCourseId = courseId || id
   const { showToast } = useApp()
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
@@ -40,23 +39,18 @@ export default function FeedbackPage() {
         setExistingFeedback(data)
       }
     } catch (err) {
-      // No existing feedback - that's okay
+      // ignore missing analytics
     }
   }
 
   const tagOptions = ['Clarity', 'Usefulness', 'Difficulty', 'Engagement', 'Pacing']
-  
+
   const toggleTag = (tag) => {
-    setTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    )
+    setTags(prev => (prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]))
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    
     const numericRating = Number(rating)
     if (Number.isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
       showToast('Rating must be between 1 and 5', 'error')
@@ -66,16 +60,14 @@ export default function FeedbackPage() {
     setLoading(true)
     try {
       await submitFeedback(actualCourseId, {
-        learner_id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef', // Mock learner ID
+        learner_id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
         rating: numericRating,
         tags: tags.length > 0 ? tags : ['General'],
         comment: comment.trim()
       })
       setSubmitted(true)
       showToast('Feedback submitted successfully! Thank you!', 'success')
-      setTimeout(() => {
-        navigate(`/courses/${actualCourseId}`)
-      }, 2000)
+      setTimeout(() => navigate(`/courses/${actualCourseId}`), 2000)
     } catch (err) {
       showToast('Failed to submit feedback', 'error')
     } finally {
@@ -85,244 +77,115 @@ export default function FeedbackPage() {
 
   if (submitted) {
     return (
-      <div style={{ paddingTop: '100px', minHeight: '100vh', padding: 'var(--spacing-2xl)' }}>
-        <div className="card" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-          <i className="fas fa-check-circle" style={{ 
-            fontSize: '4rem', 
-            color: 'var(--accent-green)', 
-            marginBottom: 'var(--spacing-lg)' 
-          }}></i>
-          <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
-            Thank You!
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-lg)' }}>
-            Your feedback has been submitted successfully.
-          </p>
-          <Button variant="primary" onClick={() => navigate(`/courses/${courseId}`)}>
-            Back to Course
-          </Button>
-        </div>
-        <Toast />
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--spacing-md)' }}>
+        <i className="fas fa-check-circle" style={{ fontSize: '3rem', color: '#047857' }} />
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 600 }}>Thank you!</h2>
+        <p style={{ color: 'var(--text-muted)', textAlign: 'center', maxWidth: '420px' }}>
+          Your feedback helps trainers keep the content fresh and relevant.
+        </p>
+        <Button variant="primary" onClick={() => navigate(`/courses/${actualCourseId}`)}>
+          Back to course
+        </Button>
       </div>
     )
   }
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh', padding: 'var(--spacing-2xl) var(--spacing-lg)' }}>
-      <div className="microservices-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {course && (
-          <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-            <Link to={`/courses/${actualCourseId}`} style={{ 
-              color: 'var(--primary-cyan)', 
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-xs)',
-              marginBottom: 'var(--spacing-md)'
-            }}>
-              <i className="fas fa-arrow-left"></i>
-              Back to Course
-            </Link>
-            <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-sm)' }}>
-              {course.title || course.course_name}
-            </h2>
-          </div>
+    <div className="personalized-dashboard">
+      <section className="section-panel" style={{ maxWidth: '820px', margin: '0 auto', marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+        <div>
+          <Link to={`/courses/${actualCourseId}`} style={{ color: 'var(--primary-cyan)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+            <i className="fas fa-arrow-left" /> Back to course
+          </Link>
+          <h1 style={{ marginTop: 'var(--spacing-md)', fontSize: '2rem', fontWeight: 700 }}>Submit feedback</h1>
+          {course && <p style={{ color: 'var(--text-muted)', marginTop: 'var(--spacing-xs)' }}>{course.title || course.course_name}</p>}
+        </div>
+
+        {existingFeedback && (
+          <article className="course-card">
+            <h3 style={{ fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Community rating</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+              <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{existingFeedback.average_rating?.toFixed(1) || 'N/A'}</span>
+              <span style={{ color: '#FACC15', fontSize: '1.3rem' }}>{'★'.repeat(Math.round(existingFeedback.average_rating || 0))}</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>({existingFeedback.total_ratings || 0} ratings)</span>
+            </div>
+          </article>
         )}
 
-        <div className="card">
-          <h1 style={{
-            fontSize: '2rem',
-            fontWeight: 600,
-            marginBottom: 'var(--spacing-md)',
-            color: 'var(--text-primary)'
-          }}>
-            Submit Feedback
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-xl)' }}>
-            Help us improve by sharing your experience with this course.
-          </p>
-
-          {/* Existing Feedback Summary */}
-          {existingFeedback && (
-            <div style={{
-              background: 'var(--bg-secondary)',
-              padding: 'var(--spacing-md)',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: 'var(--spacing-lg)'
-            }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 'var(--spacing-xs)' }}>
-                Community Average Rating
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>
-                  {existingFeedback.average_rating?.toFixed(1) || 'N/A'}
-                </div>
-                <div style={{ color: '#FACC15', fontSize: '1.2rem' }}>
-                  {'★'.repeat(Math.floor(existingFeedback.average_rating || 0))}
-                </div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  ({existingFeedback.total_ratings || 0} ratings)
-                </span>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={onSubmit}>
-            {/* Rating */}
-            <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-sm)',
-                color: 'var(--text-primary)',
-                fontWeight: 500
-              }}>
-                Rating <span style={{ color: 'var(--text-muted)' }}>(1-5)</span>
-              </label>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-md)',
-                flexWrap: 'wrap'
-              }}>
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  step="1"
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  style={{
-                    flex: 1,
-                    minWidth: '200px',
-                    height: '8px',
-                    background: 'var(--bg-tertiary)',
-                    borderRadius: '4px',
-                    outline: 'none'
-                  }}
-                />
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--spacing-xs)',
-                  minWidth: '120px'
-                }}>
-                  <div style={{
-                    fontSize: '2rem',
-                    fontWeight: 700,
-                    color: 'var(--primary-cyan)',
-                    minWidth: '40px',
-                    textAlign: 'center'
-                  }}>
-                    {rating}
-                  </div>
-                  <div style={{ color: '#FACC15', fontSize: '1.5rem' }}>
-                    {'★'.repeat(Number(rating))}
-                  </div>
-                </div>
-              </div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 'var(--spacing-xs)',
-                fontSize: '0.85rem',
-                color: 'var(--text-muted)'
-              }}>
-                <span>Poor</span>
-                <span>Excellent</span>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-sm)',
-                color: 'var(--text-primary)',
-                fontWeight: 500
-              }}>
-                What did you like? <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>(Optional)</span>
-              </label>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 'var(--spacing-sm)'
-              }}>
-                {tagOptions.map(tag => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    style={{
-                      padding: 'var(--spacing-xs) var(--spacing-md)',
-                      background: tags.includes(tag) 
-                        ? 'var(--gradient-primary)' 
-                        : 'var(--bg-secondary)',
-                      color: tags.includes(tag) ? 'white' : 'var(--text-primary)',
-                      border: `1px solid ${tags.includes(tag) ? 'transparent' : 'var(--bg-tertiary)'}`,
-                      borderRadius: 'var(--radius-sm)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      fontWeight: 500
-                    }}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Comment */}
-            <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-sm)',
-                color: 'var(--text-primary)',
-                fontWeight: 500
-              }}>
-                Additional Comments <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>(Optional)</span>
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your thoughts about this course..."
-                rows="6"
-                style={{ width: '100%', resize: 'vertical' }}
+        <form onSubmit={onSubmit} className="course-card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 'var(--spacing-sm)' }}>
+              Rating <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>(1-5)</span>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                style={{ flex: 1, minWidth: '220px' }}
               />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{rating}</span>
+                <span style={{ color: '#FACC15', fontSize: '1.2rem' }}>{'★'.repeat(Number(rating))}</span>
+              </div>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span>Poor</span>
+              <span>Excellent</span>
+            </div>
+          </div>
 
-            {/* Submit Button */}
-            <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading}
-                style={{ flex: 1 }}
-              >
-                {loading ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-paper-plane mr-2"></i>
-                    Submit Feedback
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => navigate(`/courses/${actualCourseId}`)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 'var(--spacing-sm)' }}>
+              What stood out? <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>(optional)</span>
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+              {tagOptions.map(tag => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  style={{
+                    padding: 'var(--spacing-xs) var(--spacing-md)',
+                    background: tags.includes(tag) ? 'var(--gradient-primary)' : 'var(--bg-secondary)',
+                    color: tags.includes(tag) ? '#fff' : 'var(--text-primary)',
+                    border: tags.includes(tag) ? 'none' : '1px solid var(--bg-tertiary)',
+                    borderRadius: '18px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
             </div>
-          </form>
-        </div>
-      </div>
-      <Toast />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 'var(--spacing-sm)' }}>
+              Additional comments <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>(optional)</span>
+            </label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows="6"
+              placeholder="Share your thoughts about this course..."
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+            <Button type="submit" variant="primary" disabled={loading} style={{ flex: 1 }}>
+              {loading ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }} /> Submitting...</> : <><i className="fas fa-paper-plane" style={{ marginRight: '8px' }} /> Submit feedback</>}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => navigate(`/courses/${actualCourseId}`)} disabled={loading}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </section>
     </div>
   )
 }

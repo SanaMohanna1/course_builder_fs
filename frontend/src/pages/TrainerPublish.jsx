@@ -4,7 +4,6 @@ import { getCourseById, publishCourse, scheduleCourse } from '../services/apiSer
 import PublishControls from '../components/PublishControls.jsx'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import Toast from '../components/Toast.jsx'
 import { useApp } from '../context/AppContext'
 
 export default function TrainerPublish() {
@@ -31,14 +30,12 @@ export default function TrainerPublish() {
     }
   }
 
-  const handlePublish = async ({ immediate }) => {
+  const handlePublish = async () => {
     setPublishing(true)
     try {
       await publishCourse(id)
       showToast('Course published successfully!', 'success')
-      setTimeout(() => {
-        navigate('/trainer/dashboard')
-      }, 2000)
+      navigate('/trainer/dashboard')
     } catch (err) {
       showToast('Failed to publish course', 'error')
     } finally {
@@ -51,9 +48,7 @@ export default function TrainerPublish() {
     try {
       await scheduleCourse(id, { publish_at: scheduled_at })
       showToast(`Course scheduled for ${new Date(scheduled_at).toLocaleString()}`, 'success')
-      setTimeout(() => {
-        navigate('/trainer/dashboard')
-      }, 2000)
+      navigate('/trainer/dashboard')
     } catch (err) {
       showToast('Failed to schedule course', 'error')
     } finally {
@@ -63,103 +58,61 @@ export default function TrainerPublish() {
 
   if (loading) {
     return (
-      <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading course..." />
       </div>
     )
   }
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh', padding: 'var(--spacing-2xl) var(--spacing-lg)' }}>
-      <div className="microservices-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-          <Button
-            variant="secondary"
-            onClick={() => navigate(`/trainer/course/${id}`)}
-            style={{ marginBottom: 'var(--spacing-md)' }}
-          >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Back to Validation
+    <div className="personalized-dashboard">
+      <section className="section-panel" style={{ maxWidth: '820px', margin: '0 auto', marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
+        <div>
+          <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
+            <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to validation
           </Button>
-          <h1 className="section-title" style={{ textAlign: 'left', marginBottom: 'var(--spacing-md)' }}>
-            Publish Course
-          </h1>
+          <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Publish course</h1>
           {course && (
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+            <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
               {course.title || course.course_name}
             </p>
           )}
         </div>
 
-        {/* Course Preview */}
         {course && (
-          <div className="card" style={{ marginBottom: 'var(--spacing-xl)' }}>
-            <h3 style={{
-              fontSize: '1.3rem',
-              fontWeight: 600,
-              marginBottom: 'var(--spacing-md)',
-              color: 'var(--text-primary)'
-            }}>
-              Course Preview
-            </h3>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: 'var(--spacing-md)',
-              padding: 'var(--spacing-md)',
-              background: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-md)'
-            }}>
+          <div className="course-card">
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Course preview</h3>
+            <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
               <div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 'var(--spacing-xs)' }}>
-                  Modules
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>
-                  {course.modules?.length || 0}
-                </div>
+                <span className="status-chip">Modules</span>
+                <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>{course.modules?.length || 0}</p>
               </div>
               <div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 'var(--spacing-xs)' }}>
-                  Lessons
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>
-                  {course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0}
-                </div>
+                <span className="status-chip">Lessons</span>
+                <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>
+                  {course.modules?.reduce((acc, module) => acc + (module.lessons?.length || 0), 0) || 0}
+                </p>
               </div>
               <div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 'var(--spacing-xs)' }}>
-                  Level
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)', textTransform: 'capitalize' }}>
-                  {course.level || 'beginner'}
-                </div>
+                <span className="status-chip">Level</span>
+                <p style={{ fontSize: '1.6rem', fontWeight: 700, textTransform: 'capitalize' }}>{course.level || 'beginner'}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Publish Controls */}
         <PublishControls
           courseId={id}
-          onPublish={handlePublish}
+          onPublish={() => handlePublish({ immediate: true })}
           onSchedule={handleSchedule}
           loading={publishing}
         />
 
-        {/* Info */}
-        <div style={{
-          marginTop: 'var(--spacing-xl)',
-          padding: 'var(--spacing-md)',
-          background: 'rgba(0, 166, 118, 0.1)',
-          borderRadius: 'var(--radius-md)',
-          color: 'var(--text-primary)',
-          fontSize: '0.9rem'
-        }}>
-          <i className="fas fa-info-circle mr-2" style={{ color: 'var(--primary-emerald)' }}></i>
-          Once published, the course will be visible in the internal mini-marketplace and learners can register.
+        <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: '18px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--primary-cyan)' }} />
+          Once published, the course will be visible in the internal marketplace and learners can register.
         </div>
-      </div>
-      <Toast />
+      </section>
     </div>
   )
 }

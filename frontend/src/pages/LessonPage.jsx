@@ -4,7 +4,6 @@ import { getLessonById } from '../services/apiService.js'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import LessonViewer from '../components/LessonViewer.jsx'
-import Toast from '../components/Toast.jsx'
 import { useApp } from '../context/AppContext'
 
 export default function LessonPage() {
@@ -25,7 +24,6 @@ export default function LessonPage() {
       setLesson(data)
     } catch (err) {
       showToast('Failed to load lesson', 'error')
-      console.error('Error loading lesson:', err)
     } finally {
       setLoading(false)
     }
@@ -33,37 +31,32 @@ export default function LessonPage() {
 
   if (loading) {
     return (
-      <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading lesson..." />
       </div>
     )
   }
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh', padding: 'var(--spacing-2xl) var(--spacing-lg)' }}>
-      <div className="microservices-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* Back Button */}
-        <Button
-          variant="secondary"
-          onClick={() => navigate(-1)}
-          style={{ marginBottom: 'var(--spacing-lg)' }}
-        >
-          <i className="fas fa-arrow-left mr-2"></i>
-          Back
-        </Button>
-
-        {/* Lesson Content */}
+    <div className="personalized-dashboard">
+      <section className="section-panel" style={{ maxWidth: '960px', margin: '0 auto', padding: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+          <Button variant="secondary" onClick={() => navigate(-1)}>
+            <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to previous
+          </Button>
+          {lesson?.module?.name && (
+            <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
+              Module: {lesson.module.name}
+            </span>
+          )}
+        </div>
         <LessonViewer
           lesson={lesson}
           onPrevious={() => navigate(-1)}
           onNext={() => navigate(-1)}
-          onComplete={(lesson) => {
-            showToast('Lesson completed!', 'success')
-          }}
+          onComplete={() => showToast('Lesson completed!', 'success')}
         />
-
-      </div>
-      <Toast />
+      </section>
     </div>
   )
 }

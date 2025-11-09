@@ -70,6 +70,12 @@ Brief notes.
 Feature: <name> — <refinement summary>
 ````
 
+## Emerald UI Rollout — Phase Summary
+- **Phase 1 · Global Shell & Header** — Introduced emerald gradient canvas, particle background, and responsive header with role-aware navigation, mobile menu, and context badges.
+- **Phase 2 · Learner Experience** — Reimagined dashboard, marketplace, personalised hub, library, assessments, feedback, and lesson views using section panels, course cards, and stage grids for lifecycle clarity.
+- **Phase 3 · Trainer Experience** — Applied unified styling to dashboards, course lifecycle, validation, publishing, and analytics workflows with consistent action grids and status chips.
+- **Phase 4 · Shared Components** — Updated course detail layouts, routing shell, and lesson viewer contexts to reflect new typography, chips, and progress treatments across modules.
+
 
 
 
