@@ -30,9 +30,17 @@
   --gradient-card: linear-gradient(145deg, #ffffff, #f0fdfa);
 
   /* Shadows - Dark Emerald Glow Effects */
-  --shadow-glow: 0 0 30px rgba(6, 95, 70, 0.3);
-  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 20px 60px rgba(6, 95, 70, 0.2);
+  --shadow-glow: 0 14px 38px rgba(6, 95, 70, 0.22);
+  --shadow-card: 0 18px 45px rgba(15, 23, 42, 0.12);
+  --shadow-hover: 0 26px 60px rgba(6, 95, 70, 0.18);
+
+  /* Radii */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
 
   /* Spacing */
   --spacing-xs: 0.5rem;
@@ -68,9 +76,9 @@
   --gradient-card: linear-gradient(145deg, #1e293b, #334155);
 
   /* Night Mode Shadows */
-  --shadow-glow: 0 0 30px rgba(13, 148, 136, 0.4);
-  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.6);
-  --shadow-hover: 0 20px 60px rgba(13, 148, 136, 0.3);
+  --shadow-glow: 0 16px 44px rgba(13, 148, 136, 0.28);
+  --shadow-card: 0 18px 48px rgba(2, 6, 23, 0.45);
+  --shadow-hover: 0 30px 70px rgba(13, 148, 136, 0.32);
 }
 
 /* Day Mode Theme (Default) */
@@ -261,14 +269,15 @@
 
 .dashboard-card {
   background: var(--gradient-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   text-align: center;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
 .dashboard-card::before {
@@ -287,9 +296,9 @@
 }
 
 .dashboard-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   border-color: var(--primary-cyan);
-  box-shadow: 0 15px 30px rgba(8, 145, 178, 0.2);
+  box-shadow: var(--shadow-hover);
 }
 
 .dashboard-icon {
@@ -297,7 +306,7 @@
   height: 60px;
   margin: 0 auto var(--spacing-md);
   background: var(--gradient-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -404,8 +413,8 @@ body {
 
 .section-panel {
   background: var(--bg-card);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(16px);
@@ -519,11 +528,12 @@ body {
   align-items: flex-start;
   gap: 8px;
   padding: var(--spacing-md);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(148, 163, 184, 0.3);
   background: var(--bg-card);
   font-size: 0.9rem;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-card);
 }
 
 .stage-button span {
@@ -569,8 +579,8 @@ body {
   flex-direction: column;
   gap: var(--spacing-md);
   background: var(--bg-card);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-card);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -588,7 +598,7 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.35);
   background: var(--bg-card);
   color: var(--text-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   width: 44px;
   height: 44px;
   box-shadow: var(--shadow-card);
@@ -601,13 +611,14 @@ body {
 }
 
 .role-selector {
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.32);
   background: rgba(255, 255, 255, 0.85);
   color: var(--text-secondary);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font-weight: 600;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: var(--shadow-card);
 }
 
 .role-selector:focus {
@@ -760,6 +771,25 @@ body {
   background-clip: text;
 }
 
+.brand-logo {
+  height: 48px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 6px 18px rgba(6, 95, 70, 0.35));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.brand-logo:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: drop-shadow(0 12px 24px rgba(12, 148, 106, 0.45));
+}
+
+@media (max-width: 720px) {
+  .brand-logo {
+    height: 40px;
+  }
+}
+
 .nav-links {
   display: flex;
   list-style: none;
@@ -900,7 +930,7 @@ body {
 .btn {
   padding: var(--spacing-sm) var(--spacing-lg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -908,6 +938,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
+  box-shadow: var(--shadow-card);
 }
 
 .btn-primary {
@@ -918,7 +949,7 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+  box-shadow: var(--shadow-hover);
 }
 
 .btn-secondary {
@@ -1033,11 +1064,12 @@ body {
 
 .gamification-preview {
   background: var(--gradient-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   margin: var(--spacing-lg) 0;
   backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
 }
 
 .xp-bar {
@@ -1056,14 +1088,14 @@ body {
   width: 100%;
   height: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 
 .xp-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--xp-color), var(--accent-orange));
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   position: relative;
   animation: xpGlow 2s ease-in-out infinite;
 }

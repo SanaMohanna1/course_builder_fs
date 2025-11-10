@@ -8,8 +8,8 @@ import { useRole } from '../hooks/useRole.js'
 export default function Header() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { theme, toggleTheme, userProfile } = useApp()
-  const { userRole, switchRole, isLearner, isTrainer, availableRoles } = useRole()
+  const { theme, toggleTheme } = useApp()
+  const { userRole, switchRole, isLearner, availableRoles } = useRole()
   const [isMenuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -47,17 +47,9 @@ export default function Header() {
           <img
             src={theme === 'day-mode' ? logoLight : logoDark}
             alt="Course Builder logo"
-            style={{ height: '34px', width: 'auto' }}
+            className="brand-logo"
           />
         </Link>
-
-        <div className="user-info">
-          <span className="user-name">{userProfile?.name || (isLearner ? 'Learner mode' : 'Trainer mode')}</span>
-          <span className="user-role">
-            {isLearner ? 'Personalized learning' : 'Course operations'}
-            {userProfile?.company ? ` · ${userProfile.company}` : ''}
-          </span>
-        </div>
 
         <button
           type="button"
@@ -91,20 +83,6 @@ export default function Header() {
         </nav>
 
         <div className={`header-controls ${isMenuOpen ? 'nav-open' : ''}`}>
-          <div className="user-profile">
-            <div className={`user-avatar ${isTrainer ? 'trainer' : 'learner'}`}>
-              {userProfile?.avatar ? (
-                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{userProfile.avatar}</span>
-              ) : (
-                <i className={`fa-solid ${isTrainer ? 'fa-user-tie' : 'fa-user-graduate'}`} />
-              )}
-            </div>
-            <div className="user-details">
-              <span className="user-name">{userProfile?.name || 'Active mode'}</span>
-              <span className="user-role" style={{ textTransform: 'capitalize' }}>{userRole}</span>
-            </div>
-          </div>
-
           <select
             value={userRole}
             onChange={(event) => handleRoleChange(event.target.value)}

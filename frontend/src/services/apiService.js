@@ -15,6 +15,38 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
+const roleProfiles = {
+  learner: {
+    id: '10000000-0000-0000-0000-000000000001',
+    name: 'Alice Learner'
+  },
+  trainer: {
+    id: '20000000-0000-0000-0000-000000000001',
+    name: 'Tristan Trainer'
+  }
+}
+
+const getStoredRole = () => {
+  if (typeof window === 'undefined') {
+    return 'learner'
+  }
+  const stored = window.localStorage.getItem('coursebuilder:userRole')
+  return stored && Object.keys(roleProfiles).includes(stored) ? stored : 'learner'
+}
+
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const role = getStoredRole()
+    const profile = roleProfiles[role]
+    if (profile) {
+      config.headers['X-User-Role'] = role
+      config.headers['X-User-Id'] = profile.id
+      config.headers['X-User-Name'] = profile.name
+    }
+  }
+  return config
+})
+
 export function getCourses(params = {}) {
   return api.get('/courses', { params }).then(r => r.data)
 }
