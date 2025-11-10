@@ -113,7 +113,15 @@ function renderContent(lesson) {
   )
 }
 
-export default function LessonViewer({ lesson, onNext, onPrevious, onComplete, isCompleted = false }) {
+export default function LessonViewer({
+  lesson,
+  onNext,
+  onPrevious,
+  onComplete,
+  isCompleted = false,
+  onTakeTest,
+  canTakeTest = false
+}) {
   const [completed, setCompleted] = useState(isCompleted)
 
   useEffect(() => {
@@ -343,26 +351,21 @@ export default function LessonViewer({ lesson, onNext, onPrevious, onComplete, i
       </div>
 
       {/* Navigation */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        gap: 'var(--spacing-md)',
-        paddingTop: 'var(--spacing-lg)',
-        borderTop: '1px solid var(--bg-tertiary)'
-      }}>
-        <Button
-          variant="secondary"
-          onClick={onPrevious}
-          disabled={!onPrevious}
-        >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 'var(--spacing-md)',
+          paddingTop: 'var(--spacing-lg)',
+          borderTop: '1px solid var(--bg-tertiary)'
+        }}
+      >
+        <Button variant="secondary" onClick={onPrevious} disabled={!onPrevious}>
           <i className="fas fa-arrow-left mr-2"></i>
           Previous
         </Button>
-        <Button
-          variant="primary"
-          onClick={handleComplete}
-          disabled={completed || isProcessing}
-        >
+
+        <Button variant="primary" onClick={handleComplete} disabled={completed || isProcessing}>
           {completed ? (
             <>
               <i className="fas fa-check-circle mr-2"></i>
@@ -375,16 +378,30 @@ export default function LessonViewer({ lesson, onNext, onPrevious, onComplete, i
             </>
           )}
         </Button>
-        <Button
-          variant="secondary"
-          onClick={onNext}
-          disabled={!onNext}
-        >
-          Next
-          <i className="fas fa-arrow-right ml-2"></i>
-        </Button>
+
+        {onTakeTest ? (
+          <Button variant="secondary" onClick={onTakeTest} disabled={!canTakeTest}>
+            {canTakeTest ? (
+              <>
+                Take Test
+                <i className="fas fa-graduation-cap ml-2"></i>
+              </>
+            ) : (
+              <>
+                Complete lesson
+                <i className="fas fa-lock ml-2"></i>
+              </>
+            )}
+          </Button>
+        ) : onNext ? (
+          <Button variant="secondary" onClick={onNext} disabled={!onNext}>
+            Next
+            <i className="fas fa-arrow-right ml-2"></i>
+          </Button>
+        ) : (
+          <span />
+        )}
       </div>
     </div>
   )
 }
-

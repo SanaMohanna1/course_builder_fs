@@ -67,9 +67,14 @@ export default function LessonPage() {
     return []
   }, [course])
 
-  const currentIndex = flattenedLessons.findIndex(item => (item.id || item.lesson_id || '').toString() === lessonId)
+  const normalizedLessonId = lessonId?.toString() || ''
+  const currentIndex = flattenedLessons.findIndex(
+    (item) => (item.id || item.lesson_id || '').toString() === normalizedLessonId
+  )
   const previousLesson = currentIndex > 0 ? flattenedLessons[currentIndex - 1] : null
-  const nextLesson = currentIndex >= 0 && currentIndex < flattenedLessons.length - 1 ? flattenedLessons[currentIndex + 1] : null
+  const nextLesson =
+    currentIndex >= 0 && currentIndex < flattenedLessons.length - 1 ? flattenedLessons[currentIndex + 1] : null
+  const isFinalLesson = currentIndex >= 0 && !nextLesson
 
   const handleComplete = async () => {
     if (!lessonId) return
@@ -115,10 +120,39 @@ export default function LessonPage() {
     )
   }
 
+  const hasCompletedCurrent = completedLessons.includes(normalizedLessonId)
   const allLessonsCompleted = flattenedLessons.length > 0 && completedLessons.length >= flattenedLessons.length
+  const canTakeAssessment = isFinalLesson && hasCompletedCurrent
+  const handleTakeTest = () => {
+    if (!canTakeAssessment) {
+      showToast('Complete the final lesson to unlock the assessment.', 'info')
+      return
+    }
+    navigate(`/course/${courseId}/assessment`)
+  }
   const completionSummary = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', fontSize: '0.9rem', color: allLessonsCompleted ? '#047857' : 'var(--text-secondary)' }}>
-      {allLessonsCompleted ? (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-sm)',
+        fontSize: '0.9rem',
+        color: canTakeAssessment || allLessonsCompleted ? '#047857' : 'var(--text-secondary)'
+      }}
+    >
+      {isFinalLesson ? (
+        canTakeAssessment ? (
+          <>
+            <i className="fa-solid fa-unlock" />
+            Final assessment ready – click “Take Test” to continue.
+          </>
+        ) : (
+          <>
+            <i className="fa-solid fa-lock" />
+            Finish this lesson to unlock the assessment.
+          </>
+        )
+      ) : allLessonsCompleted ? (
         <>
           <i className="fa-solid fa-unlock" />
           Exercises & exam unlocked
@@ -137,10 +171,15 @@ export default function LessonPage() {
       courseTitle={course?.title || course?.course_name}
       lesson={lesson}
       onPrevious={previousLesson ? () => navigate(`/course/${courseId}/lesson/${previousLesson.id || previousLesson.lesson_id}`) : undefined}
-      onNext={nextLesson ? () => navigate(`/course/${courseId}/lesson/${nextLesson.id || nextLesson.lesson_id}`) : undefined}
+      onNext={
+        nextLesson ? () => navigate(`/course/${courseId}/lesson/${nextLesson.id || nextLesson.lesson_id}`) : undefined
+      }
       onComplete={handleComplete}
-      isCompleted={completedLessons.includes(lessonId)}
+      isCompleted={hasCompletedCurrent}
       completionSummary={completionSummary}
+      onTakeTest={isFinalLesson ? handleTakeTest : undefined}
+      canTakeTest={canTakeAssessment}
+      isFinalLesson={isFinalLesson}
     />
   )
 }

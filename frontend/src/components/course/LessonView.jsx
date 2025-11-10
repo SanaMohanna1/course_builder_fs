@@ -7,7 +7,10 @@ export default function LessonView({
   onNext,
   onComplete,
   isCompleted,
-  completionSummary
+  completionSummary,
+  onTakeTest,
+  canTakeTest = false,
+  isFinalLesson = false
 }) {
   return (
     <div className="personalized-dashboard">
@@ -27,22 +30,41 @@ export default function LessonView({
             {lesson?.title || lesson?.lesson_name || 'Lesson'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Progress through the curated content to unlock exercises and the final assessment.
+            {isFinalLesson
+              ? 'You are at the final lesson. Wrap this up to unlock the course assessment and share your feedback.'
+              : 'Progress through the curated content to unlock exercises and the final assessment.'}
           </p>
         </header>
 
         <LessonViewer
           lesson={lesson}
           onPrevious={onPrevious}
-          onNext={onNext}
+          onNext={isFinalLesson ? undefined : onNext}
           onComplete={() => onComplete?.(lesson)}
           isCompleted={isCompleted}
+          onTakeTest={isFinalLesson ? onTakeTest : undefined}
+          canTakeTest={canTakeTest}
         />
 
         <footer style={{ marginTop: 'var(--spacing-xl)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-md)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            <i className={`fa-solid ${isCompleted ? 'fa-circle-check' : 'fa-circle'} `} style={{ color: isCompleted ? '#047857' : 'var(--text-secondary)' }} />
-            {isCompleted ? 'Marked as completed' : 'Complete the lesson to track progress'}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+              color: 'var(--text-secondary)',
+              fontSize: '0.9rem'
+            }}
+          >
+            <i
+              className={`fa-solid ${isCompleted ? 'fa-circle-check' : 'fa-circle'} `}
+              style={{ color: isCompleted ? '#047857' : 'var(--text-secondary)' }}
+            />
+            {isCompleted
+              ? isFinalLesson
+                ? 'Final lesson completed – assessment unlocked'
+                : 'Marked as completed'
+              : 'Complete the lesson to track progress'}
           </div>
           {completionSummary}
         </footer>

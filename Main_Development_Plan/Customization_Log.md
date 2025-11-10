@@ -14,3 +14,8 @@
 - Removed the auto-redirect from `CourseDetailsPage` so enrolled learners land on the overview first and choose when to advance to structure, keeping the four-step experience intentional.
 - Reaffirmed individual route styling (hero background and spacing tweaks) so each step feels distinct without collapsing into a single mega page.
 
+## 2025-11-10 – Final Lesson Assessment Flow
+- Updated `LessonPage`/`LessonView`/`LessonViewer` so the final lesson swaps the “Next” CTA with a `Take Test` button once the learner marks it complete.
+- Linked the assessment placeholder to jump directly into the feedback page after the simulated exam and routed all back/cancel buttons to the course structure view for consistency.
+- Aligned the feedback screen navigation (back, cancel, success states) with the course structure route so the four-step loop remains linear.
+

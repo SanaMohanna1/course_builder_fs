@@ -31,10 +31,10 @@ export default function AssessmentPage() {
 
   const handleStartAssessment = () => {
     setRedirecting(true)
-    showToast('Redirecting to Assessment microservice...', 'success')
+    showToast('Assessment launching... good luck!', 'success')
     setTimeout(() => {
-      showToast('Assessment service integration coming soon', 'success')
-      navigate(`/courses/${id}`)
+      showToast('Great job! Share your feedback with the course team.', 'success')
+      navigate(`/course/${id}/feedback`)
     }, 2000)
   }
 
@@ -49,7 +49,7 @@ export default function AssessmentPage() {
   return (
     <div className="personalized-dashboard">
       <section className="section-panel" style={{ maxWidth: '820px', margin: '0 auto', marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-        <Button variant="secondary" onClick={() => navigate(`/courses/${id}`)}>
+        <Button variant="secondary" onClick={() => navigate(`/course/${id}/structure`)}>
           <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to course
         </Button>
 
@@ -89,13 +89,13 @@ export default function AssessmentPage() {
           <Button variant="primary" size="lg" onClick={handleStartAssessment} disabled={redirecting}>
             {redirecting ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }} /> Redirecting...</> : <><i className="fas fa-play" style={{ marginRight: '8px' }} /> Start assessment</>}
           </Button>
-          <Button variant="secondary" onClick={() => navigate(`/courses/${id}`)} disabled={redirecting}>
+          <Button variant="secondary" onClick={() => navigate(`/course/${id}/structure`)} disabled={redirecting}>
             Cancel
           </Button>
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          <i className="fas fa-info-circle" style={{ marginRight: '6px' }} /> You will be redirected to the Assessment microservice to complete your exam.
+          <i className="fas fa-info-circle" style={{ marginRight: '6px' }} /> Once finished, you&apos;ll move straight into the feedback page.
         </p>
       </section>
     </div>

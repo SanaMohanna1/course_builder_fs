@@ -74,7 +74,7 @@ export default function FeedbackPage() {
       })
       setSubmitted(true)
       showToast('Feedback submitted successfully! Thank you!', 'success')
-      setTimeout(() => navigate(`/courses/${actualCourseId}`), 2000)
+      setTimeout(() => navigate(`/course/${actualCourseId}/structure`), 2000)
     } catch (err) {
       showToast('Failed to submit feedback', 'error')
     } finally {
@@ -90,7 +90,7 @@ export default function FeedbackPage() {
         <p style={{ color: 'var(--text-muted)', textAlign: 'center', maxWidth: '420px' }}>
           Your feedback helps trainers keep the content fresh and relevant.
         </p>
-        <Button variant="primary" onClick={() => navigate(`/courses/${actualCourseId}`)}>
+        <Button variant="primary" onClick={() => navigate(`/course/${actualCourseId}/structure`)}>
           Back to course
         </Button>
       </div>
@@ -101,7 +101,16 @@ export default function FeedbackPage() {
     <div className="personalized-dashboard">
       <section className="section-panel" style={{ maxWidth: '820px', margin: '0 auto', marginTop: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
         <div>
-          <Link to={`/courses/${actualCourseId}`} style={{ color: 'var(--primary-cyan)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+          <Link
+            to={`/course/${actualCourseId}/structure`}
+            style={{
+              color: 'var(--primary-cyan)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
+            }}
+          >
             <i className="fas fa-arrow-left" /> Back to course
           </Link>
           <h1 style={{ marginTop: 'var(--spacing-md)', fontSize: '2rem', fontWeight: 700 }}>Submit feedback</h1>
@@ -187,7 +196,12 @@ export default function FeedbackPage() {
             <Button type="submit" variant="primary" disabled={loading} style={{ flex: 1 }}>
               {loading ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }} /> Submitting...</> : <><i className="fas fa-paper-plane" style={{ marginRight: '8px' }} /> Submit feedback</>}
             </Button>
-            <Button type="button" variant="secondary" onClick={() => navigate(`/courses/${actualCourseId}`)} disabled={loading}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => navigate(`/course/${actualCourseId}/structure`)}
+              disabled={loading}
+            >
               Cancel
             </Button>
           </div>
