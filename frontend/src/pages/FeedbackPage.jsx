@@ -169,7 +169,7 @@ export default function FeedbackPage() {
                     background: tags.includes(tag) ? 'var(--gradient-primary)' : 'var(--bg-secondary)',
                     color: tags.includes(tag) ? '#fff' : 'var(--text-primary)',
                     border: tags.includes(tag) ? 'none' : '1px solid var(--bg-tertiary)',
-                    borderRadius: '18px',
+                    borderRadius: 'var(--radius-pill)',
                     cursor: 'pointer',
                     fontWeight: 600
                   }}

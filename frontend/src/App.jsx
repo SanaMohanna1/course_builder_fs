@@ -21,12 +21,6 @@ import TrainerFeedbackAnalytics from './pages/TrainerFeedbackAnalytics.jsx'
 import TrainerCourses from './pages/TrainerCourses.jsx'
 import { useRole } from './hooks/useRole.js'
 
-const PARTICLE_CONFIG = Array.from({ length: 24 }, (_, index) => ({
-  left: `${(index * 37) % 100}%`,
-  animationDelay: `${index * 0.65}s`,
-  animationDuration: `${18 + (index % 12)}s`
-}))
-
 function LegacyCourseRedirect() {
   const { id } = useParams()
   return <Navigate to={`/course/${id}/overview`} replace />
@@ -41,26 +35,14 @@ function AppShell() {
   const isLearner = userRole === 'learner'
 
   return (
-    <div className="app-surface" data-testid="app-root">
-      <div className="bg-animation" />
-      <div className="particles">
-        {PARTICLE_CONFIG.map((particle, idx) => (
-          <span
-            key={idx}
-            className="particle"
-            style={{
-              left: particle.left,
-              animationDelay: particle.animationDelay,
-              animationDuration: particle.animationDuration
-            }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen" data-testid="app-root">
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
 
-      <a href="#main" className="skip-link">Skip to main content</a>
       <Header />
 
-      <main id="main" className="app-main">
+      <main id="main" className="pt-24">
         <Routes>
           <Route
             path="/"

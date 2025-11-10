@@ -112,7 +112,7 @@ export default function TrainerCourseValidation() {
               label: 'AI enrichment is applied',
               checked: true
             }].map((item, idx) => (
-              <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', padding: 'var(--spacing-sm)', background: item.checked ? 'rgba(16,185,129,0.12)' : 'var(--bg-secondary)', borderRadius: '14px' }}>
+              <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', padding: 'var(--spacing-sm)', background: item.checked ? 'rgba(16,185,129,0.12)' : 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                 <i className={item.checked ? 'fas fa-check-circle' : 'fas fa-circle'} style={{ color: item.checked ? '#047857' : 'var(--text-muted)' }} />
                 <span style={{ color: item.checked ? 'var(--text-primary)' : 'var(--text-muted)' }}>{item.label}</span>
               </li>

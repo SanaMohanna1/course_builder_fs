@@ -1,32 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { BookOpen, CheckCircle, Zap, Award, Sparkles, ShoppingBag, Play } from 'lucide-react'
 import { getCourses } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import Container from '../components/Container.jsx'
 import { useApp } from '../context/AppContext'
 
-const quickActions = [
-  {
-    title: 'Marketplace',
-    description: 'Discover new learning paths curated by experts.',
-    icon: 'fa-solid fa-store',
-    to: '/learner/marketplace'
-  },
-  {
-    title: 'Personalized',
-    description: 'AI-personalised recommendations to stay ahead.',
-    icon: 'fa-solid fa-wand-magic-sparkles',
-    to: '/learner/personalized'
-  },
-  {
-    title: 'Enrolled',
-    description: 'Resume courses and track certificates in progress.',
-    icon: 'fa-solid fa-book-open-reader',
-    to: '/learner/enrolled'
-  }
-]
-
 export default function LearnerDashboard() {
-  const { showToast } = useApp()
+  const { showToast, userProfile } = useApp()
   const [recommended, setRecommended] = useState([])
   const [continueLearning, setContinueLearning] = useState([])
   const [trendingTopics, setTrendingTopics] = useState([])
@@ -69,6 +50,9 @@ export default function LearnerDashboard() {
     [recommended, continueLearning]
   )
 
+  const enrolledCount = continueLearning.length
+  const completedCount = continueLearning.filter((course) => course.progress >= 90).length
+
   if (loading) {
     return (
       <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -78,133 +62,145 @@ export default function LearnerDashboard() {
   }
 
   return (
-    <div className="personalized-dashboard">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Learner mode</p>
-            <h1>Shape your learning journey with curated experiences</h1>
-            <p className="subtitle">
-              Jump back into ongoing courses, explore AI-guided recommendations, and stay on track with your growth milestones.
-            </p>
-            <div className="hero-stats">
-              <div className="stat">
-                <span className="stat-number">12,487</span>
-                <span className="stat-label">Active learners</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">280+</span>
-                <span className="stat-label">Curated courses</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">92%</span>
-                <span className="stat-label">Completion success</span>
-              </div>
-            </div>
-            <div className="hero-actions">
-              <Link to="/learner/marketplace" className="btn btn-primary">
-                Browse marketplace
-              </Link>
-              <Link to="/learner/personalized" className="btn btn-secondary">
-                View recommendations
-              </Link>
-            </div>
-          </div>
-          <div className="hero-visual">
-            <div className="floating-card">
-              <div className="card-header">
-                <div className="card-icon">
-                  <i className="fa-solid fa-graduation-cap" />
-                </div>
-                <span className="card-title">Weekly focus</span>
-              </div>
-              <p className="progress-text">Designing Systems Thinking</p>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: '72%' }} />
-              </div>
-              <p className="progress-text" style={{ marginTop: 'var(--spacing-sm)' }}>
-                Complete 2 more lessons to unlock your milestone badge
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div>
+      <div style={{ background: 'var(--bg-card)' }}>
+        <Container className="py-16 text-center">
+          <h1 style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+            Welcome back, {userProfile?.name || 'Learner'}!
+          </h1>
+          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '720px', margin: '0 auto' }}>
+            Continue your learning journey and discover new skills curated just for you.
+          </p>
+        </Container>
+      </div>
 
-      <section className="dashboard-container" style={{ marginTop: 'var(--spacing-xl)' }}>
-        <div className="dashboard-grid">
-          {quickActions.map((action) => (
-            <Link key={action.title} to={action.to} className="dashboard-card">
-              <div className="dashboard-icon">
-                <i className={action.icon} />
-              </div>
-              <h3>{action.title}</h3>
-              <p>{action.description}</p>
-            </Link>
-          ))}
+      <Container className="py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="dashboard-card">
+            <div className="dashboard-icon">
+              <BookOpen size={24} />
+            </div>
+            <h3>Enrolled Courses</h3>
+            <p>{enrolledCount}</p>
+          </div>
+          <div className="dashboard-card">
+            <div className="dashboard-icon" style={{ background: 'var(--gradient-secondary)' }}>
+              <CheckCircle size={24} />
+            </div>
+            <h3>Completed</h3>
+            <p>{completedCount}</p>
+          </div>
+          <div className="dashboard-card">
+            <div className="dashboard-icon" style={{ background: 'var(--gradient-accent)' }}>
+              <Zap size={24} />
+            </div>
+            <h3>Learning Streak</h3>
+            <p>7 days</p>
+          </div>
+          <div className="dashboard-card">
+            <div className="dashboard-icon" style={{ background: 'var(--gradient-primary)' }}>
+              <Award size={24} />
+            </div>
+            <h3>Achievements</h3>
+            <p>12</p>
+          </div>
         </div>
-      </section>
+      </Container>
 
       {emptyState ? (
-        <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)', textAlign: 'center' }}>
-          <i className="fa-solid fa-compass" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
-          <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>Ready to start exploring?</h2>
-          <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-            Build your learner profile by visiting the marketplace and saving courses to your library.
-          </p>
-          <div className="hero-actions" style={{ marginTop: 'var(--spacing-lg)' }}>
-            <Link to="/learner/marketplace" className="btn btn-primary">
-              Browse Marketplace
-            </Link>
-            <Link to="/learner/personalized" className="btn btn-secondary">
-              Get Recommendations
-            </Link>
-          </div>
-        </section>
-      ) : (
-        <>
-          <section className="section-panel" style={{ marginTop: 'var(--spacing-xl)' }}>
-            <div className="section-heading">
-              <div>
-                <h2>Recommended for you</h2>
-                <p>Curated from your interests and recent activity.</p>
-              </div>
-              <Link to="/learner/personalized" className="action-link">
-                View personalised hub <i className="fa-solid fa-chevron-right text-xs" />
+        <Container className="py-8">
+          <div className="microservice-card text-center">
+            <Sparkles size={32} />
+            <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Ready to start exploring?
+            </h2>
+            <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
+              Build your learner profile by visiting the marketplace and saving courses to your library.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+              <Link to="/learner/marketplace" className="btn btn-primary">
+                Browse Marketplace
+              </Link>
+              <Link to="/learner/personalized" className="btn btn-secondary">
+                Get Recommendations
               </Link>
             </div>
-            <div className="course-grid">
-              {recommended.slice(0, 4).map((course) => (
-                <Link
-                  key={course.id || course.course_id}
-                  to={`/courses/${course.id || course.course_id}`}
-                  className="course-card"
-                >
-                  <div>
-                    <span className="tag-chip" style={{ marginBottom: 'var(--spacing-sm)' }}>
-                      <i className="fa-solid fa-layer-group" />
-                      {course.level || 'Beginner'}
-                    </span>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>{course.title || course.course_name}</h3>
-                    <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-                      {course.description || course.course_description || 'Build practical skills with guided lessons and projects.'}
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', gap: 'var(--spacing-md)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    <span className="status-chip">
-                      <i className="fa-solid fa-clock" />
-                      {course.duration ? `${course.duration} min` : '45 min / lesson'}
-                    </span>
-                    <span className="status-chip">
-                      <i className="fa-solid fa-star" />
-                      {(course.rating || course.average_rating || 4.6).toFixed(1)} rating
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+          </div>
+        </Container>
+      ) : (
+        <Container className="py-8 space-y-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="microservice-card">
+              <div className="flex items-center mb-6">
+                <div className="service-icon" style={{ background: 'var(--gradient-secondary)' }}>
+                  <Sparkles size={24} />
+                </div>
+                <div>
+                  <h2 className="card-title">Personalized learning</h2>
+                  <p className="progress-text">AI-powered recommendations tailored to your goals</p>
+                </div>
+              </div>
 
-          <div className="stats-row" style={{ marginTop: 'var(--spacing-xl)' }}>
+              <div className="space-y-4">
+                {recommended.slice(0, 3).map((course) => (
+                  <div key={course.id || course.course_id} className="floating-card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="card-title mb-1">{course.title || course.course_name}</h3>
+                        <p className="progress-text">
+                          {course.description || course.course_description || 'Build practical skills with guided lessons and projects.'}
+                        </p>
+                      </div>
+                      <span className="badge badge-purple">Personalized</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                      <span>{course.duration ? `${course.duration} mins` : 'Approx. 45 mins'}</span>
+                      <Link to={`/courses/${course.id || course.course_id}`} className="btn btn-primary text-sm flex items-center gap-2">
+                        <Play size={16} />
+                        Start learning
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="microservice-card">
+              <div className="flex items-center mb-6">
+                <div className="service-icon" style={{ background: 'var(--gradient-primary)' }}>
+                  <ShoppingBag size={24} />
+                </div>
+                <div>
+                  <h2 className="card-title">Marketplace</h2>
+                  <p className="progress-text">Discover courses from expert instructors</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {recommended.slice(3, 6).map((course) => (
+                  <div key={`market-${course.id || course.course_id}`} className="floating-card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="card-title mb-1">{course.title || course.course_name}</h3>
+                        <p className="progress-text">
+                          {course.description || course.course_description || 'Learn from specialists with real-world experience.'}
+                        </p>
+                      </div>
+                      <span className="badge badge-blue">Marketplace</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                      <span>{(course.rating || course.average_rating || 4.6).toFixed(1)} rating</span>
+                      <Link to={`/courses/${course.id || course.course_id}`} className="btn btn-secondary text-sm">
+                        View details
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
             <section className="section-panel">
               <div className="section-heading">
                 <div>
@@ -215,6 +211,7 @@ export default function LearnerDashboard() {
                   View all <i className="fa-solid fa-arrow-right" />
                 </Link>
               </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
                 {continueLearning.slice(0, 4).map((course) => (
                   <div key={course.id || course.course_id} className="course-card">
@@ -258,7 +255,13 @@ export default function LearnerDashboard() {
                           {topic.learners.toLocaleString()} learners this week
                         </p>
                       </div>
-                      <span className="status-chip" style={{ background: topic.momentum === 'up' ? 'rgba(34,197,94,0.12)' : 'rgba(14,165,233,0.12)', color: topic.momentum === 'up' ? '#047857' : '#0f766e' }}>
+                      <span
+                        className="status-chip"
+                        style={{
+                          background: topic.momentum === 'up' ? 'rgba(34,197,94,0.12)' : 'rgba(14,165,233,0.12)',
+                          color: topic.momentum === 'up' ? '#047857' : '#0f766e'
+                        }}
+                      >
                         <i className={`fa-solid ${topic.momentum === 'up' ? 'fa-arrow-trend-up' : 'fa-arrow-right'}`} />
                         {topic.momentum === 'up' ? 'Growing' : 'Steady'}
                       </span>
@@ -268,7 +271,26 @@ export default function LearnerDashboard() {
               </div>
             </aside>
           </div>
-        </>
+
+          <div className="microservice-card" style={{ background: 'var(--gradient-primary)' }}>
+            <div className="text-center">
+              <h2 className="card-title mb-4" style={{ color: 'white' }}>
+                Ready to start learning?
+              </h2>
+              <p className="progress-text mb-6" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                Choose your learning path and begin your journey to mastery.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/learner/marketplace" className="btn btn-secondary" style={{ background: 'white', color: 'var(--primary-blue)', border: 'none' }}>
+                  Browse Marketplace
+                </Link>
+                <Link to="/learner/personalized" className="btn btn-secondary" style={{ background: 'var(--accent-gold)', color: 'white', border: 'none' }}>
+                  Get Personalized
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Container>
       )}
     </div>
   )

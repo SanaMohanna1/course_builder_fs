@@ -84,13 +84,13 @@ export default function CoursesPage() {
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               placeholder="Search courses..."
-              style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px 12px 44px' }}
+              style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px 12px 44px' }}
             />
           </div>
           <select
             value={filters.level}
             onChange={(e) => handleFilterChange('level', e.target.value)}
-            style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px' }}
+            style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px' }}
           >
             <option value="">All levels</option>
             <option value="beginner">Beginner</option>
@@ -100,7 +100,7 @@ export default function CoursesPage() {
           <select
             value={filters.sort}
             onChange={(e) => handleFilterChange('sort', e.target.value)}
-            style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px' }}
+            style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px' }}
           >
             <option value="rating">Highest rated</option>
             <option value="newest">Newest first</option>

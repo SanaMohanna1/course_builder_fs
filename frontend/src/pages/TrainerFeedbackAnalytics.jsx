@@ -84,7 +84,7 @@ export default function TrainerFeedbackAnalytics() {
           <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Feedback by category</h2>
           <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginTop: 'var(--spacing-md)' }}>
             {Object.entries(analytics.tags_breakdown || {}).map(([tag, rating]) => (
-              <div key={tag} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: '18px', textAlign: 'center' }}>
+              <div key={tag} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
                 <strong style={{ color: 'var(--text-primary)' }}>{tag}</strong>
                 <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--primary-cyan)', marginTop: 'var(--spacing-xs)' }}>{rating.toFixed(1)}</p>
                 <span style={{ color: '#FACC15' }}>{'★'.repeat(Math.round(rating))}</span>
@@ -101,7 +101,7 @@ export default function TrainerFeedbackAnalytics() {
             <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Rating trend</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-md)' }}>
               {analytics.rating_trend.map((trend, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--spacing-sm)', background: 'var(--bg-secondary)', borderRadius: '14px' }}>
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--spacing-sm)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                   <span style={{ color: 'var(--text-muted)' }}>{new Date(trend.date).toLocaleDateString()}</span>
                   <span style={{ fontWeight: 600, color: 'var(--primary-cyan)' }}>{trend.avg_rating.toFixed(1)} ★</span>
                 </div>
@@ -115,7 +115,7 @@ export default function TrainerFeedbackAnalytics() {
             <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Ratings by version</h2>
             <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
               {analytics.versions.map((v, idx) => (
-                <div key={idx} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: '18px', textAlign: 'center' }}>
+                <div key={idx} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--spacing-xs)' }}>Version {v.version_no}</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{v.avg_rating.toFixed(1)}</div>
                 </div>

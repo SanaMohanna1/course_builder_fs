@@ -108,7 +108,7 @@ export default function TrainerPublish() {
           loading={publishing}
         />
 
-        <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: '18px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+        <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: 'var(--radius-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
           <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--primary-cyan)' }} />
           Once published, the course will be visible in the internal marketplace and learners can register.
         </div>

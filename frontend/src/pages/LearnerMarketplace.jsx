@@ -87,13 +87,13 @@ export default function LearnerMarketplace() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by course, topic, trainer..."
-              style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px 12px 40px', fontSize: '0.95rem' }}
+              style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px 12px 40px', fontSize: '0.95rem' }}
             />
           </div>
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            style={{ width: '100%', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px', fontSize: '0.95rem' }}
+            style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px', fontSize: '0.95rem' }}
           >
             <option value="all">All levels</option>
             <option value="beginner">Beginner</option>

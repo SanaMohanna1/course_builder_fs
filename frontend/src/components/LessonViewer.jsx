@@ -380,7 +380,7 @@ export default function LessonViewer({
         </Button>
 
         {onTakeTest ? (
-          <Button variant="secondary" onClick={onTakeTest} disabled={!canTakeTest}>
+          <Button variant={canTakeTest ? 'primary' : 'secondary'} onClick={onTakeTest} disabled={!canTakeTest}>
             {canTakeTest ? (
               <>
                 Take Test
