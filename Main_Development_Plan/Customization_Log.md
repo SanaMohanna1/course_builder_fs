@@ -10,3 +10,7 @@
 - Rounded key surfaces (`section-panel`, `course-card`, `dashboard-card`, `stage-button`, buttons, modals) with the new radii and softened card hover states for a calmer visual rhythm.
 - Updated role controls and gamification widgets to adopt the softer geometry so the entire learner/trainer experience feels easier on the eyes.
 
+## 2025-11-10 – Preserve Step-by-Step Course Journey
+- Removed the auto-redirect from `CourseDetailsPage` so enrolled learners land on the overview first and choose when to advance to structure, keeping the four-step experience intentional.
+- Reaffirmed individual route styling (hero background and spacing tweaks) so each step feels distinct without collapsing into a single mega page.
+

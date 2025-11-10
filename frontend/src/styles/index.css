@@ -971,14 +971,14 @@ body {
   position: relative;
   background: linear-gradient(
     135deg,
-    rgba(30, 64, 175, 0.1) 0%,
-    rgba(139, 69, 19, 0.1) 25%,
-    rgba(30, 64, 175, 0.1) 50%,
-    rgba(139, 69, 19, 0.1) 75%,
-    rgba(30, 64, 175, 0.1) 100%
+    rgba(6, 95, 70, 0.08) 0%,
+    rgba(15, 118, 110, 0.06) 50%,
+    rgba(4, 120, 87, 0.08) 100%
   );
-  background-size: 400% 400%;
-  animation: gradientShift 8s ease-in-out infinite;
+  background-size: 280% 280%;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  overflow: hidden;
+  animation: gradientShift 16s ease-in-out infinite;
 }
 
 @keyframes gradientShift {

@@ -39,12 +39,6 @@ export default function CourseDetailsPage() {
     loadCourse()
   }, [id, loadCourse])
 
-  useEffect(() => {
-    if (!loading && learnerProgress?.is_enrolled && userRole === 'learner') {
-      navigate(`/course/${id}/structure`, { replace: true })
-    }
-  }, [id, learnerProgress, loading, navigate, userRole])
-
   const isEnrolled = learnerProgress?.is_enrolled
 
   const handleEnrollment = async () => {
