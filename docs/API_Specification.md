@@ -256,6 +256,79 @@ When validation fails because of legacy fields, the response body now preserves 
 
 ---
 
+## Course Enrollment & Progress
+
+Learner-facing screens interact with the following endpoints to manage course enrollment and lesson completion. These routes share the same authentication semantics as the rest of the API (JWT-based once gateway policies are enforced).
+
+### `POST /api/v1/courses/:courseId/register`
+
+- **Audience**: Learner dashboard and marketplace flows.
+- **Description**: Creates (or confirms) a learner registration for the specified course and returns the registration identifier used for downstream progress updates.
+
+#### Request Body
+
+```json
+{
+  "learner_id": "00000000-0000-0000-0000-000000000101",
+  "learner_name": "optional",
+  "learner_company": "optional"
+}
+```
+
+#### Success Response `201 Created`
+
+```json
+{
+  "status": "registered",
+  "registration_id": "5fce7207-8a8d-4fdb-a735-3900df6f0be8",
+  "course_id": "11111111-1111-1111-1111-111111111111",
+  "learner_id": "00000000-0000-0000-0000-000000000101",
+  "progress": 0
+}
+```
+
+> Subsequent attempts to register the same learner return `409 Conflict`.
+
+### `PATCH /api/v1/courses/:courseId/progress`
+
+- **Audience**: Lesson view (mark-as-complete action) and progress indicators.
+- **Description**: Upserts lesson completion state for the learner’s registration and recalculates overall course progress.
+
+#### Request Body
+
+```json
+{
+  "learner_id": "00000000-0000-0000-0000-000000000101",
+  "lesson_id": "4d6533d1-4c2f-4c43-8d8e-7b34c069cf31",
+  "completed": true
+}
+```
+
+#### Success Response `200 OK`
+
+```json
+{
+  "course_id": "11111111-1111-1111-1111-111111111111",
+  "registration_id": "5fce7207-8a8d-4fdb-a735-3900df6f0be8",
+  "learner_id": "00000000-0000-0000-0000-000000000101",
+  "lesson_id": "4d6533d1-4c2f-4c43-8d8e-7b34c069cf31",
+  "completed": true,
+  "progress": 100,
+  "status": "completed",
+  "total_lessons": 1,
+  "completed_lessons": [
+    "4d6533d1-4c2f-4c43-8d8e-7b34c069cf31"
+  ]
+}
+```
+
+#### Error Responses
+
+- `404 Not Found` – when the course, lesson, or learner registration cannot be located.
+- `400 Bad Request` – when required fields (learner_id, lesson_id) are missing.
+
+---
+
 ## Next Steps
 
 1. Mirror this schema in the integration gateway so `/api/v1/integrations` forwards `sourceService` downstream without manual mapping.

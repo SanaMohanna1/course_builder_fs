@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from './Button.jsx'
 
 /**
@@ -113,8 +113,14 @@ function renderContent(lesson) {
   )
 }
 
-export default function LessonViewer({ lesson, onNext, onPrevious, onComplete }) {
-  const [completed, setCompleted] = useState(false)
+export default function LessonViewer({ lesson, onNext, onPrevious, onComplete, isCompleted = false }) {
+  const [completed, setCompleted] = useState(isCompleted)
+
+  useEffect(() => {
+    setCompleted(isCompleted)
+  }, [isCompleted])
+
+  const [isProcessing, setProcessing] = useState(false)
 
   if (!lesson) {
     return (
@@ -125,9 +131,24 @@ export default function LessonViewer({ lesson, onNext, onPrevious, onComplete })
     )
   }
 
-  const handleComplete = () => {
-    setCompleted(true)
-    if (onComplete) onComplete(lesson)
+  const handleComplete = async () => {
+    if (completed || isProcessing) {
+      return
+    }
+
+    setProcessing(true)
+    try {
+      if (onComplete) {
+        const result = await onComplete()
+        if (result === false) {
+          setProcessing(false)
+          return
+        }
+      }
+      setCompleted(true)
+    } finally {
+      setProcessing(false)
+    }
   }
 
   return (
@@ -340,7 +361,7 @@ export default function LessonViewer({ lesson, onNext, onPrevious, onComplete })
         <Button
           variant="primary"
           onClick={handleComplete}
-          disabled={completed}
+          disabled={completed || isProcessing}
         >
           {completed ? (
             <>

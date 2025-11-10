@@ -101,8 +101,10 @@ export const browseCourses = async ({ search, category, level, sort, page, limit
 /**
  * Get course details with full structure
  */
-export const getCourseDetails = async (courseId) => {
+export const getCourseDetails = async (courseId, options = {}) => {
   try {
+    const { learnerId } = options;
+
     // Get course
     const course = await db.oneOrNone(
       `SELECT 
@@ -144,6 +146,39 @@ export const getCourseDetails = async (courseId) => {
       [courseId]
     );
 
+    let learnerProgress = null;
+
+    if (learnerId) {
+      const registration = await db.oneOrNone(
+        `SELECT registration_id, progress, status
+         FROM registrations
+         WHERE course_id = $1 AND learner_id = $2`,
+        [courseId, learnerId]
+      );
+
+      if (registration) {
+        const completedLessons = await db.any(
+          `SELECT lesson_id
+           FROM lesson_progress
+           WHERE registration_id = $1 AND completed = TRUE`,
+          [registration.registration_id]
+        );
+
+        learnerProgress = {
+          is_enrolled: true,
+          registration_id: registration.registration_id,
+          progress: parseFloat(registration.progress) || 0,
+          status: registration.status,
+          completed_lessons: completedLessons.map((row) => row.lesson_id)
+        };
+      } else {
+        learnerProgress = {
+          is_enrolled: false,
+          completed_lessons: []
+        };
+      }
+    }
+
     return {
       id: course.id,
       title: course.title,
@@ -157,7 +192,8 @@ export const getCourseDetails = async (courseId) => {
       })),
       skills: course.skills || [],
       rating: parseFloat(course.rating) || 0,
-      version: course.version?.toString() || '1'
+      version: course.version?.toString() || '1',
+      ...(learnerProgress && { learner_progress: learnerProgress })
     };
   } catch (error) {
     console.error('Error getting course details:', error);
@@ -210,12 +246,121 @@ export const registerLearner = async (courseId, { learner_id, company_id }) => {
 
     return {
       status: 'registered',
+      registration_id: registrationId,
       course_id: courseId,
       learner_id: learner_id,
-      registered_at: new Date().toISOString()
+      registered_at: new Date().toISOString(),
+      progress: 0
     };
   } catch (error) {
     console.error('Error registering learner:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update lesson progress for a learner
+ */
+export const updateLessonProgress = async (courseId, { learner_id, lesson_id, completed = true }) => {
+  try {
+    return await db.tx(async (t) => {
+      const course = await t.oneOrNone(
+        'SELECT course_id FROM courses WHERE course_id = $1',
+        [courseId]
+      );
+
+      if (!course) {
+        const error = new Error('Course not found');
+        error.status = 404;
+        throw error;
+      }
+
+      const registration = await t.oneOrNone(
+        `SELECT registration_id, progress, status
+         FROM registrations
+         WHERE course_id = $1 AND learner_id = $2`,
+        [courseId, learner_id]
+      );
+
+      if (!registration) {
+        const error = new Error('Learner is not registered for this course');
+        error.status = 404;
+        throw error;
+      }
+
+      const lesson = await t.oneOrNone(
+        `SELECT l.lesson_id
+         FROM lessons l
+         JOIN modules m ON m.module_id = l.module_id
+         WHERE l.lesson_id = $1 AND m.course_id = $2`,
+        [lesson_id, courseId]
+      );
+
+      if (!lesson) {
+        const error = new Error('Lesson not found in course');
+        error.status = 404;
+        throw error;
+      }
+
+      await t.none(
+        `INSERT INTO lesson_progress (registration_id, course_id, lesson_id, completed, completed_at)
+         VALUES ($1, $2, $3, $4, CASE WHEN $4 THEN NOW() ELSE NULL END)
+         ON CONFLICT (registration_id, lesson_id)
+         DO UPDATE SET completed = EXCLUDED.completed,
+                       completed_at = EXCLUDED.completed_at`,
+        [registration.registration_id, courseId, lesson_id, completed]
+      );
+
+      const totalLessonsRow = await t.one(
+        `SELECT COUNT(*)::int AS total
+         FROM lessons l
+         JOIN modules m ON m.module_id = l.module_id
+         WHERE m.course_id = $1`,
+        [courseId]
+      );
+
+      const completedLessonsRow = await t.one(
+        `SELECT COUNT(*)::int AS completed
+         FROM lesson_progress
+         WHERE registration_id = $1 AND completed = TRUE`,
+        [registration.registration_id]
+      );
+
+      const totalLessons = totalLessonsRow.total;
+      const completedCount = completedLessonsRow.completed;
+      const rawProgress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+      const progress = Number(rawProgress.toFixed(2));
+      const status = progress >= 100 ? 'completed' : 'in_progress';
+
+      await t.none(
+        `UPDATE registrations
+         SET progress = $1, status = $2, updated_at = NOW()
+         WHERE registration_id = $3`,
+        [progress, status, registration.registration_id]
+      );
+
+      const completedLessonIds = await t.any(
+        `SELECT lesson_id
+         FROM lesson_progress
+         WHERE registration_id = $1 AND completed = TRUE
+         ORDER BY completed_at ASC NULLS LAST`,
+        [registration.registration_id]
+      );
+
+      return {
+        course_id: courseId,
+        learner_id,
+        registration_id: registration.registration_id,
+        lesson_id,
+        completed,
+        progress,
+        status,
+        total_lessons: totalLessons,
+        completed_lessons: completedLessonIds.map((row) => row.lesson_id)
+      };
+    });
+  } catch (error) {
+    console.error('Error updating lesson progress:', error);
     throw error;
   }
 };
@@ -239,8 +384,8 @@ export const getAllCourses = async (filters = {}) => {
  * Get course by ID (CRUD: Read one)
  * Alias for getCourseDetails
  */
-export const getCourseById = async (courseId) => {
-  return getCourseDetails(courseId);
+export const getCourseById = async (courseId, options = {}) => {
+  return getCourseDetails(courseId, options);
 };
 
 /**
@@ -679,6 +824,7 @@ export const coursesService = {
   createCourse,
   updateCourse,
   registerLearner,
+  updateLessonProgress,
   publishCourse,
   schedulePublishing,
   unpublishCourse,

@@ -19,8 +19,8 @@ export function getCourses(params = {}) {
   return api.get('/courses', { params }).then(r => r.data)
 }
 
-export function getCourseById(id) {
-  return api.get(`/courses/${id}`).then(r => r.data)
+export function getCourseById(id, params = {}) {
+  return api.get(`/courses/${id}`, { params }).then(r => r.data)
 }
 
 export function registerLearner(courseId, body) {
@@ -79,6 +79,10 @@ export function getLearnerProgress(learnerId) {
   return api.get(`/courses/learners/${learnerId}/progress`).then(r => r.data)
 }
 
+export function updateCourseProgress(courseId, body) {
+  return api.patch(`/courses/${courseId}/progress`, body).then(r => r.data)
+}
+
 export default {
   getCourses,
   getCourseById,
@@ -95,7 +99,8 @@ export default {
   unpublishCourse,
   triggerPersonalizedCourse,
   getLessonById,
-  getLearnerProgress
+  getLearnerProgress,
+  updateCourseProgress
 }
 
 

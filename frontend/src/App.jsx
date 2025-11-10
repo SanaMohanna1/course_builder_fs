@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AppProvider } from './context/AppContext.jsx'
 import Header from './components/Header.jsx'
 import AccessibilityControls from './components/AccessibilityControls.jsx'
@@ -6,6 +6,7 @@ import ChatbotWidget from './components/ChatbotWidget.jsx'
 import Toast from './components/Toast.jsx'
 import CoursesPage from './pages/CoursesPage.jsx'
 import CourseDetailsPage from './pages/CourseDetailsPage.jsx'
+import CourseStructurePage from './pages/CourseStructurePage.jsx'
 import LessonPage from './pages/LessonPage.jsx'
 import TrainerDashboard from './pages/TrainerDashboard.jsx'
 import FeedbackPage from './pages/FeedbackPage.jsx'
@@ -25,6 +26,15 @@ const PARTICLE_CONFIG = Array.from({ length: 24 }, (_, index) => ({
   animationDelay: `${index * 0.65}s`,
   animationDuration: `${18 + (index % 12)}s`
 }))
+
+function LegacyCourseRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/course/${id}/overview`} replace />
+}
+
+function LegacyLessonRedirect() {
+  return <Navigate to="/courses" replace />
+}
 
 function AppShell() {
   const { userRole } = useRole()
@@ -58,8 +68,11 @@ function AppShell() {
           />
 
           {/* Shared */}
-          <Route path="/courses/:id" element={<CourseDetailsPage />} />
-          <Route path="/lessons/:id" element={<LessonPage />} />
+          <Route path="/course/:id/overview" element={<CourseDetailsPage />} />
+          <Route path="/course/:id/structure" element={<CourseStructurePage />} />
+          <Route path="/course/:id/lesson/:lessonId" element={<LessonPage />} />
+          <Route path="/courses/:id" element={<LegacyCourseRedirect />} />
+          <Route path="/lessons/:id" element={<LegacyLessonRedirect />} />
           <Route path="/course/:id/assessment" element={<AssessmentPage />} />
           <Route path="/feedback/:courseId" element={<FeedbackPage />} />
           <Route path="/course/:id/feedback" element={<FeedbackPage />} />

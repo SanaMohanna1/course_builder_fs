@@ -119,7 +119,7 @@ export default function CourseTreeView({ modules, courseId, onLessonClick }) {
                       >
                         <i className="fas fa-play-circle" style={{ color: 'var(--primary-cyan)', fontSize: '1.1rem' }}></i>
                         <Link
-                          to={onLessonClick ? `#` : `/lessons/${lessonId}`}
+                          to={onLessonClick || !courseId ? `#` : `/course/${courseId}/lesson/${lessonId}`}
                           onClick={(e) => {
                             if (onLessonClick) {
                               e.preventDefault()

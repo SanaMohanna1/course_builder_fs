@@ -4,13 +4,14 @@ import db from '../config/database.js';
 
 describe('Courses Integration Tests', () => {
   let testCourseId;
+  let testLessonId;
   const testLearnerId = '00000000-0000-0000-0000-000000000101';
 
-  afterAll(async () => {
-    // Clean up test data
+  afterEach(async () => {
     if (testCourseId) {
-      await db.none('DELETE FROM registrations WHERE course_id = $1', [testCourseId]);
       await db.none('DELETE FROM courses WHERE course_id = $1', [testCourseId]);
+      testCourseId = null;
+      testLessonId = null;
     }
   });
 
@@ -124,13 +125,26 @@ describe('Courses Integration Tests', () => {
 
     describe('POST /api/v1/courses/:id/register', () => {
       beforeEach(async () => {
-        // Create a test course
-        testCourseId = await db.one(
+        const courseRow = await db.one(
           `INSERT INTO courses (course_id, course_name, course_description, level, visibility, status)
            VALUES (uuid_generate_v4(), 'Test Course', 'Test Description', 'beginner', 'public', 'live')
            RETURNING course_id`
         );
-        testCourseId = testCourseId.course_id;
+        testCourseId = courseRow.course_id;
+
+        const moduleRow = await db.one(
+          `INSERT INTO modules (module_id, course_id, name, "order")
+           VALUES (uuid_generate_v4(), $1, 'Test Module', 1)
+           RETURNING module_id`,
+          [testCourseId]
+        );
+        const lessonRow = await db.one(
+          `INSERT INTO lessons (lesson_id, module_id, lesson_name, content_type, content_data, "order")
+           VALUES (uuid_generate_v4(), $1, 'Test Lesson', 'text', '{}'::jsonb, 1)
+           RETURNING lesson_id`,
+          [moduleRow.module_id]
+        );
+        testLessonId = lessonRow.lesson_id;
       });
 
       it('should register learner and persist to database', async () => {
@@ -143,6 +157,7 @@ describe('Courses Integration Tests', () => {
         expect(response.body.status).toBe('registered');
         expect(response.body.course_id).toBe(testCourseId);
         expect(response.body.learner_id).toBe(testLearnerId);
+        expect(response.body).toHaveProperty('registration_id');
 
         // Verify registration exists in database
         const registration = await db.oneOrNone(
@@ -187,6 +202,57 @@ describe('Courses Integration Tests', () => {
           .expect(404);
 
         expect(response.body).toHaveProperty('error');
+      });
+
+      it('should update lesson progress and persist completion state', async () => {
+        const registrationResponse = await request(app)
+          .post(`/api/v1/courses/${testCourseId}/register`)
+          .send({ learner_id: testLearnerId })
+          .expect(201);
+
+        const registrationId = registrationResponse.body.registration_id;
+
+        const response = await request(app)
+          .patch(`/api/v1/courses/${testCourseId}/progress`)
+          .send({
+            learner_id: testLearnerId,
+            lesson_id: testLessonId,
+            completed: true
+          })
+          .expect(200);
+
+        expect(response.body).toHaveProperty('progress');
+        expect(response.body).toHaveProperty('completed_lessons');
+        expect(response.body.completed_lessons).toContain(testLessonId);
+        expect(parseFloat(response.body.progress)).toBe(100);
+        expect(response.body.status).toBe('completed');
+
+        const lessonProgress = await db.one(
+          'SELECT completed FROM lesson_progress WHERE registration_id = $1 AND lesson_id = $2',
+          [registrationId, testLessonId]
+        );
+        expect(lessonProgress.completed).toBe(true);
+
+        const registration = await db.one(
+          'SELECT progress, status FROM registrations WHERE registration_id = $1',
+          [registrationId]
+        );
+        expect(parseFloat(registration.progress)).toBe(100);
+        expect(registration.status).toBe('completed');
+      });
+
+      it('should return 404 when updating progress without registration', async () => {
+        const response = await request(app)
+          .patch(`/api/v1/courses/${testCourseId}/progress`)
+          .send({
+            learner_id: testLearnerId,
+            lesson_id: testLessonId,
+            completed: true
+          })
+          .expect(404);
+
+        expect(response.body).toHaveProperty('error', 'Not Found');
+        expect(response.body.message).toContain('not registered');
       });
     });
   });

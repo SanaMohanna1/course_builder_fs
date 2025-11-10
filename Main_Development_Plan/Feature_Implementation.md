@@ -57,7 +57,8 @@ Implementation tracker for Course Builder v1 MVP. Use this table during developm
 - **Integration Tests**: Full-stack tests (controller → service → database) for courses and feedback endpoints
 - **CRUD Operations**: Complete CRUD for courses (create, read, update, delete via getAllCourses/getCourseById)
 - **Feedback Validation**: 1-5 rating validation, duplicate learner check, aggregated feedback with tag breakdown
- - **API Integration**: Frontend connected to backend endpoints (courses, course details, registration, feedback, input). CORS and .env base URL handled.
+- **API Integration**: Frontend connected to backend endpoints (courses, course details, registration, feedback, input). CORS and .env base URL handled.
+- **Enrollment & Progress**: `POST /courses/:id/register` now returns a registration_id; `PATCH /courses/:id/progress` persists lesson completion and recalculates course progress for the learner journey.
 
 ## Key Decisions
 - **ES6 Modules**: Using `"type": "module"` in package.json for native ES6 import/export syntax

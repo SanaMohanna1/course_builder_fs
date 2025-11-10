@@ -37,6 +37,7 @@ export const browseCourses = async (req, res, next) => {
 export const getCourseDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { learner_id: learnerId } = req.query;
     
     if (!id) {
       return res.status(400).json({
@@ -45,7 +46,9 @@ export const getCourseDetails = async (req, res, next) => {
       });
     }
 
-    const course = await coursesService.getCourseDetails(id);
+    const course = await coursesService.getCourseDetails(id, {
+      learnerId
+    });
 
     if (!course) {
       return res.status(404).json({
@@ -96,6 +99,55 @@ export const registerForCourse = async (req, res, next) => {
         message: 'Learner is already registered for this course'
       });
     }
+    next(error);
+  }
+};
+
+/**
+ * Update learner progress within a course
+ * PATCH /api/v1/courses/:id/progress
+ */
+export const updateCourseProgress = async (req, res, next) => {
+  try {
+    const { id: courseId } = req.params;
+    const { learner_id: learnerId, lesson_id: lessonId, completed = true } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Course ID is required'
+      });
+    }
+
+    if (!learnerId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'learner_id is required'
+      });
+    }
+
+    if (!lessonId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'lesson_id is required'
+      });
+    }
+
+    const result = await coursesService.updateLessonProgress(courseId, {
+      learner_id: learnerId,
+      lesson_id: lessonId,
+      completed: Boolean(completed)
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: error.message
+      });
+    }
+
     next(error);
   }
 };
@@ -335,6 +387,7 @@ export const coursesController = {
   browseCourses,
   getCourseDetails,
   registerForCourse,
+  updateCourseProgress,
   createCourse,
   updateCourse,
   publishCourse,

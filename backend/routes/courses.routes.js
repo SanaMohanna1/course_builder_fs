@@ -51,6 +51,12 @@ router.put('/:id', authorizeRoles('trainer', 'admin'), coursesController.updateC
 router.post('/:id/register', authorizeRoles('learner'), coursesController.registerForCourse);
 
 /**
+ * PATCH /api/v1/courses/:id/progress
+ * Update learner lesson completion progress
+ */
+router.patch('/:id/progress', authorizeRoles('learner'), coursesController.updateCourseProgress);
+
+/**
  * POST /api/v1/courses/:id/publish
  * Publish course immediately (Trainer/Admin)
  */

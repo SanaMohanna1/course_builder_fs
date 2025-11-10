@@ -8,6 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Drop tables if they exist (for clean migration)
 DROP TABLE IF EXISTS assessments CASCADE;
 DROP TABLE IF EXISTS feedback CASCADE;
+DROP TABLE IF EXISTS lesson_progress CASCADE;
 DROP TABLE IF EXISTS registrations CASCADE;
 DROP TABLE IF EXISTS topics CASCADE;
 DROP TABLE IF EXISTS lessons CASCADE;
@@ -127,9 +128,38 @@ CREATE TABLE registrations (
     progress DECIMAL(5,2) DEFAULT 0.0, -- Completion percentage
     status registration_status DEFAULT 'in_progress',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT registrations_unique_learner_course UNIQUE (course_id, learner_id),
     CONSTRAINT registrations_progress_check CHECK (progress >= 0 AND progress <= 100)
 );
+
+-- ============================================
+-- LESSON PROGRESS TABLE
+-- ============================================
+CREATE TABLE lesson_progress (
+    progress_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    registration_id UUID NOT NULL REFERENCES registrations(registration_id) ON DELETE CASCADE,
+    course_id UUID NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    lesson_id UUID NOT NULL REFERENCES lessons(lesson_id) ON DELETE CASCADE,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT lesson_progress_unique UNIQUE (registration_id, lesson_id)
+);
+
+CREATE INDEX idx_lesson_progress_registration ON lesson_progress(registration_id);
+CREATE INDEX idx_lesson_progress_course ON lesson_progress(course_id, lesson_id);
+
+CREATE TRIGGER update_lesson_progress_updated_at
+    BEFORE UPDATE ON lesson_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_registrations_updated_at
+    BEFORE UPDATE ON registrations
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
 -- FEEDBACK TABLE

@@ -123,7 +123,12 @@ export default function CoursesPage() {
       ) : (
         <section className="course-grid" style={{ marginTop: 'var(--spacing-xl)' }}>
           {courses.map(course => (
-            <Link key={course.id || course.course_id} to={`/courses/${course.id || course.course_id}`} className="course-card" style={{ textDecoration: 'none' }}>
+            <Link
+              key={course.id || course.course_id}
+              to={`/course/${course.id || course.course_id}/overview`}
+              className="course-card"
+              style={{ textDecoration: 'none' }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-sm)', alignItems: 'flex-start' }}>
                 <span className="tag-chip" style={{ background: 'rgba(99,102,241,0.12)', color: '#4338ca' }}>
                   <i className="fa-solid fa-graduation-cap" />

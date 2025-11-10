@@ -1,32 +1,110 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { getLessonById } from '../services/apiService.js'
-import Button from '../components/Button.jsx'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { getLessonById, getCourseById, updateCourseProgress } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import LessonViewer from '../components/LessonViewer.jsx'
+import LessonView from '../components/course/LessonView.jsx'
 import { useApp } from '../context/AppContext'
 
 export default function LessonPage() {
-  const { id } = useParams()
+  const { id: courseId, lessonId } = useParams()
   const navigate = useNavigate()
-  const { showToast } = useApp()
+  const { showToast, userRole } = useApp()
+  const learnerId = userRole === 'learner' ? 'a1b2c3d4-e5f6-7890-1234-567890abcdef' : null
+
   const [loading, setLoading] = useState(true)
   const [lesson, setLesson] = useState(null)
+  const [course, setCourse] = useState(null)
+  const [completedLessons, setCompletedLessons] = useState([])
+  const [learnerProgress, setLearnerProgress] = useState(null)
 
-  useEffect(() => {
-    loadLesson()
-  }, [id])
-
-  const loadLesson = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await getLessonById(id)
-      setLesson(data)
+      const params = learnerId ? { learner_id: learnerId } : undefined
+      const [courseResponse, lessonResponse] = await Promise.all([
+        getCourseById(courseId, params),
+        getLessonById(lessonId)
+      ])
+      setCourse(courseResponse)
+      setLesson(lessonResponse)
+      const progress = courseResponse.learner_progress || null
+      setLearnerProgress(progress)
+      if (progress?.completed_lessons) {
+        setCompletedLessons(progress.completed_lessons.map(String))
+      } else {
+        setCompletedLessons([])
+      }
     } catch (err) {
-      showToast('Failed to load lesson', 'error')
+      showToast('Unable to load lesson. Please try again later.', 'error')
+      navigate(`/course/${courseId}/structure`, { replace: true })
     } finally {
       setLoading(false)
     }
+  }, [courseId, lessonId, learnerId, navigate, showToast])
+
+  useEffect(() => {
+    loadData()
+  }, [courseId, lessonId, loadData])
+
+  useEffect(() => {
+    if (!loading && learnerProgress && !learnerProgress.is_enrolled && userRole === 'learner') {
+      navigate(`/course/${courseId}/overview`, { replace: true })
+    }
+  }, [courseId, learnerProgress, loading, navigate, userRole])
+
+  const flattenedLessons = useMemo(() => {
+    if (!course) return []
+    const topics = Array.isArray(course.topics) ? course.topics : []
+    if (topics.length > 0) {
+      return topics.flatMap(topic => (topic.modules || []).flatMap(module => module.lessons || []))
+    }
+    if (Array.isArray(course.modules)) {
+      return course.modules.flatMap(module => module.lessons || [])
+    }
+    if (Array.isArray(course.lessons)) {
+      return course.lessons
+    }
+    return []
+  }, [course])
+
+  const currentIndex = flattenedLessons.findIndex(item => (item.id || item.lesson_id || '').toString() === lessonId)
+  const previousLesson = currentIndex > 0 ? flattenedLessons[currentIndex - 1] : null
+  const nextLesson = currentIndex >= 0 && currentIndex < flattenedLessons.length - 1 ? flattenedLessons[currentIndex + 1] : null
+
+  const handleComplete = async () => {
+    if (!lessonId) return
+
+    if (!learnerId) {
+      showToast('Progress tracking is available for learners only.', 'info')
+      return false
+    }
+
+    try {
+      const result = await updateCourseProgress(courseId, {
+        learner_id: learnerId,
+        lesson_id: lessonId,
+        completed: true
+      })
+      setCompletedLessons(result.completed_lessons.map(String))
+      setLearnerProgress((prev) => ({
+        ...(prev || {}),
+        is_enrolled: true,
+        registration_id: result.registration_id,
+        progress: result.progress,
+        status: result.status,
+        completed_lessons: result.completed_lessons
+      }))
+      showToast('Lesson marked as complete. Great progress!', 'success')
+      return true
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Unable to update progress'
+      showToast(message, 'error')
+      return false
+    }
+  }
+
+  if (userRole === 'learner' && !learnerProgress?.is_enrolled && !loading) {
+    return null
   }
 
   if (loading) {
@@ -37,26 +115,32 @@ export default function LessonPage() {
     )
   }
 
-  return (
-    <div className="personalized-dashboard">
-      <section className="section-panel" style={{ maxWidth: '960px', margin: '0 auto', padding: 'var(--spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
-          <Button variant="secondary" onClick={() => navigate(-1)}>
-            <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to previous
-          </Button>
-          {lesson?.module?.name && (
-            <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
-              Module: {lesson.module.name}
-            </span>
-          )}
-        </div>
-        <LessonViewer
-          lesson={lesson}
-          onPrevious={() => navigate(-1)}
-          onNext={() => navigate(-1)}
-          onComplete={() => showToast('Lesson completed!', 'success')}
-        />
-      </section>
+  const allLessonsCompleted = flattenedLessons.length > 0 && completedLessons.length >= flattenedLessons.length
+  const completionSummary = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', fontSize: '0.9rem', color: allLessonsCompleted ? '#047857' : 'var(--text-secondary)' }}>
+      {allLessonsCompleted ? (
+        <>
+          <i className="fa-solid fa-unlock" />
+          Exercises & exam unlocked
+        </>
+      ) : (
+        <>
+          <i className="fa-solid fa-lock" />
+          Complete all lessons to unlock exercises and exam
+        </>
+      )}
     </div>
+  )
+
+  return (
+    <LessonView
+      courseTitle={course?.title || course?.course_name}
+      lesson={lesson}
+      onPrevious={previousLesson ? () => navigate(`/course/${courseId}/lesson/${previousLesson.id || previousLesson.lesson_id}`) : undefined}
+      onNext={nextLesson ? () => navigate(`/course/${courseId}/lesson/${nextLesson.id || nextLesson.lesson_id}`) : undefined}
+      onComplete={handleComplete}
+      isCompleted={completedLessons.includes(lessonId)}
+      completionSummary={completionSummary}
+    />
   )
 }

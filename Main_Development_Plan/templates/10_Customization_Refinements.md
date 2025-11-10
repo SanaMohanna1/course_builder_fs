@@ -75,6 +75,7 @@ Feature: <name> — <refinement summary>
 - **Phase 2 · Learner Experience** — Reimagined dashboard, marketplace, personalised hub, library, assessments, feedback, and lesson views using section panels, course cards, and stage grids for lifecycle clarity.
 - **Phase 3 · Trainer Experience** — Applied unified styling to dashboards, course lifecycle, validation, publishing, and analytics workflows with consistent action grids and status chips.
 - **Phase 4 · Shared Components** — Updated course detail layouts, routing shell, and lesson viewer contexts to reflect new typography, chips, and progress treatments across modules.
+- **Course Flow UX** — Refactored the learner journey into a four-step flow (overview, enrollment modal, structure explorer, lesson view) with breadcrumbs, modal styling, session persistence, and adaptive/AI badges.
 
 
 

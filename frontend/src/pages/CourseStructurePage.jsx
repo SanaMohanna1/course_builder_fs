@@ -1,0 +1,125 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { getCourseById } from '../services/apiService.js'
+import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import CourseStructure from '../components/course/CourseStructure.jsx'
+import { useApp } from '../context/AppContext'
+
+export default function CourseStructurePage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { showToast, userRole } = useApp()
+  const learnerId = userRole === 'learner' ? 'a1b2c3d4-e5f6-7890-1234-567890abcdef' : null
+
+  const [course, setCourse] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [completedLessons, setCompletedLessons] = useState([])
+  const [learnerProgress, setLearnerProgress] = useState(null)
+
+  const loadCourse = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params = learnerId ? { learner_id: learnerId } : undefined
+      const data = await getCourseById(id, params)
+      setCourse(data)
+      const progress = data.learner_progress || null
+      setLearnerProgress(progress)
+      if (progress?.completed_lessons) {
+        setCompletedLessons(progress.completed_lessons.map(String))
+      } else {
+        setCompletedLessons([])
+      }
+    } catch (err) {
+      const message = err.message || 'Failed to load course structure'
+      setError(message)
+      showToast(message, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [id, learnerId, showToast])
+
+  useEffect(() => {
+    loadCourse()
+  }, [id, loadCourse])
+
+  useEffect(() => {
+    if (!loading && learnerProgress && !learnerProgress.is_enrolled && userRole === 'learner') {
+      navigate(`/course/${id}/overview`, { replace: true })
+    }
+  }, [id, learnerProgress, loading, navigate, userRole])
+
+  if (userRole === 'learner' && !learnerProgress?.is_enrolled && !loading) {
+    return null
+  }
+
+  const handleSelectLesson = (lessonId) => {
+    if (!lessonId) return
+    navigate(`/course/${id}/lesson/${lessonId}`)
+  }
+
+  const totalLessons = course?.modules?.reduce((total, module) => {
+    return total + (module.lessons?.length || 0)
+  }, 0) || 0
+
+  const completionBadge = (
+    <div className="floating-card" style={{ padding: 'var(--spacing-md)', fontSize: '0.95rem', background: 'rgba(16,185,129,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+        <i className="fa-solid fa-chart-simple" style={{ color: '#047857' }} />
+        <span>
+          Progress {completedLessons.length}/{totalLessons} lessons complete
+        </span>
+      </div>
+    </div>
+  )
+
+  if (loading) {
+    return (
+      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
+  if (!course || error) {
+    return (
+      <section className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 'var(--spacing-md)' }}>
+        <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '2.5rem', color: '#f97316' }} />
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 600 }}>{error || 'Course not found'}</h2>
+        <button type="button" className="btn btn-primary" onClick={() => navigate(`/course/${id}/overview`)}>
+          Back to overview
+        </button>
+      </section>
+    )
+  }
+
+  return (
+    <div className="personalized-dashboard">
+      <nav className="breadcrumb" aria-label="Structure breadcrumb">
+        <span>Overview</span>
+        <span>Structure</span>
+      </nav>
+
+      <header className="hero" style={{ marginBottom: 'var(--spacing-lg)' }}>
+        <div className="hero-container">
+          <div className="hero-content">
+            <p className="subtitle">Course structure</p>
+            <h1>{course.title || course.course_name}</h1>
+            <p className="subtitle">
+              Explore the adaptive journey, track your milestones, and jump into the next lesson when ready.
+            </p>
+            {completionBadge}
+          </div>
+        </div>
+      </header>
+
+      <CourseStructure
+        course={course}
+        onSelectLesson={handleSelectLesson}
+        completedLessonIds={completedLessons}
+        unlocked
+      />
+    </div>
+  )
+}
