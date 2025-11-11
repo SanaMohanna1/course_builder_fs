@@ -105,7 +105,7 @@ export default function CourseStructure({
 
   if (hierarchy.length === 0) {
     return (
-      <div className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-white/90 p-10 text-center shadow-sm backdrop-blur">
+      <div className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-10 text-center shadow-sm backdrop-blur transition-colors">
         <BookOpen className="mx-auto mb-4 h-8 w-8 text-[var(--text-muted)]" />
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Modules will appear here once the course publisher adds structured content.
@@ -121,7 +121,7 @@ export default function CourseStructure({
         return (
           <div
             key={topic.id}
-            className="rounded-3xl border border-[rgba(148,163,184,0.16)] bg-white/90 shadow-sm backdrop-blur transition-shadow hover:shadow-lg"
+            className="rounded-3xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 shadow-sm backdrop-blur transition-shadow transition-colors hover:shadow-lg"
           >
             <button
               type="button"
@@ -168,7 +168,7 @@ export default function CourseStructure({
                         className="flex w-full items-start justify-between gap-4 rounded-2xl px-5 py-4 text-left transition-colors hover:bg-[var(--bg-secondary)]/60"
                       >
                         <div className="flex items-start gap-3">
-                          <span className="mt-1 rounded-xl bg-white/70 p-2 text-[var(--primary-cyan)] shadow-sm">
+                          <span className="mt-1 rounded-xl bg-[var(--bg-card)]/70 p-2 text-[var(--primary-cyan)] shadow-sm transition-colors">
                             <Folder size={16} />
                           </span>
                           <div className="space-y-1">
@@ -176,7 +176,7 @@ export default function CourseStructure({
                               <h4 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                                 {module.title}
                               </h4>
-                              <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
+                              <span className="rounded-full bg-[var(--bg-card)]/70 px-3 py-1 text-xs font-semibold text-[var(--text-muted)] transition-colors">
                                 {(module.lessons?.length || 0)} lesson{module.lessons?.length === 1 ? '' : 's'}
                               </span>
                             </div>
@@ -208,13 +208,13 @@ export default function CourseStructure({
                               <li key={lessonId}>
                                 <button
                                   type="button"
-                                  className={`flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-all ${
+                                className={`flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-all ${
                                     disabled
                                       ? 'cursor-not-allowed opacity-60'
-                                      : 'hover:border-[var(--primary-cyan)] hover:bg-white'
+                                      : 'hover:border-[var(--primary-cyan)] hover:bg-[var(--bg-card)]'
                                   }`}
                                   style={{
-                                    background: completed ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.9)',
+                                    background: completed ? 'rgba(16,185,129,0.1)' : 'var(--bg-card)',
                                     color: 'var(--text-primary)',
                                     boxShadow: completed ? '0 8px 20px rgba(16,185,129,0.12)' : 'none'
                                   }}

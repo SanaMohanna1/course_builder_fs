@@ -173,7 +173,7 @@ export default function CourseOverview({
     : null
 
   return (
-    <div className="page-surface">
+    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
         <div className="flex flex-col gap-10 py-10">
           <div className="flex items-center justify-between gap-4">
@@ -245,7 +245,7 @@ export default function CourseOverview({
                 {metadata.map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-white/90 p-4 text-sm shadow-sm backdrop-blur"
+                    className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors"
                     style={{ background: 'var(--bg-card)' }}
                   >
                     <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
@@ -262,7 +262,7 @@ export default function CourseOverview({
               </div>
             </div>
 
-            <aside className="space-y-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/80 p-6 shadow-lg backdrop-blur">
+            <aside className="space-y-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-6 shadow-lg backdrop-blur transition-colors">
               <div className="space-y-2 text-sm">
                 <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   Course access
@@ -333,7 +333,7 @@ export default function CourseOverview({
                   {insights.map((item) => (
                     <div
                       key={item.title}
-                      className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-white/90 p-5 text-sm shadow-sm backdrop-blur"
+                      className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-5 text-sm shadow-sm backdrop-blur transition-colors"
                       style={{ background: 'var(--bg-card)' }}
                     >
                       <div className="flex items-center gap-3 text-[var(--primary-cyan)]">
@@ -359,7 +359,7 @@ export default function CourseOverview({
                     {sampleTopics.map((topic) => (
                       <div
                         key={topic.id}
-                        className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-white/90 p-5 shadow-sm backdrop-blur"
+                        className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-5 shadow-sm backdrop-blur transition-colors"
                         style={{ background: 'var(--bg-card)' }}
                       >
                         <div className="flex items-start justify-between gap-4">

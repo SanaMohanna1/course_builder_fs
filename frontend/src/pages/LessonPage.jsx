@@ -115,7 +115,7 @@ export default function LessonPage() {
 
   if (loading) {
     return (
-      <div className="page-surface">
+      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
         <Container>
           <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Loading lesson..." />

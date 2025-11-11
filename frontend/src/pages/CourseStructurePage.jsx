@@ -145,7 +145,7 @@ export default function CourseStructurePage() {
   }
 
   return (
-    <div className="page-surface">
+    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
         <div className="flex flex-col gap-10 py-10">
           <div className="flex items-center justify-between gap-4">
@@ -162,7 +162,7 @@ export default function CourseStructurePage() {
             </div>
           </div>
 
-          <section className="microservice-card refined" style={{ textAlign: 'left' }}>
+          <section className="microservice-card refined transition-colors" style={{ textAlign: 'left' }}>
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex-1 space-y-5">
                 <div className="flex flex-wrap items-center gap-3">
@@ -195,7 +195,7 @@ export default function CourseStructurePage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 shadow-sm backdrop-blur">
+                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 shadow-sm backdrop-blur transition-colors">
                     <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                       <Layers size={18} />
                       <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -206,7 +206,7 @@ export default function CourseStructurePage() {
                       {moduleCount || '--'}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 shadow-sm backdrop-blur">
+                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 shadow-sm backdrop-blur transition-colors">
                     <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                       <BookOpen size={18} />
                       <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -217,7 +217,7 @@ export default function CourseStructurePage() {
                       {totalLessons}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 shadow-sm backdrop-blur">
+                  <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 shadow-sm backdrop-blur transition-colors">
                     <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                       <Clock size={18} />
                       <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -231,7 +231,7 @@ export default function CourseStructurePage() {
                 </div>
               </div>
 
-              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/80 p-6 shadow-lg backdrop-blur">
+              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-6 shadow-lg backdrop-blur transition-colors">
                 <div className="space-y-2 text-sm">
                   <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                     Current milestone

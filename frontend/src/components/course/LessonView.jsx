@@ -40,7 +40,7 @@ export default function LessonView({
     : 'Approx. 12 mins'
 
   return (
-    <div className="page-surface">
+    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
         <div className="flex flex-col gap-10 py-10">
           <div className="flex items-center justify-between gap-4">
@@ -124,7 +124,7 @@ export default function LessonView({
               isFinalLesson={isFinalLesson}
             />
 
-            <footer className="flex flex-col gap-4 rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/80 px-6 py-4 text-sm text-[var(--text-secondary)] backdrop-blur md:flex-row md:items-center md:justify-between">
+            <footer className="flex flex-col gap-4 rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 px-6 py-4 text-sm text-[var(--text-secondary)] backdrop-blur transition-colors md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3 text-sm font-medium">
                 <span className="rounded-full bg-[rgba(14,165,233,0.12)] p-2 text-[var(--primary-cyan)]">
                   {isCompleted ? <CheckCircle2 size={18} /> : <PlayCircle size={18} />}

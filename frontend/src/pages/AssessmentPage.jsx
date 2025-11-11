@@ -51,7 +51,7 @@ export default function AssessmentPage() {
 
   if (loading) {
     return (
-      <div className="page-surface">
+      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
         <Container>
           <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Loading assessment..." />
@@ -64,7 +64,7 @@ export default function AssessmentPage() {
   const courseTitle = course?.title || course?.course_name || 'Course assessment'
 
   return (
-    <div className="page-surface">
+    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
         <div className="mx-auto flex max-w-4xl flex-col gap-10 py-10">
           <div className="flex items-center justify-between gap-4">
@@ -94,21 +94,21 @@ export default function AssessmentPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 text-sm shadow-sm backdrop-blur">
+              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors">
                 <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                   <CheckCircle2 size={16} />
                   <span className="font-semibold text-[var(--text-primary)]">Passing score</span>
                 </div>
                 <p className="mt-2 font-semibold text-[var(--text-secondary)]">70% or higher</p>
               </div>
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 text-sm shadow-sm backdrop-blur">
+              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors">
                 <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                   <Clock size={16} />
                   <span className="font-semibold text-[var(--text-primary)]">Time limit</span>
                 </div>
                 <p className="mt-2 font-semibold text-[var(--text-secondary)]">60 minutes</p>
               </div>
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-white/90 p-4 text-sm shadow-sm backdrop-blur">
+              <div className="rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors">
                 <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
                   <Sparkles size={16} />
                   <span className="font-semibold text-[var(--text-primary)]">Attempts</span>
@@ -117,7 +117,7 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/90 p-6 shadow-sm backdrop-blur">
+            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-6 shadow-sm backdrop-blur transition-colors">
               <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Assessment checklist</h2>
               <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                 <li className="flex items-start gap-3">

@@ -223,7 +223,7 @@ export default function FeedbackPage() {
 
   if (pageLoading) {
     return (
-      <div className="page-surface">
+      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
         <Container>
           <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Preparing feedback workspace..." />
@@ -237,7 +237,7 @@ export default function FeedbackPage() {
   const readonlyView = hasExistingFeedback && !isEditing
 
   return (
-    <div className="page-surface">
+    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
         <div className="mx-auto flex max-w-4xl flex-col gap-10 py-10">
           <div className="flex items-center justify-between gap-4">
@@ -271,7 +271,7 @@ export default function FeedbackPage() {
             </div>
 
             {communityStats && (
-              <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/90 p-6 shadow-sm backdrop-blur">
+              <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-6 shadow-sm backdrop-blur transition-colors">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-[var(--text-primary)]">Community sentiment</h2>
@@ -288,7 +288,7 @@ export default function FeedbackPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/95 p-6 shadow-sm backdrop-blur">
+              <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-sm backdrop-blur transition-colors">
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col items-center gap-4 text-center">
                     <div className="text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]">
@@ -318,7 +318,7 @@ export default function FeedbackPage() {
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={6}
-                      className="w-full resize-none rounded-2xl border border-[rgba(148,163,184,0.2)] bg-white/90 p-4 text-sm text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--primary-cyan)] focus:ring-2 focus:ring-[var(--primary-cyan)]/30"
+                      className="w-full resize-none rounded-2xl border border-[rgba(148,163,184,0.2)] bg-[var(--bg-card)]/90 p-4 text-sm text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--primary-cyan)] focus:ring-2 focus:ring-[var(--primary-cyan)]/30"
                       placeholder="Tell us about your experience, what resonated, or what could be improved..."
                       readOnly={!isEditing}
                     />

@@ -28,7 +28,7 @@ const renderContent = (lesson) => {
   if (contentData.content_ref) {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-white/90 p-4 text-sm shadow-sm backdrop-blur">
+        <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors">
           <strong className="text-[var(--text-primary)]">Content Reference:</strong>{' '}
           <span className="text-[var(--text-secondary)]">{contentData.content_ref}</span>
         </div>
@@ -133,7 +133,7 @@ export default function LessonViewer({
 
   if (!lesson) {
     return (
-      <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/90 p-12 text-center shadow-sm backdrop-blur text-[var(--text-secondary)]">
+      <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-12 text-center shadow-sm backdrop-blur transition-colors text-[var(--text-secondary)]">
         <BookOpen className="mx-auto mb-4 h-10 w-10 text-[var(--text-muted)]" />
         <p>No lesson content available</p>
       </div>
@@ -162,7 +162,7 @@ export default function LessonViewer({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-white/95 p-6 shadow-sm backdrop-blur">
+      <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-sm backdrop-blur transition-colors">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <span className="rounded-2xl bg-[rgba(14,165,233,0.12)] p-3 text-[var(--primary-cyan)]">
@@ -235,7 +235,7 @@ export default function LessonViewer({
         {(lesson.enrichment_data || lesson.micro_skills || lesson.nano_skills) && (
           <div className="mt-8 space-y-6">
             {lesson.enrichment_data && (
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-white/90 p-5 shadow-sm backdrop-blur">
+              <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-5 shadow-sm backdrop-blur transition-colors">
                 <h3 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Additional resources</h3>
                 <div className="space-y-4 text-sm">
                   {Array.isArray(lesson.enrichment_data.youtube_links) && lesson.enrichment_data.youtube_links.length > 0 && (
@@ -287,7 +287,7 @@ export default function LessonViewer({
             )}
 
             {(lesson.micro_skills || lesson.nano_skills) && (
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-white/90 p-5 shadow-sm backdrop-blur">
+              <div className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-5 shadow-sm backdrop-blur transition-colors">
                 <h3 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Learning objectives</h3>
                 <div className="space-y-4 text-sm text-[var(--text-secondary)]">
                   {lesson.micro_skills && (
