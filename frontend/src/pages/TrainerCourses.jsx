@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getCourses } from '../services/apiService.js'
+import { Archive, ArrowLeft, BarChart3, Layers, Pencil, Rocket, Trash2, Users } from 'lucide-react'
+import { getCourses, updateCourse, publishCourse } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import Container from '../components/Container.jsx'
+
+const STATUS_FILTERS = ['all', 'draft', 'live', 'archived']
 
 export default function TrainerCourses() {
   const { showToast } = useApp()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [processingId, setProcessingId] = useState(null)
 
   useEffect(() => {
     loadCourses()
@@ -18,7 +22,7 @@ export default function TrainerCourses() {
   const loadCourses = async () => {
     setLoading(true)
     try {
-      const data = await getCourses({ limit: 50 })
+      const data = await getCourses({ limit: 100 })
       setCourses(data.courses || [])
     } catch (err) {
       showToast('Failed to load trainer courses', 'error')
@@ -27,132 +31,223 @@ export default function TrainerCourses() {
     }
   }
 
-  const filteredCourses = courses.filter(course => {
-    if (statusFilter === 'all') return true
-    return (course.status || 'draft') === statusFilter
-  })
+  const filteredCourses = useMemo(() => {
+    if (statusFilter === 'all') return courses
+    return courses.filter((course) => (course.status || 'draft') === statusFilter)
+  }, [courses, statusFilter])
+
+  const handleArchiveCourse = async (courseId) => {
+    const confirm = window.confirm('Archive this course? Learners will no longer see it in the marketplace.')
+    if (!confirm) return
+
+    setProcessingId(courseId)
+    try {
+      await updateCourse(courseId, { status: 'archived' })
+      showToast('Course archived successfully', 'success')
+      loadCourses()
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Failed to archive course'
+      showToast(message, 'error')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handlePublishCourse = async (courseId) => {
+    const confirm = window.confirm('Publish this course now?')
+    if (!confirm) return
+
+    setProcessingId(courseId)
+    try {
+      await publishCourse(courseId)
+      showToast('Course published successfully', 'success')
+      loadCourses()
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Failed to publish course'
+      showToast(message, 'error')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const badgeStyles = (status) => {
+    switch (status) {
+      case 'live':
+        return 'bg-[rgba(16,185,129,0.16)] text-[#047857]'
+      case 'archived':
+        return 'bg-[rgba(148,163,184,0.18)] text-[var(--text-muted)]'
+      default:
+        return 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
+    }
+  }
 
   return (
-    <div className="personalized-dashboard">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Trainer lifecycle</p>
-            <h1>Manage course lifecycle</h1>
-            <p className="subtitle">
-              Draft, refine, and publish courses across versions. Track feedback and keep content evergreen with quick actions.
-            </p>
-            <div className="hero-actions">
-              <Link to="/trainer/dashboard" className="btn btn-secondary">
+    <div className="page-surface">
+      <Container>
+        <div className="flex flex-col gap-10 py-10">
+          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <ArrowLeft className="h-4 w-4 text-[var(--primary-cyan)]" />
+                Lifecycle management
+              </span>
+              <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+                Curate, iterate, and launch your course catalogue
+              </h1>
+              <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+                Filter by status, update course content, and coordinate publishing with confidence. Archived courses stay
+                available for auditing while being hidden from learners.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/trainer/dashboard" className="btn btn-secondary inline-flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
                 Back to dashboard
               </Link>
               <button type="button" className="btn btn-primary" onClick={loadCourses}>
-                Refresh
+                Refresh courses
               </button>
             </div>
-          </div>
-        </div>
-      </section>
+          </header>
 
-      <Container>
-        <div className="section-panel">
-          <div className="surface-card soft flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-4 shadow-sm backdrop-blur">
             <div className="flex flex-wrap gap-2">
-              {['all', 'draft', 'live', 'archived'].map((status) => (
+              {STATUS_FILTERS.map((status) => (
                 <button
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(status)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                     statusFilter === status
                       ? 'bg-[var(--primary-cyan)] text-white shadow-sm'
-                      : 'border border-[rgba(148,163,184,0.35)] bg-white/90 text-[var(--text-primary)] hover:border-[var(--primary-cyan)]'
+                      : 'border border-[rgba(148,163,184,0.35)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-[var(--primary-cyan)]'
                   }`}
                 >
-                  <span className="capitalize">{status === 'all' ? 'All' : status}</span>
-                  {status === 'all' && <small className="ml-2 text-[var(--text-muted)]">{courses.length} total</small>}
+                  <span className="capitalize">{status}</span>
+                  {status === 'all' && (
+                    <small className="ml-2 text-[var(--text-muted)]">{courses.length} total</small>
+                  )}
                 </button>
               ))}
             </div>
-            <span className="text-sm font-medium text-[var(--text-muted)]">
+            <span className="text-sm text-[var(--text-secondary)]">
               {filteredCourses.length} course{filteredCourses.length === 1 ? '' : 's'} shown
             </span>
           </div>
-        </div>
-      </Container>
 
-      {loading ? (
-        <Container>
-          <div className="section-panel">
-            <div className="surface-card soft flex min-h-[40vh] items-center justify-center">
+          {loading ? (
+            <div className="flex min-h-[320px] items-center justify-center rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-10 shadow-sm backdrop-blur">
               <LoadingSpinner message="Loading trainer workspace..." />
             </div>
-          </div>
-        </Container>
-      ) : filteredCourses.length === 0 ? (
-        <Container>
-          <section className="section-panel">
-            <div className="surface-card soft space-y-4 text-center">
-              <i className="fa-solid fa-chalkboard text-3xl text-[var(--primary-cyan)]" />
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses for this status</h2>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Adjust the filter or reach out to the curriculum team to provision additional content.
-              </p>
+          ) : filteredCourses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-[rgba(148,163,184,0.35)] bg-[var(--bg-secondary)]/40 p-12 text-center">
+              <Archive className="h-10 w-10 text-[var(--primary-cyan)]" />
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses for this filter</h2>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Adjust the filters or reach out to the curriculum team to provision additional content.
+                </p>
+              </div>
             </div>
-          </section>
-        </Container>
-      ) : (
-        <Container>
-          <section className="section-panel">
-            <div className="space-y-6">
-              {filteredCourses.map((course) => (
-                <article key={course.id || course.course_id} className="course-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
-                  <div>
-                    <span className="tag-chip" style={{ background: 'rgba(148,163,184,0.15)', color: 'var(--text-muted)' }}>
-                      {course.category || 'General'}
-                    </span>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: 'var(--spacing-sm)' }}>
-                      {course.title || course.course_name}
-                    </h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                      {course.description || course.course_description || 'Keep this course updated with the latest insights and best practices.'}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span className="status-chip" style={{ background: (course.status || 'draft') === 'live' ? 'rgba(16,185,129,0.12)' : (course.status || 'draft') === 'archived' ? 'rgba(148,163,184,0.2)' : 'rgba(234,179,8,0.15)', color: (course.status || 'draft') === 'live' ? '#047857' : (course.status || 'draft') === 'archived' ? 'var(--text-secondary)' : '#b45309' }}>
-                      <i className="fa-solid fa-circle" style={{ fontSize: '0.5rem' }} /> {course.status || 'draft'}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Last updated {course.updated_at ? new Date(course.updated_at).toLocaleDateString() : 'recently'}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {course.total_enrollments || 0} active learners
-                    </span>
-                  </div>
-                </div>
-                <div className="stage-grid">
-                  <Link to={`/trainer/course/${course.id || course.course_id}`} className="stage-button" style={{ background: 'rgba(79,70,229,0.12)', borderColor: 'rgba(79,70,229,0.4)' }}>
-                    <span>Edit content &amp; versions</span>
-                    <small>Update modules, lessons, and metadata</small>
-                  </Link>
-                  <Link to={`/trainer/publish/${course.id || course.course_id}`} className="stage-button" style={{ background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.4)' }}>
-                    <span>Schedule publishing</span>
-                    <small>Coordinate releases with stakeholders</small>
-                  </Link>
-                  <Link to={`/trainer/feedback/${course.id || course.course_id}`} className="stage-button" style={{ background: 'rgba(236,72,153,0.12)', borderColor: 'rgba(236,72,153,0.4)' }}>
-                    <span>Feedback analytics</span>
-                    <small>Monitor sentiment and tags</small>
-                  </Link>
-                </div>
-              </article>
-              ))}
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {filteredCourses.map((course) => {
+                const courseId = course.id || course.course_id
+                const status = course.status || 'draft'
+                const disabled = processingId === courseId
+
+                return (
+                  <article
+                    key={courseId}
+                    className="flex flex-col gap-5 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-3">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(148,163,184,0.16)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                          {course.category || 'General'}
+                        </span>
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                          {course.title || course.course_name}
+                        </h2>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {course.description ||
+                            course.course_description ||
+                            'Keep this course updated with the latest insights and best practices.'}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${badgeStyles(status)}`}>
+                        <Layers className="h-3 w-3" />
+                        {status}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)] sm:grid-cols-3">
+                      <span className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-[var(--primary-cyan)]" />
+                        {course.active_enrollments || course.total_enrollments || 0} learners
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-[var(--primary-cyan)]" />
+                        {(course.average_rating || 0).toFixed(1)} rating
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Layers className="h-4 w-4 text-[var(--primary-cyan)]" />
+                        {(course.modules || []).length} modules
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        to={`/trainer/course/${courseId}`}
+                        className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit course
+                      </Link>
+                      <Link
+                        to={`/trainer/publish/${courseId}`}
+                        className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                      >
+                        <Rocket className="h-4 w-4" />
+                        Publish
+                      </Link>
+                      <Link
+                        to={`/trainer/feedback/${courseId}`}
+                        className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                      >
+                        <BarChart3 className="h-4 w-4" />
+                        Analytics
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() =>
+                          status === 'archived' ? handlePublishCourse(courseId) : handleArchiveCourse(courseId)
+                        }
+                        className={`btn flex-1 min-w-[140px] items-center justify-center gap-2 ${
+                          status === 'archived' ? 'btn-primary' : 'btn-secondary'
+                        }`}
+                      >
+                        {status === 'archived' ? (
+                          <>
+                            <Rocket className="h-4 w-4" />
+                            Restore
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4" />
+                            Archive
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
-          </section>
-        </Container>
-      )}
+          )}
+        </div>
+      </Container>
     </div>
   )
 }
-
-

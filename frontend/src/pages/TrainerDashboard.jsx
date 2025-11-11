@@ -1,9 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getCourses, publishCourse } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import {
+  BarChart3,
+  Layers,
+  Users,
+  Star,
+  RefreshCw,
+  PlusCircle,
+  ArrowUpRight,
+  CheckCircle2,
+  Rocket,
+  Sparkles
+} from 'lucide-react'
+
+const getAverageRating = (courses) => {
+  if (!courses.length) return 0
+  const total = courses.reduce((acc, course) => acc + Number(course.average_rating || course.rating || 0), 0)
+  return total / courses.length
+}
+
+const getActiveLearners = (courses) =>
+  courses.reduce((acc, course) => acc + Number(course.active_enrollments || course.total_enrollments || 0), 0)
 
 export default function TrainerDashboard() {
   const { showToast } = useApp()
@@ -28,7 +49,9 @@ export default function TrainerDashboard() {
   }
 
   const onPublish = async (courseId) => {
-    if (!window.confirm('Publish this course to the marketplace?')) return
+    const confirm = window.confirm('Publish this course to the marketplace?')
+    if (!confirm) return
+
     setPublishing(true)
     try {
       await publishCourse(courseId)
@@ -42,94 +65,203 @@ export default function TrainerDashboard() {
     }
   }
 
+  const metrics = useMemo(() => {
+    const published = courses.filter((course) => (course.status || 'draft') === 'live')
+    const drafts = courses.filter((course) => (course.status || 'draft') === 'draft')
+
+    return [
+      {
+        label: 'Published courses',
+        value: published.length,
+        icon: Rocket,
+        accent: 'bg-[rgba(16,185,129,0.14)] text-[#047857]'
+      },
+      {
+        label: 'Drafts in progress',
+        value: drafts.length,
+        icon: Layers,
+        accent: 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
+      },
+      {
+        label: 'Active learners',
+        value: getActiveLearners(published),
+        icon: Users,
+        accent: 'bg-[rgba(59,130,246,0.14)] text-[#1d4ed8]'
+      },
+      {
+        label: 'Average rating',
+        value: getAverageRating(published).toFixed(1),
+        icon: Star,
+        accent: 'bg-[rgba(250,204,21,0.18)] text-[#ca8a04]'
+      }
+    ]
+  }, [courses])
+
   return (
-    <div className="dashboard-surface">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Trainer workspace</p>
-            <h1>Validate and manage your course portfolio</h1>
-            <p className="subtitle">
-              Review drafts, publish updates, and monitor learner engagement across the emerald learning network.
-            </p>
-            <div className="hero-actions">
-              <Link to="/trainer/courses" className="btn btn-primary">
-                Lifecycle workspace
+    <div className="page-surface">
+      <Container>
+        <div className="flex flex-col gap-10 py-10">
+          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <Sparkles className="h-4 w-4 text-[var(--primary-cyan)]" />
+                Trainer workspace
+              </span>
+              <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+                Manage and launch world-class learning experiences
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+                Review draft courses, publish updates, and keep tabs on learner engagement. Everything you need to steer
+                your portfolio lives here.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/trainer/courses" className="btn btn-primary inline-flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
+                Manage courses
               </Link>
-              <button type="button" className="btn btn-secondary" onClick={loadCourses}>
+              <button type="button" className="btn btn-secondary inline-flex items-center gap-2" onClick={loadCourses}>
+                <RefreshCw className="h-4 w-4" />
                 Refresh data
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <Container>
-        <section className="dashboard-panel">
-          <header className="section-heading">
-            <div>
-              <h2>Active courses</h2>
-              <p>My course portfolio ({courses.length})</p>
-            </div>
           </header>
 
-          {loading ? (
-            <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LoadingSpinner message="Syncing courses..." />
-            </div>
-          ) : courses.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)', color: 'var(--text-muted)' }}>
-              <i className="fa-solid fa-layer-group" style={{ fontSize: '2.5rem', color: 'var(--primary-cyan)' }} />
-              <h3 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.5rem', fontWeight: 600 }}>No assigned courses yet</h3>
-              <p style={{ marginTop: 'var(--spacing-xs)' }}>
-                Your course workspace will appear here once content is provisioned for you.
-              </p>
-            </div>
-          ) : (
-            <div className="course-grid">
-              {courses.map(course => (
-                <article key={course.id || course.course_id} className="course-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--spacing-sm)' }}>
-                    <span className="tag-chip" style={{ background: 'rgba(99,102,241,0.12)', color: '#4338ca' }}>
-                      {course.level || 'beginner'}
-                    </span>
-                    <span className="status-chip" style={{ background: (course.status || 'draft') === 'live' ? 'rgba(16,185,129,0.12)' : 'rgba(234,179,8,0.15)', color: (course.status || 'draft') === 'live' ? '#047857' : '#b45309' }}>
-                      <i className="fa-solid fa-circle" style={{ fontSize: '0.5rem' }} /> {course.status || 'draft'}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>{course.title || course.course_name}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    {course.description || course.course_description || 'No description yet.'}
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {metrics.map(({ label, value, icon: Icon, accent }) => (
+              <article
+                key={label}
+                className="flex items-center justify-between rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur"
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
+                  <p className="mt-3 text-3xl font-bold text-[var(--text-primary)]">{value}</p>
+                </div>
+                <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${accent}`}>
+                  <Icon className="h-6 w-6" />
+                </span>
+              </article>
+            ))}
+          </section>
+
+          <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Portfolio overview</h2>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {courses.length} course{courses.length === 1 ? '' : 's'} assigned to you
+                </p>
+              </div>
+              <Link
+                to="/trainer/feedback/overview"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary-cyan)] hover:text-[var(--primary-blue)]"
+              >
+                View analytics
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </header>
+
+            {loading ? (
+              <div className="flex min-h-[320px] items-center justify-center">
+                <LoadingSpinner message="Syncing courses..." />
+              </div>
+            ) : courses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[rgba(148,163,184,0.35)] bg-[var(--bg-secondary)]/40 p-10 text-center text-[var(--text-muted)]">
+                <Layers className="h-10 w-10 text-[var(--primary-cyan)]" />
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-[var(--text-primary)]">No assigned courses yet</h3>
+                  <p className="text-sm">
+                    Your course workspace will appear here once content is provisioned for you.
                   </p>
-                  <div className="stage-grid">
-                    {course.status !== 'live' && (
-                      <button
-                        type="button"
-                        onClick={() => onPublish(course.id || course.course_id)}
-                        disabled={publishing}
-                        className="stage-button"
-                        style={{ background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.4)' }}
-                      >
-                        <span>Publish</span>
-                        <small>Send to marketplace</small>
-                      </button>
-                    )}
-                    <Link to={`/trainer/course/${course.id || course.course_id}`} className="stage-button" style={{ background: 'rgba(79,70,229,0.12)', borderColor: 'rgba(79,70,229,0.4)' }}>
-                      <span>Review &amp; validate</span>
-                      <small>Check structure and readiness</small>
-                    </Link>
-                    {course.status === 'live' && (
-                      <Link to={`/trainer/feedback/${course.id || course.course_id}`} className="stage-button" style={{ background: 'rgba(236,72,153,0.12)', borderColor: 'rgba(236,72,153,0.4)' }}>
-                        <span>Analytics</span>
-                        <small>Monitor feedback trends</small>
-                      </Link>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                {courses.map((course) => {
+                  const courseId = course.id || course.course_id
+                  const status = course.status || 'draft'
+                  const isLive = status === 'live'
+
+                  return (
+                    <article
+                      key={courseId}
+                      className="flex flex-col gap-5 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-2">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(99,102,241,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#4338ca]">
+                            {course.level || 'Beginner'}
+                          </span>
+                          <h3 className="text-lg font-semibold leading-tight text-[var(--text-primary)]">
+                            {course.title || course.course_name}
+                          </h3>
+                          <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                            {course.description || course.course_description || 'No description provided yet.'}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
+                            isLive
+                              ? 'bg-[rgba(16,185,129,0.14)] text-[#047857]'
+                              : 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
+                          }`}
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          {isLive ? 'Live' : 'Draft'}
+                        </span>
+                      </div>
+
+                      <div className="grid gap-3 rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)] sm:grid-cols-3">
+                        <span className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-[var(--primary-cyan)]" />
+                          {(course.modules || []).length} modules
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-[var(--primary-cyan)]" />
+                          {course.active_enrollments || course.total_enrollments || 0} learners
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4 text-[var(--primary-cyan)]" />
+                          {(course.average_rating || 0).toFixed(1)} rating
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-3">
+                        {!isLive && (
+                          <button
+                            type="button"
+                            onClick={() => onPublish(courseId)}
+                            disabled={publishing}
+                            className="btn btn-primary flex-1 min-w-[140px] items-center justify-center gap-2"
+                          >
+                            <Rocket className="h-4 w-4" />
+                            Publish
+                          </button>
+                        )}
+                        <Link
+                          to={`/trainer/course/${courseId}`}
+                          className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                        >
+                          <Layers className="h-4 w-4" />
+                          Structure
+                        </Link>
+                        {isLive && (
+                          <Link
+                            to={`/trainer/feedback/${courseId}`}
+                            className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                          >
+                            <BarChart3 className="h-4 w-4" />
+                            Feedback
+                          </Link>
+                        )}
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        </div>
       </Container>
     </div>
   )

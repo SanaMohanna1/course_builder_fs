@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { ArrowLeft, MessageSquare, Star, TrendingUp, Users } from 'lucide-react'
 import { getCourseById, getFeedbackAnalytics } from '../services/apiService.js'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
@@ -21,10 +22,7 @@ export default function TrainerFeedbackAnalytics() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [courseData, analyticsData] = await Promise.all([
-        getCourseById(id),
-        getFeedbackAnalytics(id).catch(() => null)
-      ])
+      const [courseData, analyticsData] = await Promise.all([getCourseById(id), getFeedbackAnalytics(id).catch(() => null)])
       setCourse(courseData)
       setFeedback(analyticsData)
     } catch (err) {
@@ -38,7 +36,7 @@ export default function TrainerFeedbackAnalytics() {
     return (
       <div className="page-surface">
         <Container>
-          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+          <div className="flex min-h-[60vh] items-center justify-center rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-10 shadow-sm backdrop-blur">
             <LoadingSpinner message="Loading feedback analytics..." />
           </div>
         </Container>
@@ -55,61 +53,106 @@ export default function TrainerFeedbackAnalytics() {
   }
 
   return (
-    <div className="personalized-dashboard">
+    <div className="page-surface">
       <Container>
-        <section className="section-panel" style={{ maxWidth: '1200px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-          <div>
-            <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
-              <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to dashboard
-            </Button>
-            <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Feedback analytics</h1>
-            {course && (
-              <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
-                {course.title || course.course_name}
+        <div className="flex flex-col gap-10 py-10">
+          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <MessageSquare className="h-4 w-4 text-[var(--primary-cyan)]" />
+                Feedback analytics
+              </span>
+              <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+                Understand learner sentiment and take action
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+                Track ratings, identify trends, and see which course versions resonate with learners. Use these insights
+                to prioritise updates and respond proactively.
               </p>
-            )}
-          </div>
-
-          <div style={{ display: 'grid', gap: 'var(--spacing-lg)', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-            <article className="course-card" style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Average rating</h3>
-              <p style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{analytics.average_rating?.toFixed(1) || 'N/A'}</p>
-              <div style={{ color: '#FACC15', fontSize: '1.5rem' }}>{'★'.repeat(Math.round(analytics.average_rating || 0))}</div>
-            </article>
-            <article className="course-card" style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total feedback</h3>
-              <p style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{analytics.total_feedback || 0}</p>
-            </article>
-            <article className="course-card" style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Versions analysed</h3>
-              <p style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{analytics.versions?.length || 0}</p>
-            </article>
-          </div>
-
-          <section className="course-card">
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Feedback by category</h2>
-            <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginTop: 'var(--spacing-md)' }}>
-              {Object.entries(analytics.tags_breakdown || {}).map(([tag, rating]) => (
-                <div key={tag} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                  <strong style={{ color: 'var(--text-primary)' }}>{tag}</strong>
-                  <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--primary-cyan)', marginTop: 'var(--spacing-xs)' }}>{rating.toFixed(1)}</p>
-                  <span style={{ color: '#FACC15' }}>{'★'.repeat(Math.round(rating))}</span>
-                </div>
-              ))}
-              {Object.keys(analytics.tags_breakdown || {}).length === 0 && (
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No tagged feedback yet.</p>
+              {course && (
+                <p className="text-sm font-semibold text-[var(--text-primary)]">
+                  Course: <span className="text-[var(--text-secondary)]">{course.title || course.course_name}</span>
+                </p>
               )}
+            </div>
+            <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to dashboard
+            </Button>
+          </header>
+
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 text-center shadow-sm backdrop-blur">
+              <span className="inline-flex items-center justify-center rounded-2xl bg-[rgba(250,204,21,0.18)] p-3 text-[#ca8a04]">
+                <Star className="h-5 w-5" />
+              </span>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Average rating</p>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">
+                {analytics.average_rating?.toFixed(1) || 'N/A'}
+              </p>
+            </div>
+            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 text-center shadow-sm backdrop-blur">
+              <span className="inline-flex items-center justify-center rounded-2xl bg-[rgba(59,130,246,0.18)] p-3 text-[#1d4ed8]">
+                <Users className="h-5 w-5" />
+              </span>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Total feedback</p>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{analytics.total_feedback || 0}</p>
+            </div>
+            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 text-center shadow-sm backdrop-blur">
+              <span className="inline-flex items-center justify-center rounded-2xl bg-[rgba(16,185,129,0.18)] p-3 text-[#047857]">
+                <TrendingUp className="h-5 w-5" />
+              </span>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Rating trend</p>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">
+                {analytics.rating_trend?.length || 0} checkpoints
+              </p>
+            </div>
+            <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 text-center shadow-sm backdrop-blur">
+              <span className="inline-flex items-center justify-center rounded-2xl bg-[rgba(99,102,241,0.18)] p-3 text-[#4338ca]">
+                <MessageSquare className="h-5 w-5" />
+              </span>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Versions analysed</p>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{analytics.versions?.length || 0}</p>
             </div>
           </section>
 
+          <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <header className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Feedback by category</h2>
+              <MessageSquare className="h-5 w-5 text-[var(--primary-cyan)]" />
+            </header>
+            {Object.keys(analytics.tags_breakdown || {}).length === 0 ? (
+              <p className="text-sm text-[var(--text-secondary)]">No tagged feedback yet.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {Object.entries(analytics.tags_breakdown || {}).map(([tag, rating]) => (
+                  <div
+                    key={tag}
+                    className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-secondary)]/40 p-4 text-center"
+                  >
+                    <strong className="text-sm text-[var(--text-primary)]">{tag}</strong>
+                    <p className="mt-3 text-2xl font-bold text-[var(--primary-cyan)]">{rating.toFixed(1)}</p>
+                    <span className="text-xs text-[var(--text-secondary)]">Avg. sentiment</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
           {analytics.rating_trend && analytics.rating_trend.length > 0 && (
-            <section className="course-card">
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Rating trend</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-md)' }}>
+            <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+              <header className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Rating trend</h2>
+                <TrendingUp className="h-5 w-5 text-[var(--primary-cyan)]" />
+              </header>
+              <div className="space-y-3">
                 {analytics.rating_trend.map((trend, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--spacing-sm)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>{new Date(trend.date).toLocaleDateString()}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--primary-cyan)' }}>{trend.avg_rating.toFixed(1)} ★</span>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-2xl bg-[var(--bg-secondary)]/40 px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]"
+                  >
+                    <span>{new Date(trend.date).toLocaleDateString()}</span>
+                    <span className="text-[var(--primary-cyan)]">{trend.avg_rating.toFixed(1)} ★</span>
                   </div>
                 ))}
               </div>
@@ -117,19 +160,28 @@ export default function TrainerFeedbackAnalytics() {
           )}
 
           {analytics.versions && analytics.versions.length > 0 && (
-            <section className="course-card">
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Ratings by version</h2>
-              <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
-                {analytics.versions.map((v, idx) => (
-                  <div key={idx} style={{ padding: 'var(--spacing-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--spacing-xs)' }}>Version {v.version_no}</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{v.avg_rating.toFixed(1)}</div>
+            <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+              <header className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Ratings by version</h2>
+                <Users className="h-5 w-5 text-[var(--primary-cyan)]" />
+              </header>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {analytics.versions.map((version, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-secondary)]/40 p-4 text-center"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                      Version {version.version_no}
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--primary-cyan)]">{version.avg_rating.toFixed(1)}</p>
+                    <span className="text-xs text-[var(--text-secondary)]">Avg. rating</span>
                   </div>
                 ))}
               </div>
             </section>
           )}
-        </section>
+        </div>
       </Container>
     </div>
   )

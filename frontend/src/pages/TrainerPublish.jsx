@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { CalendarRange, Layers, ListOrdered, Rocket } from 'lucide-react'
 import { getCourseById, publishCourse, scheduleCourse } from '../services/apiService.js'
 import PublishControls from '../components/PublishControls.jsx'
 import Button from '../components/Button.jsx'
@@ -61,7 +62,7 @@ export default function TrainerPublish() {
     return (
       <div className="page-surface">
         <Container>
-          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+          <div className="flex min-h-[60vh] items-center justify-center rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-10 shadow-sm backdrop-blur">
             <LoadingSpinner message="Loading course..." />
           </div>
         </Container>
@@ -70,55 +71,96 @@ export default function TrainerPublish() {
   }
 
   return (
-    <div className="personalized-dashboard">
+    <div className="page-surface">
       <Container>
-        <section className="section-panel" style={{ maxWidth: '820px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-          <div>
-            <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
-              <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to validation
-            </Button>
-            <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Publish course</h1>
+        <div className="mx-auto flex max-w-4xl flex-col gap-10 py-10">
+          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur">
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                  <Rocket className="h-4 w-4 text-[var(--primary-cyan)]" />
+                  Publishing control
+                </span>
+                <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">Launch your course</h1>
+                <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+                  Confirm the course metadata, choose a launch window, and publish instantly or schedule a future release.
+                </p>
+              </div>
+              <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
+                Back to validation
+              </Button>
+            </div>
             {course && (
-              <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
-                {course.title || course.course_name}
-              </p>
-            )}
-          </div>
-
-          {course && (
-            <div className="course-card">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Course preview</h3>
-              <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
-                <div>
-                  <span className="status-chip">Modules</span>
-                  <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>{course.modules?.length || 0}</p>
-                </div>
-                <div>
-                  <span className="status-chip">Lessons</span>
-                  <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>
-                    {course.modules?.reduce((acc, module) => acc + (module.lessons?.length || 0), 0) || 0}
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <span className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Course</span>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">
+                    {course.title || course.course_name}
                   </p>
                 </div>
-                <div>
-                  <span className="status-chip">Level</span>
-                  <p style={{ fontSize: '1.6rem', fontWeight: 700, textTransform: 'capitalize' }}>{course.level || 'beginner'}</p>
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <span className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Difficulty</span>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">
+                    {(course.level || 'Beginner').toString()}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <span className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Status</span>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)] capitalize">
+                    {course.status || 'draft'}
+                  </p>
                 </div>
               </div>
-            </div>
+            )}
+          </header>
+
+          {course && (
+            <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+              <header className="mb-5 flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Snapshot</h2>
+                <Layers className="h-5 w-5 text-[var(--primary-cyan)]" />
+              </header>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Modules</p>
+                  <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">
+                    {(course.modules || []).length}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Lessons</p>
+                  <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">
+                    {(course.modules || []).reduce((total, module) => total + (module.lessons?.length || 0), 0)}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                  <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Next step</p>
+                  <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">
+                    Choose immediate publish or schedule a launch
+                  </p>
+                </div>
+              </div>
+            </section>
           )}
 
-          <PublishControls
-            courseId={id}
-            onPublish={handlePublish}
-            onSchedule={handleSchedule}
-            loading={publishing}
-          />
+          <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <header className="mb-4 flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Publishing controls</h2>
+              <CalendarRange className="h-5 w-5 text-[var(--primary-cyan)]" />
+            </header>
+            <PublishControls
+              courseId={id}
+              onPublish={handlePublish}
+              onSchedule={handleSchedule}
+              loading={publishing}
+            />
+          </section>
 
-          <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: 'var(--radius-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--primary-cyan)' }} />
-            Once published, the course will be visible in the internal marketplace and learners can register.
+          <div className="rounded-3xl border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.1)] p-4 text-sm text-[#047857]">
+            <ListOrdered className="mr-3 inline h-4 w-4" />
+            Once published, the course appears in the internal marketplace and learners can enrol immediately.
           </div>
-        </section>
+        </div>
       </Container>
     </div>
   )

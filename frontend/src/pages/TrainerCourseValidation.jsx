@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { CheckCircle2, Circle, Layers, ListChecks, Rocket } from 'lucide-react'
 import { getCourseById } from '../services/apiService.js'
 import CourseTreeView from '../components/CourseTreeView.jsx'
 import Button from '../components/Button.jsx'
@@ -37,11 +38,37 @@ export default function TrainerCourseValidation() {
     showToast('Course validated successfully! Ready for publishing.', 'success')
   }
 
+  const checklist = useMemo(() => {
+    if (!course) return []
+    return [
+      {
+        label: 'Course structure is complete',
+        checked: (course.modules || []).length > 0
+      },
+      {
+        label: 'All modules have supporting lessons',
+        checked: (course.modules || []).every((module) => (module.lessons || []).length > 0)
+      },
+      {
+        label: 'Course description is provided',
+        checked: Boolean(course.description || course.course_description)
+      },
+      {
+        label: 'Difficulty level is assigned',
+        checked: Boolean(course.level)
+      },
+      {
+        label: 'Metadata & enrichment applied',
+        checked: Boolean(course.metadata)
+      }
+    ]
+  }, [course])
+
   if (loading) {
     return (
       <div className="page-surface">
         <Container>
-          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+          <div className="flex min-h-[60vh] items-center justify-center rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-10 shadow-sm backdrop-blur">
             <LoadingSpinner message="Loading course..." />
           </div>
         </Container>
@@ -53,9 +80,11 @@ export default function TrainerCourseValidation() {
     return (
       <div className="page-surface">
         <Container>
-          <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+          <section className="flex min-h-[60vh] flex-col items-center justify-center gap-4 rounded-3xl border border-[rgba(148,163,184,0.12)] bg-[var(--bg-card)] p-10 text-center shadow-sm backdrop-blur">
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">Course not found</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Try returning to the trainer dashboard and selecting a course again.</p>
+            <p className="max-w-md text-sm text-[var(--text-secondary)]">
+              Try returning to the trainer dashboard and selecting a course again.
+            </p>
             <Button variant="primary" onClick={() => navigate('/trainer/dashboard')}>
               Back to dashboard
             </Button>
@@ -66,80 +95,127 @@ export default function TrainerCourseValidation() {
   }
 
   return (
-    <div className="personalized-dashboard">
+    <div className="page-surface">
       <Container>
-        <section className="section-panel" style={{ maxWidth: '1200px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-          <div>
+        <div className="flex flex-col gap-10 py-10">
+          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur md:flex-row md:items-center md:justify-between">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <Layers className="h-4 w-4 text-[var(--primary-cyan)]" />
+                Validation workspace
+              </span>
+              <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+                Validate course structure before publishing
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+                Confirm modules, lessons, and metadata are in place. Once validation is complete you can proceed to
+                scheduling and publishing.
+              </p>
+            </div>
             <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
-              <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to dashboard
+              Back to dashboard
             </Button>
-            <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Validate course structure</h1>
-            <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
-              Review the course hierarchy, confirm enrichment, and mark as ready before scheduling publishing.
-            </p>
-          </div>
+          </header>
 
-          <article className="course-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-lg)', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 600 }}>{course.title || course.course_name}</h2>
-                <p style={{ color: 'var(--text-muted)', marginTop: 'var(--spacing-sm)' }}>{course.description || course.course_description}</p>
-                <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap', marginTop: 'var(--spacing-md)' }}>
-                  <span className="tag-chip" style={{ background: 'rgba(99,102,241,0.12)', color: '#4338ca' }}>{course.level || 'beginner'}</span>
-                  <span className="status-chip" style={{ background: validated ? 'rgba(16,185,129,0.12)' : 'rgba(234,179,8,0.15)', color: validated ? '#047857' : '#b45309' }}>
+          <article className="flex flex-col gap-5 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+              <div className="space-y-3">
+                <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+                  {course.title || course.course_name}
+                </h2>
+                <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+                  {course.description ||
+                    course.course_description ||
+                    'Maintain an up-to-date description so learners know exactly what outcomes to expect.'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(99,102,241,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#4338ca]">
+                    {course.level || 'Beginner'}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
+                      validated
+                        ? 'bg-[rgba(16,185,129,0.16)] text-[#047857]'
+                        : 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
+                    }`}
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
                     {validated ? 'Validated' : 'Pending validation'}
                   </span>
                 </div>
               </div>
               {!validated && (
-                <Button variant="primary" onClick={handleValidate}>
-                  <i className="fas fa-check-circle" style={{ marginRight: '8px' }} /> Validate course
+                <Button variant="primary" onClick={handleValidate} className="self-start">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Mark as validated
                 </Button>
               )}
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Modules</p>
+                <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">
+                  {(course.modules || []).length}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Lessons</p>
+                <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">
+                  {(course.modules || []).reduce((total, module) => total + (module.lessons?.length || 0), 0)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[var(--bg-secondary)]/40 p-4 text-sm font-semibold text-[var(--text-secondary)]">
+                <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Last updated</p>
+                <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">
+                  {course.updated_at ? new Date(course.updated_at).toLocaleDateString() : 'Recently'}
+                </p>
+              </div>
+            </div>
           </article>
 
-          <section className="course-card">
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Course structure</h2>
+          <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <header className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Course structure preview</h2>
+              <Layers className="h-5 w-5 text-[var(--primary-cyan)]" />
+            </header>
             <CourseTreeView modules={course.modules || []} courseId={id} />
           </section>
 
-          <section className="course-card">
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 600 }}>Validation checklist</h2>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-md)' }}>
-              {[{
-                label: 'Course structure is complete',
-                checked: (course.modules || []).length > 0
-              }, {
-                label: 'All modules have lessons',
-                checked: (course.modules || []).every(m => (m.lessons || []).length > 0)
-              }, {
-                label: 'Course description is provided',
-                checked: !!(course.description || course.course_description)
-              }, {
-                label: 'Level is assigned',
-                checked: !!course.level
-              }, {
-                label: 'AI enrichment is applied',
-                checked: true
-              }].map((item, idx) => (
-                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', padding: 'var(--spacing-sm)', background: item.checked ? 'rgba(16,185,129,0.12)' : 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
-                  <i className={item.checked ? 'fas fa-check-circle' : 'fas fa-circle'} style={{ color: item.checked ? '#047857' : 'var(--text-muted)' }} />
-                  <span style={{ color: item.checked ? 'var(--text-primary)' : 'var(--text-muted)' }}>{item.label}</span>
+          <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+            <header className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Validation checklist</h2>
+              <ListChecks className="h-5 w-5 text-[var(--primary-cyan)]" />
+            </header>
+            <ul className="space-y-3">
+              {checklist.map((item) => (
+                <li
+                  key={item.label}
+                  className={`flex items-center gap-3 rounded-2xl border border-[rgba(148,163,184,0.18)] px-4 py-3 text-sm ${
+                    item.checked ? 'bg-[rgba(16,185,129,0.1)] text-[#047857]' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
+                  }`}
+                >
+                  {item.checked ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-[var(--text-muted)]" />
+                  )}
+                  <span>{item.label}</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center' }}>
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Button variant="primary" onClick={() => navigate(`/trainer/publish/${id}`)} disabled={!validated}>
-              <i className="fas fa-paper-plane" style={{ marginRight: '8px' }} /> Proceed to publishing
+              <Rocket className="mr-2 h-4 w-4" />
+              Proceed to publishing
             </Button>
             <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
               Save & return
             </Button>
           </div>
-        </section>
+        </div>
       </Container>
     </div>
   )
