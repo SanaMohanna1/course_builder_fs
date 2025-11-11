@@ -96,6 +96,7 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
               ? canAccessStage(stageKey) && isLastLessonCompleted
               : canAccessStage(stageKey)
           const disabled = !accessible || complete
+          const statusLabel = complete ? 'Completed' : accessible ? 'Ready' : 'Locked'
 
           return (
             <button
@@ -103,18 +104,27 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
               type="button"
               onClick={handleStageComplete(stageKey)}
               disabled={disabled}
-              className={`stage-button ${complete ? 'complete' : ''}`}
-              style={
-                !complete && accessible
-                  ? { background: metadata.accent, borderColor: metadata.accentBorder }
-                  : undefined
-              }
+              className={`stage-card ${complete ? 'stage-card--complete' : ''} ${
+                accessible && !complete ? 'stage-card--active' : ''
+              }`}
+              style={{
+                '--stage-accent': metadata.accent,
+                '--stage-border': metadata.accentBorder
+              }}
             >
-              <div className="flex w-full items-center justify-between">
-                <span>{metadata.label}</span>
+              <div className="stage-card__icon">
                 <i className={metadata.icon} aria-hidden="true" />
               </div>
-              <small>{metadata.description}</small>
+              <div className="stage-card__body">
+                <span className="stage-card__title">{metadata.label}</span>
+                <p>{metadata.description}</p>
+              </div>
+              <span className="stage-card__status">{statusLabel}</span>
+              {complete && (
+                <span className="stage-card__badge">
+                  <i className="fa-solid fa-circle-check" aria-hidden="true" /> Done
+                </span>
+              )}
             </button>
           )
         })}

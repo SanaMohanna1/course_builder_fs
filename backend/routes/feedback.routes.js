@@ -32,7 +32,7 @@ router.delete('/courses/:id/feedback', authorizeRoles('learner'), feedbackContro
  * GET /api/v1/feedback/:courseId
  * Get aggregated feedback for a course
  */
-router.get('/feedback/:courseId', authorizeRoles('trainer', 'admin'), feedbackController.getAggregatedFeedback);
+router.get('/feedback/:courseId', authorizeRoles('learner', 'trainer', 'admin'), feedbackController.getAggregatedFeedback);
 
 export default router;
 
