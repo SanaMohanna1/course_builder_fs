@@ -38,79 +38,48 @@ export default function LearnerMarketplace() {
 
   return (
     <div className="personalized-dashboard">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Marketplace</p>
-            <h1>Explore expert-crafted courses and collections</h1>
-            <p className="subtitle">
-              Filter by level, browse curated hubs, and enrol to start building your personalised curriculum.
-            </p>
-            <div className="hero-stats">
-              <div className="stat">
-                <span className="stat-number">280+</span>
-                <span className="stat-label">Active courses</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">42</span>
-                <span className="stat-label">Learning paths</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">12k</span>
-                <span className="stat-label">Verified learners</span>
-              </div>
-            </div>
-          </div>
-          <div className="hero-visual">
-            <div className="floating-card" style={{ minWidth: '280px' }}>
-              <div className="card-header">
-                <div className="card-icon">
-                  <i className="fa-solid fa-chart-line" />
-                </div>
-                <span className="card-title">Top categories</span>
-              </div>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                <li><strong>AI & Data</strong> · 68 courses</li>
-                <li><strong>Secure Engineering</strong> · 41 courses</li>
-                <li><strong>Product Leadership</strong> · 27 courses</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <Container>
-        <div className="section-panel">
-          <div className="surface-card soft space-y-6">
-            <form
-              onSubmit={handleSearch}
-              className="grid gap-4 md:grid-cols-[1.5fr,1fr,auto]"
-            >
-              <div className="relative">
-                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by course, topic, trainer..."
-                  className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 py-3 pl-12 pr-4 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
-                />
-              </div>
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
-              >
-                <option value="all">All levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-              <button type="submit" className="btn btn-primary px-6 py-3">
-                Apply filters
-              </button>
-            </form>
+        <div className="section-panel space-y-8">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--primary-cyan)]">
+              Marketplace
+            </p>
+            <h1 className="text-3xl font-semibold text-[var(--text-primary)]">
+              Marketplace Courses
+            </h1>
+            <p className="max-w-3xl text-[var(--text-secondary)]">
+              Search the course catalog, filter by level, and enrol in programs that match your learning goals.
+            </p>
           </div>
+
+          <form
+            onSubmit={handleSearch}
+            className="grid gap-4 rounded-[var(--radius-xl)] border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-card)] md:grid-cols-[1.5fr,1fr,auto]"
+          >
+            <div className="relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by course, topic, trainer..."
+                className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 py-3 pl-12 pr-4 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+              />
+            </div>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+            >
+              <option value="all">All levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <button type="submit" className="btn btn-primary px-6 py-3">
+              Apply filters
+            </button>
+          </form>
         </div>
       </Container>
 
