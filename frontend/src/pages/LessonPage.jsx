@@ -4,6 +4,7 @@ import { getLessonById, getCourseById, updateCourseProgress } from '../services/
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import LessonView from '../components/course/LessonView.jsx'
 import { useApp } from '../context/AppContext'
+import Container from '../components/Container.jsx'
 
 export default function LessonPage() {
   const { id: courseId, lessonId } = useParams()
@@ -114,8 +115,12 @@ export default function LessonPage() {
 
   if (loading) {
     return (
-      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <LoadingSpinner message="Loading lesson..." />
+      <div className="page-surface">
+        <Container>
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+            <LoadingSpinner message="Loading lesson..." />
+          </div>
+        </Container>
       </div>
     )
   }

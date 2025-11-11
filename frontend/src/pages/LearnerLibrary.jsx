@@ -239,47 +239,49 @@ export default function LearnerLibrary() {
       </section>
 
       <Container>
-        <section className="section-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
-            {['all', 'in_progress', 'completed'].map(option => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setFilter(option)}
-                className="stage-button"
-                style={
-                  filter === option
-                    ? { background: 'rgba(6,95,70,0.12)', borderColor: 'rgba(6,95,70,0.45)' }
-                    : { background: 'var(--bg-card)' }
-                }
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fa-solid fa-circle" style={{ fontSize: '0.6rem' }} />
+        <div className="section-panel">
+          <div className="surface-card soft flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              {['all', 'in_progress', 'completed'].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setFilter(option)}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                    filter === option
+                      ? 'bg-[var(--primary-cyan)] text-white shadow-sm'
+                      : 'border border-[rgba(148,163,184,0.35)] bg-white/90 text-[var(--text-primary)] hover:border-[var(--primary-cyan)]'
+                  }`}
+                >
                   {option === 'all' ? 'All' : option === 'in_progress' ? 'In progress' : 'Completed'}
-                </span>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+            <span className="text-sm font-medium text-[var(--text-muted)]">
+              {filtered.length} course{filtered.length === 1 ? '' : 's'} visible
+            </span>
           </div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {filtered.length} course{filtered.length === 1 ? '' : 's'} visible
-          </span>
-        </section>
+        </div>
       </Container>
 
       <Container>
         {filtered.length === 0 ? (
-          <section className="section-panel" style={{ textAlign: 'center' }}>
-            <i className="fa-solid fa-books" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
-            <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No courses found for this filter</h2>
-            <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-              Browse the marketplace to add new courses to your learning library.
-            </p>
+          <section className="section-panel">
+            <div className="surface-card soft space-y-4 text-center">
+              <i className="fa-solid fa-books text-3xl text-[var(--primary-cyan)]" />
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses found for this filter</h2>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Browse the marketplace to add new courses to your learning library.
+              </p>
+            </div>
           </section>
         ) : (
-          <section className="section-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-            {filtered.map(course => (
-              <LibraryCourseCard key={course.id} course={course} />
-            ))}
+          <section className="section-panel">
+            <div className="space-y-6">
+              {filtered.map((course) => (
+                <LibraryCourseCard key={course.id} course={course} />
+              ))}
+            </div>
           </section>
         )}
       </Container>

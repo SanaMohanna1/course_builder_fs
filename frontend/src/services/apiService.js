@@ -67,6 +67,18 @@ export function getFeedback(courseId) {
   return api.get(`/feedback/${courseId}`).then(r => r.data)
 }
 
+export function getMyFeedback(courseId) {
+  return api.get(`/courses/${courseId}/feedback/self`).then(r => r.data)
+}
+
+export function updateFeedback(courseId, body) {
+  return api.put(`/courses/${courseId}/feedback`, body).then(r => r.data)
+}
+
+export function deleteFeedback(courseId) {
+  return api.delete(`/courses/${courseId}/feedback`).then(r => r.data)
+}
+
 export function createCourse(payload) {
   return api.post('/courses', payload).then(r => r.data)
 }
@@ -121,6 +133,9 @@ export default {
   registerLearner,
   submitFeedback,
   getFeedback,
+  getMyFeedback,
+  updateFeedback,
+  deleteFeedback,
   createCourse,
   publishCourse,
   scheduleCourse,

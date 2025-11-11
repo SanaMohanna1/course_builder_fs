@@ -1,133 +1,76 @@
 import { Link } from 'react-router-dom'
-import { useApp } from '../context/AppContext'
 
 export default function CourseCard({ course, showProgress = false, progress = 0 }) {
-  const { theme } = useApp()
-  
   const courseId = course.id || course.course_id
   const title = course.title || course.course_name
   const description = course.description || course.course_description
-  const level = course.level || 'beginner'
-  const rating = course.rating || course.average_rating || 0
-  const status = course.status || 'live'
+  const level = (course.level || 'beginner').toString()
+  const rating = Number(course.rating || course.average_rating || 0)
+  const status = (course.status || 'live').toString()
+  const duration = course.duration ? `${course.duration} mins` : 'Approx. 45 mins'
+  const displayProgress = showProgress && progress > 0
 
   return (
     <Link
       to={`/courses/${courseId}`}
-      className="microservice-card"
-      style={{ textDecoration: 'none', display: 'block' }}
+      className="course-card block no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-cyan)]/40 focus-visible:ring-offset-2"
     >
-      <div className="service-icon" style={{
-        background: status === 'live' 
-          ? 'var(--gradient-brand)' 
-          : 'var(--bg-tertiary)'
-      }}>
-        <i className={status === 'live' ? 'fas fa-graduation-cap' : 'fas fa-edit'}></i>
-      </div>
-      
-      <h3 style={{
-        fontSize: '1.2rem',
-        fontWeight: 600,
-        marginBottom: 'var(--spacing-sm)',
-        color: 'var(--text-primary)'
-      }}>
-        {title}
-      </h3>
-      
-      <p style={{
-        color: 'var(--text-secondary)',
-        fontSize: '0.9rem',
-        marginBottom: 'var(--spacing-md)',
-        lineHeight: 1.5,
-        display: '-webkit-box',
-        WebkitLineClamp: 3,
-        WebkitBoxOrient: 'vertical',
-        overflow: 'hidden'
-      }}>
-        {description || 'No description available.'}
-      </p>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[rgba(15,118,110,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--primary-cyan)]">
+              {level}
+            </span>
+            {status !== 'live' && (
+              <span className="rounded-full bg-[rgba(148,163,184,0.18)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                {status}
+              </span>
+            )}
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--text-primary)] leading-snug">{title}</h3>
+          <p
+            className="text-sm leading-6 text-[var(--text-secondary)]"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {description || 'No description available.'}
+          </p>
+        </div>
 
-      {/* Progress Bar */}
-      {showProgress && progress > 0 && (
-        <div style={{ marginBottom: 'var(--spacing-md)' }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: 'var(--spacing-xs)',
-            fontSize: '0.85rem',
-            color: 'var(--text-secondary)'
-          }}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-[#FACC15]">
+            <i className="fas fa-star" aria-hidden="true"></i>
+            <span className="text-base font-semibold text-[var(--text-primary)]">
+              {rating.toFixed(1)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)]">
+            <i className="fas fa-clock" aria-hidden="true"></i>
+            <span>{duration}</span>
+          </div>
+        </div>
+      </div>
+
+      {displayProgress && (
+        <div className="mt-6 space-y-2">
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">
             <span>Progress</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill"
-              style={{ 
+              style={{
                 width: `${progress}%`,
-                background: 'var(--gradient-secondary)'
+                background:
+                  'linear-gradient(90deg, rgba(6, 95, 70, 0.95), rgba(15, 118, 110, 0.8))'
               }}
-            ></div>
+            />
           </div>
-        </div>
-      )}
-
-      {/* Tags and Rating */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 'auto'
-      }}>
-        <div style={{ display: 'flex', gap: 'var(--spacing-xs)', flexWrap: 'wrap' }}>
-          <span style={{
-            padding: 'var(--spacing-xs) var(--spacing-sm)',
-            background: 'rgba(0, 166, 118, 0.1)',
-            color: 'var(--primary-emerald)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.85rem',
-            fontWeight: 500,
-            textTransform: 'capitalize'
-          }}>
-            {level}
-          </span>
-          {status !== 'live' && (
-            <span style={{
-              padding: 'var(--spacing-xs) var(--spacing-sm)',
-              background: 'rgba(100, 116, 139, 0.1)',
-              color: 'var(--text-muted)',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.85rem',
-              textTransform: 'capitalize'
-            }}>
-              {status}
-            </span>
-          )}
-        </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--spacing-xs)',
-          color: '#FACC15'
-        }}>
-          <i className="fas fa-star"></i>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-            {rating.toFixed(1)}
-          </span>
-        </div>
-      </div>
-
-      {course.duration && (
-        <div style={{
-          marginTop: 'var(--spacing-sm)',
-          color: 'var(--text-muted)',
-          fontSize: '0.85rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--spacing-xs)'
-        }}>
-          <i className="fas fa-clock"></i>
-          <span>{course.duration} minutes</span>
         </div>
       )}
     </Link>

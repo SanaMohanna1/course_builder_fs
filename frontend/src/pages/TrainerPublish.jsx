@@ -4,8 +4,8 @@ import { getCourseById, publishCourse, scheduleCourse } from '../services/apiSer
 import PublishControls from '../components/PublishControls.jsx'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import { useApp } from '../context/AppContext'
 
 export default function TrainerPublish() {
   const { id } = useParams()
@@ -59,9 +59,9 @@ export default function TrainerPublish() {
 
   if (loading) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Loading course..." />
           </div>
         </Container>
@@ -73,51 +73,51 @@ export default function TrainerPublish() {
     <div className="personalized-dashboard">
       <Container>
         <section className="section-panel" style={{ maxWidth: '820px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
-        <div>
-          <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
-            <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to validation
-          </Button>
-          <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Publish course</h1>
-          {course && (
-            <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
-              {course.title || course.course_name}
-            </p>
-          )}
-        </div>
+          <div>
+            <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
+              <i className="fas fa-arrow-left" style={{ marginRight: '8px' }} /> Back to validation
+            </Button>
+            <h1 style={{ marginTop: 'var(--spacing-lg)', fontSize: '2rem', fontWeight: 700 }}>Publish course</h1>
+            {course && (
+              <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-muted)', fontSize: '1rem' }}>
+                {course.title || course.course_name}
+              </p>
+            )}
+          </div>
 
-        {course && (
-          <div className="course-card">
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Course preview</h3>
-            <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
-              <div>
-                <span className="status-chip">Modules</span>
-                <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>{course.modules?.length || 0}</p>
-              </div>
-              <div>
-                <span className="status-chip">Lessons</span>
-                <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>
-                  {course.modules?.reduce((acc, module) => acc + (module.lessons?.length || 0), 0) || 0}
-                </p>
-              </div>
-              <div>
-                <span className="status-chip">Level</span>
-                <p style={{ fontSize: '1.6rem', fontWeight: 700, textTransform: 'capitalize' }}>{course.level || 'beginner'}</p>
+          {course && (
+            <div className="course-card">
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Course preview</h3>
+              <div style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginTop: 'var(--spacing-md)' }}>
+                <div>
+                  <span className="status-chip">Modules</span>
+                  <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>{course.modules?.length || 0}</p>
+                </div>
+                <div>
+                  <span className="status-chip">Lessons</span>
+                  <p style={{ fontSize: '1.6rem', fontWeight: 700 }}>
+                    {course.modules?.reduce((acc, module) => acc + (module.lessons?.length || 0), 0) || 0}
+                  </p>
+                </div>
+                <div>
+                  <span className="status-chip">Level</span>
+                  <p style={{ fontSize: '1.6rem', fontWeight: 700, textTransform: 'capitalize' }}>{course.level || 'beginner'}</p>
+                </div>
               </div>
             </div>
+          )}
+
+          <PublishControls
+            courseId={id}
+            onPublish={handlePublish}
+            onSchedule={handleSchedule}
+            loading={publishing}
+          />
+
+          <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: 'var(--radius-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--primary-cyan)' }} />
+            Once published, the course will be visible in the internal marketplace and learners can register.
           </div>
-        )}
-
-        <PublishControls
-          courseId={id}
-          onPublish={() => handlePublish({ immediate: true })}
-          onSchedule={handleSchedule}
-          loading={publishing}
-        />
-
-        <div style={{ padding: 'var(--spacing-md)', background: 'rgba(6,95,70,0.08)', borderRadius: 'var(--radius-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--primary-cyan)' }} />
-          Once published, the course will be visible in the internal marketplace and learners can register.
-        </div>
         </section>
       </Container>
     </div>

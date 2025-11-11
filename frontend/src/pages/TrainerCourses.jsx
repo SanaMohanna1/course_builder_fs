@@ -55,54 +55,58 @@ export default function TrainerCourses() {
       </section>
 
       <Container>
-        <section className="section-panel">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
-              {['all', 'draft', 'live', 'archived'].map(status => (
+        <div className="section-panel">
+          <div className="surface-card soft flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              {['all', 'draft', 'live', 'archived'].map((status) => (
                 <button
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(status)}
-                  className="stage-button"
-                  style={
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
                     statusFilter === status
-                      ? { background: 'rgba(6,95,70,0.12)', borderColor: 'rgba(6,95,70,0.45)' }
-                      : { background: 'var(--bg-card)' }
-                  }
+                      ? 'bg-[var(--primary-cyan)] text-white shadow-sm'
+                      : 'border border-[rgba(148,163,184,0.35)] bg-white/90 text-[var(--text-primary)] hover:border-[var(--primary-cyan)]'
+                  }`}
                 >
-                  <span style={{ textTransform: 'capitalize' }}>{status === 'all' ? 'All' : status}</span>
-                  <small>{status === 'all' ? `${courses.length} total` : ''}</small>
+                  <span className="capitalize">{status === 'all' ? 'All' : status}</span>
+                  {status === 'all' && <small className="ml-2 text-[var(--text-muted)]">{courses.length} total</small>}
                 </button>
               ))}
             </div>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <span className="text-sm font-medium text-[var(--text-muted)]">
               {filteredCourses.length} course{filteredCourses.length === 1 ? '' : 's'} shown
             </span>
           </div>
-        </section>
+        </div>
       </Container>
 
       {loading ? (
         <Container>
-          <div className="section-panel" style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LoadingSpinner message="Loading trainer workspace..." />
+          <div className="section-panel">
+            <div className="surface-card soft flex min-h-[40vh] items-center justify-center">
+              <LoadingSpinner message="Loading trainer workspace..." />
+            </div>
           </div>
         </Container>
       ) : filteredCourses.length === 0 ? (
         <Container>
-          <section className="section-panel" style={{ textAlign: 'center' }}>
-            <i className="fa-solid fa-chalkboard" style={{ fontSize: '2.5rem', color: 'var(--primary-cyan)' }} />
-            <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No courses for this status</h2>
-            <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-              Adjust the filter or reach out to the curriculum team to provision additional content.
-            </p>
+          <section className="section-panel">
+            <div className="surface-card soft space-y-4 text-center">
+              <i className="fa-solid fa-chalkboard text-3xl text-[var(--primary-cyan)]" />
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses for this status</h2>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Adjust the filter or reach out to the curriculum team to provision additional content.
+              </p>
+            </div>
           </section>
         </Container>
       ) : (
         <Container>
-          <section className="section-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-            {filteredCourses.map(course => (
-              <article key={course.id || course.course_id} className="course-card">
+          <section className="section-panel">
+            <div className="space-y-6">
+              {filteredCourses.map((course) => (
+                <article key={course.id || course.course_id} className="course-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
                   <div>
                     <span className="tag-chip" style={{ background: 'rgba(148,163,184,0.15)', color: 'var(--text-muted)' }}>
@@ -142,7 +146,8 @@ export default function TrainerCourses() {
                   </Link>
                 </div>
               </article>
-            ))}
+              ))}
+            </div>
           </section>
         </Container>
       )}

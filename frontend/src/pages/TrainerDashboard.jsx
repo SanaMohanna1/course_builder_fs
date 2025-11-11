@@ -43,7 +43,7 @@ export default function TrainerDashboard() {
   }
 
   return (
-    <div className="personalized-dashboard">
+    <div className="dashboard-surface">
       <section className="hero">
         <div className="hero-container">
           <div className="hero-content">
@@ -65,7 +65,7 @@ export default function TrainerDashboard() {
       </section>
 
       <Container>
-        <section className="section-panel">
+        <section className="dashboard-panel">
           <header className="section-heading">
             <div>
               <h2>Active courses</h2>

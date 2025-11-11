@@ -62,24 +62,26 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
   const stages = ['lessons', 'exercises', 'exam', 'feedback']
 
   return (
-    <article className="course-card" style={{ gap: 'var(--spacing-lg)' }}>
-      <header style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 'var(--spacing-md)' }}>
-        <div>
-          <span className="tag-chip" style={{ marginBottom: 'var(--spacing-sm)', background: 'rgba(99,102,241,0.12)', color: '#4338ca' }}>
-            <i className="fa-solid fa-sparkles" /> Personalized
+    <article className="course-card space-y-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-3">
+          <span className="tag-chip w-max bg-[rgba(99,102,241,0.12)] text-[#4338ca]">
+            <i className="fa-solid fa-sparkles" aria-hidden="true" /> Personalized
           </span>
-          <h3 style={{ fontSize: '1.35rem', fontWeight: 600 }}>{course.title || course.course_name}</h3>
-          <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
+          <h3 className="text-xl font-semibold text-[var(--text-primary)]">
+            {course.title || course.course_name}
+          </h3>
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">
             {course.description || course.course_description || 'AI-generated pathway based on your goals.'}
           </p>
         </div>
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <span className="status-chip" style={{ background: 'rgba(16,185,129,0.12)', color: '#047857' }}>
-            <i className="fa-solid fa-layer-group" />
+        <div className="flex flex-col items-start gap-2 md:items-end">
+          <span className="status-chip bg-[rgba(16,185,129,0.12)] text-[#047857]">
+            <i className="fa-solid fa-layer-group" aria-hidden="true" />
             {modules.length || 3} modules
           </span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <i className="fa-solid fa-book" style={{ marginRight: '6px' }} />
+          <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+            <i className="fa-solid fa-book" aria-hidden="true" />
             {totalLessons} lessons
           </span>
         </div>
@@ -108,9 +110,9 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
                   : undefined
               }
             >
-              <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="flex w-full items-center justify-between">
                 <span>{metadata.label}</span>
-                <i className={metadata.icon} style={{ color: 'var(--text-muted)' }} />
+                <i className={metadata.icon} aria-hidden="true" />
               </div>
               <small>{metadata.description}</small>
             </button>
@@ -118,12 +120,12 @@ function PersonalizedCourseCard({ course, state, onCompleteStage, notify }) {
         })}
       </div>
 
-      <footer style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-        <span className="status-chip" style={{ background: 'rgba(16,185,129,0.12)', color: '#047857' }}>
-          <i className="fa-solid fa-seedling" /> Adaptive difficulty enabled
+      <footer className="flex flex-wrap items-center gap-3 text-xs font-semibold text-[var(--text-muted)]">
+        <span className="status-chip bg-[rgba(16,185,129,0.12)] text-[#047857]">
+          <i className="fa-solid fa-seedling" aria-hidden="true" /> Adaptive difficulty enabled
         </span>
-        <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
-          <i className="fa-solid fa-robot" /> AI trainer synced
+        <span className="status-chip bg-[rgba(14,165,233,0.12)] text-[#0f766e]">
+          <i className="fa-solid fa-robot" aria-hidden="true" /> AI trainer synced
         </span>
       </footer>
     </article>
@@ -156,7 +158,7 @@ export default function LearnerForYou() {
   const getCourseState = (courseId) => courseState[courseId] || defaultCourseState
 
   const updateCourseState = (courseId, updater) => {
-    setCourseState(prev => {
+    setCourseState((prev) => {
       const current = prev[courseId] || defaultCourseState
       const next = typeof updater === 'function' ? updater(current) : { ...current, ...updater }
       return {
@@ -180,23 +182,32 @@ export default function LearnerForYou() {
 
   if (loading) {
     return (
-      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <LoadingSpinner message="Loading AI recommendations..." />
+      <div className="page-surface">
+        <Container>
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+            <LoadingSpinner message="Loading AI recommendations..." />
+          </div>
+        </Container>
       </div>
     )
   }
 
   return (
-    <div className="personalized-dashboard">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Personalised journey</p>
-            <h1>Courses curated just for you</h1>
-            <p className="subtitle">
-              These learning paths adapt to your progress. Complete lessons, unlock exercises, then take the exam before sharing feedback for deeper insights.
-            </p>
-            <div className="hero-actions">
+    <div className="page-surface">
+      <Container>
+        <div className="stack-lg">
+          <section className="surface-card space-y-6">
+            <div className="space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">
+                Personalised journey
+              </p>
+              <h1 className="text-3xl font-bold text-[var(--text-primary)]">Courses curated just for you</h1>
+              <p className="max-w-3xl text-base leading-7 text-[var(--text-secondary)]">
+                These learning paths adapt to your progress. Complete lessons, unlock exercises, then take the exam
+                before sharing feedback for deeper insights.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4">
               <Link to="/learner/enrolled" className="btn btn-primary">
                 View my library
               </Link>
@@ -204,49 +215,32 @@ export default function LearnerForYou() {
                 Add more interests
               </Link>
             </div>
-          </div>
-          <div className="hero-visual">
-            <div className="floating-card">
-              <div className="card-header">
-                <div className="card-icon">
-                  <i className="fa-solid fa-lightbulb" />
-                </div>
-                <span className="card-title">Next milestone</span>
-              </div>
-              <p className="progress-text">Unlock advanced AI toolkit</p>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: '58%' }} />
-              </div>
-              <p className="progress-text" style={{ marginTop: 'var(--spacing-sm)' }}>
-                Complete 1 more exam to refresh recommendations
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <Container>
-        {courses.length === 0 ? (
-          <section className="section-panel" style={{ textAlign: 'center' }}>
-            <i className="fa-solid fa-sparkles" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
-            <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No personalised courses yet</h2>
-            <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-              Interact with marketplace courses and complete feedback to unlock tailored recommendations.
-            </p>
-          </section>
-        ) : (
-          <section className="section-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-            {courses.map((course) => (
-              <PersonalizedCourseCard
-                key={course.id || course.course_id}
-                course={course}
-                state={getCourseState(course.id || course.course_id)}
-                onCompleteStage={handleStageCompletion}
-                notify={showToast}
-              />
-            ))}
-          </section>
-        )}
+          {courses.length === 0 ? (
+            <section className="surface-card soft text-center">
+              <i className="fa-solid fa-sparkles text-3xl text-[var(--primary-cyan)]" aria-hidden="true" />
+              <h2 className="mt-4 text-2xl font-semibold text-[var(--text-primary)]">
+                No personalised courses yet
+              </h2>
+              <p className="mt-2 text-[var(--text-secondary)]">
+                Interact with marketplace courses and complete feedback to unlock tailored recommendations.
+              </p>
+            </section>
+          ) : (
+            <div className="stack-lg">
+              {courses.map((course) => (
+                <PersonalizedCourseCard
+                  key={course.id || course.course_id}
+                  course={course}
+                  state={getCourseState(course.id || course.course_id)}
+                  onCompleteStage={handleStageCompletion}
+                  notify={showToast}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </Container>
     </div>
   )

@@ -94,10 +94,10 @@ export default function CourseDetailsPage() {
 
   if (loading) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LoadingSpinner />
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+            <LoadingSpinner message="Loading course..." />
           </div>
         </Container>
       </div>
@@ -106,12 +106,18 @@ export default function CourseDetailsPage() {
 
   if (!course || error) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <section className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 'var(--spacing-md)' }}>
-            <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '2.5rem', color: '#f97316' }} />
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 600 }}>{error || 'Course not found'}</h2>
-            <button type="button" className="btn btn-primary" onClick={() => navigate('/learner/marketplace')}>
+          <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
+            <i className="fa-solid fa-triangle-exclamation text-4xl text-[#f97316]" aria-hidden="true" />
+            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+              {error || 'Course not found'}
+            </h2>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate('/learner/marketplace')}
+            >
               Browse courses
             </button>
           </section>

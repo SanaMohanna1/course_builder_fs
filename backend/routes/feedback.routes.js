@@ -11,6 +11,24 @@ const router = express.Router();
 router.post('/courses/:id/feedback', authorizeRoles('learner'), feedbackController.submitFeedback);
 
 /**
+ * GET /api/v1/courses/:id/feedback/self
+ * Retrieve the authenticated learner's feedback for a course
+ */
+router.get('/courses/:id/feedback/self', authorizeRoles('learner'), feedbackController.getLearnerFeedback);
+
+/**
+ * PUT /api/v1/courses/:id/feedback
+ * Update existing feedback for a course
+ */
+router.put('/courses/:id/feedback', authorizeRoles('learner'), feedbackController.updateFeedback);
+
+/**
+ * DELETE /api/v1/courses/:id/feedback
+ * Remove learner feedback for a course
+ */
+router.delete('/courses/:id/feedback', authorizeRoles('learner'), feedbackController.deleteFeedback);
+
+/**
  * GET /api/v1/feedback/:courseId
  * Get aggregated feedback for a course
  */

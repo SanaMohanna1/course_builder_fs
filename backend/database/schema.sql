@@ -172,9 +172,15 @@ CREATE TABLE feedback (
     tags JSONB DEFAULT '[]'::jsonb, -- e.g., ["Clarity", "Usefulness", "Difficulty"]
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT feedback_rating_check CHECK (rating >= 1 AND rating <= 5),
     CONSTRAINT feedback_unique_learner_course UNIQUE (course_id, learner_id) -- One feedback per learner per course
 );
+
+CREATE TRIGGER update_feedback_updated_at
+    BEFORE UPDATE ON feedback
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
 -- ASSESSMENTS TABLE

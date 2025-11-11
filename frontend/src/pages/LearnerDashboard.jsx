@@ -55,14 +55,14 @@ export default function LearnerDashboard() {
 
   if (loading) {
     return (
-      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="dashboard-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner message="Loading your learning hub..." />
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="dashboard-surface">
       <div style={{ background: 'var(--bg-card)' }}>
         <Container className="py-16 text-center">
           <h1 style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
@@ -201,7 +201,7 @@ export default function LearnerDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
-            <section className="section-panel">
+            <section className="dashboard-panel">
               <div className="section-heading">
                 <div>
                   <h2>Continue learning</h2>
@@ -238,7 +238,7 @@ export default function LearnerDashboard() {
               </div>
             </section>
 
-            <aside className="section-panel">
+            <aside className="dashboard-panel">
               <div className="section-heading">
                 <div>
                   <h2>Trending topics</h2>

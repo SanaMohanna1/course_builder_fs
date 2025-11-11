@@ -41,9 +41,9 @@ export default function AssessmentPage() {
 
   if (loading) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Loading assessment..." />
           </div>
         </Container>
@@ -52,7 +52,7 @@ export default function AssessmentPage() {
   }
 
   return (
-    <div className="personalized-dashboard">
+    <div className="page-surface">
       <Container>
         <section className="section-panel" style={{ maxWidth: '820px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
           <Button variant="secondary" onClick={() => navigate(`/course/${id}/structure`)}>

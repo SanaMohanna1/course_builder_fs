@@ -80,54 +80,63 @@ export default function LearnerMarketplace() {
       </section>
 
       <Container>
-        <section className="section-panel">
-          <form onSubmit={handleSearch} style={{ display: 'grid', gap: 'var(--spacing-md)', gridTemplateColumns: '1.5fr 1fr auto' }}>
-            <div style={{ position: 'relative' }}>
-              <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by course, topic, trainer..."
-                style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px 12px 40px', fontSize: '0.95rem' }}
-              />
-            </div>
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(148,163,184,0.35)', padding: '12px 16px', fontSize: '0.95rem' }}
+        <div className="section-panel">
+          <div className="surface-card soft space-y-6">
+            <form
+              onSubmit={handleSearch}
+              className="grid gap-4 md:grid-cols-[1.5fr,1fr,auto]"
             >
-              <option value="all">All levels</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-            <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }}>
-              Apply filters
-            </button>
-          </form>
-        </section>
+              <div className="relative">
+                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by course, topic, trainer..."
+                  className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 py-3 pl-12 pr-4 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+                />
+              </div>
+              <select
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-white/90 px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+              >
+                <option value="all">All levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+              <button type="submit" className="btn btn-primary px-6 py-3">
+                Apply filters
+              </button>
+            </form>
+          </div>
+        </div>
       </Container>
 
       {loading ? (
         <Container>
-          <div className="section-panel" style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LoadingSpinner message="Discovering courses..." />
+          <div className="section-panel">
+            <div className="surface-card soft flex min-h-[50vh] items-center justify-center">
+              <LoadingSpinner message="Discovering courses..." />
+            </div>
           </div>
         </Container>
       ) : courses.length === 0 ? (
         <Container>
-          <section className="section-panel" style={{ textAlign: 'center' }}>
-            <i className="fa-solid fa-magnifying-glass" style={{ fontSize: '2rem', color: 'var(--primary-cyan)' }} />
-            <h2 style={{ marginTop: 'var(--spacing-md)', fontSize: '1.75rem', fontWeight: 600 }}>No courses match your filters</h2>
-            <p style={{ marginTop: 'var(--spacing-sm)', color: 'var(--text-muted)' }}>
-              Try adjusting the level or keywords to explore more learning options.
-            </p>
-          </section>
+          <div className="section-panel">
+            <section className="surface-card soft text-center space-y-4">
+              <i className="fa-solid fa-magnifying-glass text-3xl text-[var(--primary-cyan)]" />
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses match your filters</h2>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Try adjusting the level or keywords to explore more learning options.
+              </p>
+            </section>
+          </div>
         </Container>
       ) : (
         <Container>
-          <section className="section-panel" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
+          <div className="section-panel">
             <div className="course-grid">
               {courses.map(course => {
                 const tags = Array.isArray(course.tags) ? course.tags : []
@@ -185,7 +194,7 @@ export default function LearnerMarketplace() {
                 )
               })}
             </div>
-          </section>
+          </div>
         </Container>
       )}
     </div>

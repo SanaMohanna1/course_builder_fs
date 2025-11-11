@@ -1,6 +1,47 @@
 import db from '../config/database.js';
 import { v4 as uuidv4 } from 'uuid';
 
+const validateRating = (rating) => {
+  const ratingNum = parseFloat(rating);
+
+  if (Number.isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    const error = new Error('Rating must be between 1 and 5');
+    error.status = 400;
+    throw error;
+  }
+
+  return Math.round(ratingNum * 10) / 10;
+};
+
+const normalizeTags = (tags) => {
+  if (Array.isArray(tags)) {
+    return tags;
+  }
+
+  if (typeof tags === 'string' && tags.trim().length > 0) {
+    return [tags.trim()];
+  }
+
+  return [];
+};
+
+const recalculateCourseRating = async (courseId) => {
+  const stats = await db.one(
+    `SELECT 
+        COALESCE(AVG(rating), 0) as avg_rating
+     FROM feedback
+     WHERE course_id = $1`,
+    [courseId]
+  );
+
+  const average = Math.round((parseFloat(stats.avg_rating) || 0) * 10) / 10;
+
+  await db.none(
+    'UPDATE courses SET average_rating = $1 WHERE course_id = $2',
+    [average, courseId]
+  );
+};
+
 /**
  * Submit feedback for a course
  * Enforces 1-5 rating validation and duplicate learner check
@@ -8,12 +49,8 @@ import { v4 as uuidv4 } from 'uuid';
 export const submitFeedback = async (courseId, { learner_id, rating, tags, comment }) => {
   try {
     // Validate rating (1-5)
-    const ratingNum = parseFloat(rating);
-    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
-      const error = new Error('Rating must be between 1 and 5');
-      error.status = 400;
-      throw error;
-    }
+    const normalizedRating = validateRating(rating);
+    const normalizedTags = normalizeTags(tags);
 
     // Check if course exists
     const course = await db.oneOrNone(
@@ -45,21 +82,10 @@ export const submitFeedback = async (courseId, { learner_id, rating, tags, comme
     await db.none(
       `INSERT INTO feedback (feedback_id, course_id, learner_id, rating, tags, comment, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [feedbackId, courseId, learner_id, rating, JSON.stringify(tags), comment || '']
+      [feedbackId, courseId, learner_id, normalizedRating, JSON.stringify(normalizedTags), comment || '']
     );
 
-    // Update course average rating
-    const avgResult = await db.one(
-      `SELECT AVG(rating) as avg_rating, COUNT(*) as count
-       FROM feedback
-       WHERE course_id = $1`,
-      [courseId]
-    );
-
-    await db.none(
-      'UPDATE courses SET average_rating = $1 WHERE course_id = $2',
-      [parseFloat(avgResult.avg_rating) || 0, courseId]
-    );
+    await recalculateCourseRating(courseId);
 
     return {
       message: 'Feedback submitted successfully',
@@ -159,6 +185,78 @@ export const getAggregatedFeedback = async (courseId) => {
  */
 export const getFeedbackSummary = async (courseId) => {
   return getAggregatedFeedback(courseId);
+};
+
+export const getLearnerFeedback = async (courseId, learnerId) => {
+  return db.oneOrNone(
+    `SELECT 
+        feedback_id,
+        course_id,
+        learner_id,
+        rating,
+        tags,
+        comment,
+        created_at,
+        updated_at
+     FROM feedback
+     WHERE course_id = $1 AND learner_id = $2`,
+    [courseId, learnerId]
+  );
+};
+
+export const updateFeedback = async (courseId, learnerId, { rating, tags, comment }) => {
+  const normalizedRating = validateRating(rating);
+  const normalizedTags = normalizeTags(tags);
+
+  const existing = await db.oneOrNone(
+    'SELECT feedback_id FROM feedback WHERE course_id = $1 AND learner_id = $2',
+    [courseId, learnerId]
+  );
+
+  if (!existing) {
+    const error = new Error('Feedback not found for this course');
+    error.status = 404;
+    throw error;
+  }
+
+  await db.none(
+    `UPDATE feedback 
+     SET rating = $3,
+         tags = $4,
+         comment = $5,
+         updated_at = NOW()
+     WHERE course_id = $1 AND learner_id = $2`,
+    [courseId, learnerId, normalizedRating, JSON.stringify(normalizedTags), comment || '']
+  );
+
+  await recalculateCourseRating(courseId);
+
+  return {
+    message: 'Feedback updated successfully',
+    feedback_id: existing.feedback_id,
+    timestamp: new Date().toISOString()
+  };
+};
+
+export const deleteFeedback = async (courseId, learnerId) => {
+  const result = await db.result(
+    'DELETE FROM feedback WHERE course_id = $1 AND learner_id = $2',
+    [courseId, learnerId],
+    (r) => r.rowCount
+  );
+
+  if (result === 0) {
+    const error = new Error('Feedback not found for this course');
+    error.status = 404;
+    throw error;
+  }
+
+  await recalculateCourseRating(courseId);
+
+  return {
+    message: 'Feedback removed successfully',
+    timestamp: new Date().toISOString()
+  };
 };
 
 /**
@@ -286,6 +384,9 @@ export const feedbackService = {
   addFeedback: submitFeedback, // Alias
   getAggregatedFeedback,
   getFeedbackSummary,
+  getLearnerFeedback,
+  updateFeedback,
+  deleteFeedback,
   getFeedbackAnalytics
 };
 

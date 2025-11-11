@@ -4,8 +4,8 @@ import { getCourseById } from '../services/apiService.js'
 import CourseTreeView from '../components/CourseTreeView.jsx'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
-import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import { useApp } from '../context/AppContext'
 
 export default function TrainerCourseValidation() {
   const { id } = useParams()
@@ -39,9 +39,9 @@ export default function TrainerCourseValidation() {
 
   if (loading) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
             <LoadingSpinner message="Loading course..." />
           </div>
         </Container>
@@ -51,10 +51,11 @@ export default function TrainerCourseValidation() {
 
   if (!course) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <section className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--spacing-md)' }}>
-            <h2>Course not found</h2>
+          <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">Course not found</h2>
+            <p className="text-sm text-[var(--text-secondary)]">Try returning to the trainer dashboard and selecting a course again.</p>
             <Button variant="primary" onClick={() => navigate('/trainer/dashboard')}>
               Back to dashboard
             </Button>

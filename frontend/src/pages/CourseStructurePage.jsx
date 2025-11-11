@@ -53,17 +53,27 @@ export default function CourseStructurePage() {
 
   if (userRole === 'learner' && !learnerProgress?.is_enrolled && !loading) {
     return (
-      <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 'var(--spacing-md)' }}>
-        <i className="fa-solid fa-circle-info" style={{ fontSize: '2.5rem', color: 'var(--primary-cyan)' }} />
-        <div>
-          <h2 style={{ fontSize: '1.9rem', fontWeight: 600 }}>Enrol to view the structure</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: 'var(--spacing-sm)', maxWidth: '420px' }}>
-            Secure your spot in this course to unlock the module and lesson outline.
-          </p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={() => navigate(`/course/${id}/overview`)}>
-          Back to overview
-        </button>
+      <div className="page-surface">
+        <Container>
+          <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
+            <i className="fa-solid fa-circle-info text-4xl text-[var(--primary-cyan)]" aria-hidden="true" />
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+                Enrol to view the structure
+              </h2>
+              <p className="mx-auto max-w-md text-[var(--text-secondary)]">
+                Secure your spot in this course to unlock the module and lesson outline.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate(`/course/${id}/overview`)}
+            >
+              Back to overview
+            </button>
+          </section>
+        </Container>
       </div>
     )
   }
@@ -80,9 +90,9 @@ export default function CourseStructurePage() {
   const progressPercent = Math.round(learnerProgress?.progress ?? ((completedLessons.length / (totalLessons || 1)) * 100))
 
   const completionBadge = (
-    <div className="floating-card" style={{ padding: 'var(--spacing-md)', fontSize: '0.95rem', background: 'rgba(16,185,129,0.08)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-        <i className="fa-solid fa-chart-simple" style={{ color: '#047857' }} />
+    <div className="rounded-2xl border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.08)] px-4 py-3 text-sm font-semibold text-[#047857]">
+      <div className="flex flex-wrap items-center gap-2">
+        <i className="fa-solid fa-chart-simple" aria-hidden="true" />
         <span>
           Progress {progressPercent}% · {completedLessons.length}/{totalLessons} lessons complete
         </span>
@@ -92,10 +102,10 @@ export default function CourseStructurePage() {
 
   if (loading) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <div className="section-panel" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LoadingSpinner />
+          <div className="surface-card soft flex min-h-[60vh] items-center justify-center">
+            <LoadingSpinner message="Loading course structure..." />
           </div>
         </Container>
       </div>
@@ -104,12 +114,18 @@ export default function CourseStructurePage() {
 
   if (!course || error) {
     return (
-      <div className="personalized-dashboard">
+      <div className="page-surface">
         <Container>
-          <section className="section-panel" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 'var(--spacing-md)' }}>
-            <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '2.5rem', color: '#f97316' }} />
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 600 }}>{error || 'Course not found'}</h2>
-            <button type="button" className="btn btn-primary" onClick={() => navigate(`/course/${id}/overview`)}>
+          <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
+            <i className="fa-solid fa-triangle-exclamation text-4xl text-[#f97316]" aria-hidden="true" />
+            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+              {error || 'Course not found'}
+            </h2>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate(`/course/${id}/overview`)}
+            >
               Back to overview
             </button>
           </section>
@@ -118,41 +134,59 @@ export default function CourseStructurePage() {
     )
   }
 
+  const breadcrumbSegments = ['Overview', 'Structure']
+
   return (
-    <div className="personalized-dashboard">
-      <nav className="breadcrumb" aria-label="Structure breadcrumb">
-        <span>Overview</span>
-        <span>Structure</span>
-      </nav>
-
-      <header className="hero" style={{ marginBottom: 'var(--spacing-lg)' }}>
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Course structure</p>
-            <h1>{course.title || course.course_name}</h1>
-            <p className="subtitle">
-              Explore the adaptive journey, track your milestones, and jump into the next lesson when ready.
-            </p>
-            {completionBadge}
-            {learnerProgress?.status && (
-              <p style={{ marginTop: 'var(--spacing-md)', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                Status:&nbsp;
-                <span style={{ textTransform: 'capitalize', color: 'var(--text-primary)', fontWeight: 600 }}>
-                  {learnerProgress.status.replace('_', ' ')}
-                </span>
-              </p>
-            )}
-          </div>
-        </div>
-      </header>
-
+    <div className="page-surface">
       <Container>
-        <CourseStructure
-          course={course}
-          onSelectLesson={handleSelectLesson}
-          completedLessonIds={completedLessons}
-          unlocked
-        />
+        <div className="stack-lg">
+          <nav className="flex items-center gap-2 text-sm text-[var(--text-muted)]" aria-label="Structure breadcrumb">
+            {breadcrumbSegments.map((segment, index) => (
+              <span key={segment} className="relative pr-4 font-medium">
+                {segment}
+                {index < breadcrumbSegments.length - 1 && (
+                  <span className="absolute right-1 text-[var(--text-secondary)]">›</span>
+                )}
+              </span>
+            ))}
+          </nav>
+
+          <section className="surface-card space-y-6">
+            <div className="space-y-4">
+              <p className="text-sm font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">
+                Course structure
+              </p>
+              <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+                {course.title || course.course_name}
+              </h1>
+              <p className="max-w-3xl text-base leading-7 text-[var(--text-secondary)]">
+                Explore the adaptive journey, track your milestones, and jump into the next lesson when
+                you&apos;re ready.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              {completionBadge}
+              {learnerProgress?.status && (
+                <span className="text-sm font-semibold text-[var(--text-secondary)]">
+                  Status:{' '}
+                  <span className="text-[var(--text-primary)]">
+                    {learnerProgress.status.replace('_', ' ')}
+                  </span>
+                </span>
+              )}
+            </div>
+          </section>
+
+          <section className="surface-card soft">
+            <CourseStructure
+              course={course}
+              onSelectLesson={handleSelectLesson}
+              completedLessonIds={completedLessons}
+              unlocked
+            />
+          </section>
+        </div>
       </Container>
     </div>
   )
