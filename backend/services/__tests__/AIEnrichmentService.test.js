@@ -33,10 +33,12 @@ const { enrichLesson } = await import('../AIEnrichmentService.js');
 describe('AIEnrichmentService', () => {
   beforeEach(() => {
     process.env.GEMINI_API_KEY = 'test-key';
+    process.env.GEMINI_MODEL = 'test-model';
   });
 
   afterEach(() => {
     delete process.env.GEMINI_API_KEY;
+    delete process.env.GEMINI_MODEL;
     jest.clearAllMocks();
   });
 

@@ -57,10 +57,11 @@ export async function enrichLesson({
     console.warn('AI enrichment skipped: GEMINI_API_KEY is not set.');
     return { ...defaultEnrichment };
   }
+  const modelName = process.env.GEMINI_MODEL || 'gemini-pro';
   const prompt = buildPrompt({ topicName, lessonName, description, skills });
 
   try {
-    const model = client.getGenerativeModel({ model: 'gemini-pro' });
+    const model = client.getGenerativeModel({ model: modelName });
     const result = await model.generateContent(prompt);
     const text = result?.response?.text?.();
 
@@ -74,7 +75,7 @@ export async function enrichLesson({
       ...parsed
     };
   } catch (error) {
-    console.error('Gemini enrichment failed:', error);
+    console.error(`Gemini enrichment failed using model "${process.env.GEMINI_MODEL || 'gemini-pro'}":`, error);
     return { ...defaultEnrichment };
   }
 }
