@@ -10,23 +10,19 @@ const mockResponsePayload = {
   recommendations: ['Review previous module']
 };
 
-jest.unstable_mockModule('openai', () => {
+const mockGenerateContent = jest.fn().mockResolvedValue({
+  response: {
+    text: () => JSON.stringify(mockResponsePayload)
+  }
+});
+
+jest.unstable_mockModule('@google/generative-ai', () => {
   return {
-    default: class MockOpenAI {
+    GoogleGenerativeAI: class MockGemini {
       constructor() {
-        this.chat = {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify(mockResponsePayload)
-                  }
-                }
-              ]
-            })
-          }
-        };
+        this.getGenerativeModel = jest.fn().mockReturnValue({
+          generateContent: mockGenerateContent
+        });
       }
     }
   };
@@ -36,15 +32,15 @@ const { enrichLesson } = await import('../AIEnrichmentService.js');
 
 describe('AIEnrichmentService', () => {
   beforeEach(() => {
-    process.env.OPENAI_API_KEY = 'test-key';
+    process.env.GEMINI_API_KEY = 'test-key';
   });
 
   afterEach(() => {
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.GEMINI_API_KEY;
     jest.clearAllMocks();
   });
 
-  test('returns parsed enrichment payload when OpenAI succeeds', async () => {
+  test('returns parsed enrichment payload when Gemini succeeds', async () => {
     const result = await enrichLesson({
       topicName: 'Testing',
       lessonName: 'Unit Testing Basics',
@@ -52,11 +48,19 @@ describe('AIEnrichmentService', () => {
       skills: ['testing']
     });
 
-    expect(result).toEqual(mockResponsePayload);
+    expect(result).toEqual({
+      summary: mockResponsePayload.summary,
+      learning_objectives: mockResponsePayload.learning_objectives,
+      examples: mockResponsePayload.examples,
+      difficulty: mockResponsePayload.difficulty,
+      estimated_duration_minutes: mockResponsePayload.estimated_duration_minutes,
+      tags: mockResponsePayload.tags,
+      recommendations: mockResponsePayload.recommendations
+    });
   });
 
   test('returns default payload when API key is missing', async () => {
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.GEMINI_API_KEY;
 
     const result = await enrichLesson({
       topicName: 'Testing',

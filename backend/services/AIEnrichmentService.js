@@ -1,16 +1,14 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 let cachedClient = null;
 
-const getOpenAIClient = () => {
-  if (!process.env.OPENAI_API_KEY) {
+const getGeminiClient = () => {
+  if (!process.env.GEMINI_API_KEY) {
     return null;
   }
 
   if (!cachedClient) {
-    cachedClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
+    cachedClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   }
 
   return cachedClient;
@@ -53,29 +51,30 @@ export async function enrichLesson({
   description,
   skills = []
 }) {
-  const client = getOpenAIClient();
+  const client = getGeminiClient();
 
   if (!client) {
-    console.warn('AI enrichment skipped: OPENAI_API_KEY is not set.');
+    console.warn('AI enrichment skipped: GEMINI_API_KEY is not set.');
     return { ...defaultEnrichment };
   }
   const prompt = buildPrompt({ topicName, lessonName, description, skills });
 
   try {
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7
-    });
+    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent(prompt);
+    const text = result?.response?.text?.();
 
-    const content = response.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('Empty response from OpenAI');
+    if (!text) {
+      throw new Error('Empty response from Gemini');
     }
 
-    return JSON.parse(content);
+    const parsed = JSON.parse(text);
+    return {
+      ...defaultEnrichment,
+      ...parsed
+    };
   } catch (error) {
-    console.error('AI enrichment failed:', error);
+    console.error('Gemini enrichment failed:', error);
     return { ...defaultEnrichment };
   }
 }
