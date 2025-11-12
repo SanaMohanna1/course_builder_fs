@@ -47,6 +47,27 @@ const defaultEnrichment = {
   recommendations: []
 };
 
+const extractJsonPayload = (rawText) => {
+  if (!rawText || typeof rawText !== 'string') {
+    return null;
+  }
+
+  let cleaned = rawText.trim();
+
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim();
+  }
+
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    return null;
+  }
+
+  return cleaned.slice(firstBrace, lastBrace + 1);
+};
+
 export async function enrichLesson({
   topicName,
   lessonName,
@@ -74,7 +95,13 @@ export async function enrichLesson({
       throw new Error('Empty response from Gemini');
     }
 
-    const parsed = JSON.parse(text);
+    const jsonPayload = extractJsonPayload(text);
+
+    if (!jsonPayload) {
+      throw new Error('Unable to locate JSON object in Gemini response');
+    }
+
+    const parsed = JSON.parse(jsonPayload);
     return {
       ...defaultEnrichment,
       ...parsed

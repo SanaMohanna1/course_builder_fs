@@ -12,7 +12,9 @@ const mockResponsePayload = {
 
 const mockGenerateContent = jest.fn().mockResolvedValue({
   response: {
-    text: () => JSON.stringify(mockResponsePayload)
+    text: () => `\`\`\`json
+${JSON.stringify(mockResponsePayload, null, 2)}
+\`\`\``
   }
 });
 
