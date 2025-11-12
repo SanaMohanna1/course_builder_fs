@@ -23,18 +23,33 @@ const normalizeOrigin = (origin) => {
   return origin.replace(/\/+$/, ''); // Remove trailing slashes
 };
 
+const rawAllowedOrigins = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '*';
+const allowedOrigins = rawAllowedOrigins
+  .split(',')
+  .map((value) => normalizeOrigin(value.trim()))
+  .filter(Boolean);
+
+const isDevelopment = (process.env.NODE_ENV || 'development') !== 'production';
+
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigin = normalizeOrigin(process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '*');
-
     if (!origin) {
       callback(null, true);
       return;
     }
 
     const normalizedRequestOrigin = normalizeOrigin(origin);
-    
-    if (allowedOrigin === '*' || normalizedRequestOrigin === allowedOrigin) {
+
+    const isWildcard = allowedOrigins.includes('*');
+    const isExplicitMatch = allowedOrigins.includes(normalizedRequestOrigin);
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalizedRequestOrigin);
+
+    if (
+      isWildcard ||
+      isExplicitMatch ||
+      (isDevelopment && isLocalhost) ||
+      (isLocalhost && allowedOrigins.length === 0)
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
