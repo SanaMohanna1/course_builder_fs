@@ -34,11 +34,13 @@ describe('AIEnrichmentService', () => {
   beforeEach(() => {
     process.env.GEMINI_API_KEY = 'test-key';
     process.env.GEMINI_MODEL = 'test-model';
+    process.env.GEMINI_API_VERSION = 'v1';
   });
 
   afterEach(() => {
     delete process.env.GEMINI_API_KEY;
     delete process.env.GEMINI_MODEL;
+    delete process.env.GEMINI_API_VERSION;
     jest.clearAllMocks();
   });
 
