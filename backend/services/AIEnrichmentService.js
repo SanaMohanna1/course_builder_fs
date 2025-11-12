@@ -6,8 +6,7 @@ const getGeminiClient = () => {
   if (!process.env.GEMINI_API_KEY) {
     return null;
   }
-  console.log('Using Gemini model:', modelName);
-console.log('Client version:', GoogleGenerativeAI?.version || 'unknown');
+
 
 
   if (!cachedClient) {
@@ -63,6 +62,8 @@ export async function enrichLesson({
 
   const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
   const prompt = buildPrompt({ topicName, lessonName, description, skills });
+  console.log('Using Gemini model:', modelName);
+  console.log('Client version:', GoogleGenerativeAI?.version || 'unknown');
 
   try {
     const model = client.getGenerativeModel({ model: modelName });
