@@ -14,20 +14,52 @@ const DEFAULT_RESPONSE = Object.freeze({
 
 const fallbackFromTopic = ({ topic, skills }) => {
   const normalizedTopic = (topic || '').trim();
-  const primarySkill = (skills && skills.find(Boolean)) || '';
-  const base = [normalizedTopic, primarySkill].filter(Boolean).join(' ');
-  const fallbackQuery = base || 'modern development';
+  const skillArray = Array.isArray(skills) ? skills.filter(Boolean) : [];
+  
+  // Generate multiple search queries for better results
+  const baseQuery = normalizedTopic || 'programming';
+  const youtubeQueries = [];
+  const githubQueries = [];
+  
+  // YouTube queries with modifiers
+  if (normalizedTopic) {
+    youtubeQueries.push(`${normalizedTopic} tutorial`);
+    youtubeQueries.push(`${normalizedTopic} best practices`);
+    if (skillArray.length > 0) {
+      youtubeQueries.push(`${normalizedTopic} ${skillArray[0]} tutorial`);
+    }
+  } else if (skillArray.length > 0) {
+    youtubeQueries.push(`${skillArray[0]} tutorial`);
+  }
+  
+  // GitHub queries
+  if (normalizedTopic) {
+    githubQueries.push(normalizedTopic);
+    if (skillArray.length > 0) {
+      githubQueries.push(`${normalizedTopic} ${skillArray[0]}`);
+    }
+  } else if (skillArray.length > 0) {
+    githubQueries.push(skillArray[0]);
+  }
+  
+  // Ensure we have at least one query
+  if (youtubeQueries.length === 0) {
+    youtubeQueries.push('programming tutorial');
+  }
+  if (githubQueries.length === 0) {
+    githubQueries.push('programming');
+  }
 
   return {
     queries: {
-      youtube: [fallbackQuery],
-      github: [fallbackQuery]
+      youtube: youtubeQueries.slice(0, 3),
+      github: githubQueries.slice(0, 3)
     },
     suggestedUrls: {
       youtube: [],
       github: []
     },
-    tags: [normalizedTopic, ...skills].filter(Boolean)
+    tags: [normalizedTopic, ...skillArray].filter(Boolean).slice(0, 5)
   };
 };
 
@@ -151,6 +183,8 @@ const callGeminiWithRetry = async (client, modelName, prompt, maxRetries = 3) =>
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
+      // Use v1 API - the SDK should automatically use v1 for gemini-1.5-flash models
+      // If the SDK version is outdated and uses v1beta, update @google/generative-ai package
       const model = client.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
       const text = result?.response?.text?.();
@@ -193,14 +227,18 @@ export async function generateIntents({ topic, skills = [] } = {}) {
     return fallback;
   }
 
-  // Use only free models (gemini-1.5-flash is free tier)
+  // Use only free models that work with v1 API
   // gemini-pro and gemini-1.5-pro require subscription
+  // For v1 API, use: gemini-1.5-flash or gemini-1.5-flash-latest
   const primaryModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
   const modelsToTry = [primaryModel];
   
-  // Only add gemini-1.5-flash as fallback if primary is different
-  if (primaryModel !== 'gemini-1.5-flash') {
-    modelsToTry.push('gemini-1.5-flash');
+  // Try alternative model names that work with v1 API
+  const alternativeModels = ['gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+  for (const altModel of alternativeModels) {
+    if (!modelsToTry.includes(altModel)) {
+      modelsToTry.push(altModel);
+    }
   }
 
   const prompt = buildPrompt({ topic: trimmedTopic, skills: normalizedSkills });
