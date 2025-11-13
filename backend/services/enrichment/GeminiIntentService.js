@@ -125,6 +125,60 @@ Rules:
 `;
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRetryableError = (error) => {
+  if (!error) return false;
+  
+  // Check various error properties
+  const status = error.status || error.statusCode || (error.response && error.response.status);
+  const statusText = (error.statusText || '').toLowerCase();
+  const message = (error.message || '').toLowerCase();
+  const errorDetails = (error.errorDetails || '').toLowerCase();
+  
+  // Retry on 503 (Service Unavailable), 429 (Rate Limit), 500 (Internal Server Error)
+  const isRetryableStatus = status === 503 || status === 429 || status === 500;
+  const isOverloaded = statusText.includes('overloaded') || 
+                       message.includes('overloaded') ||
+                       errorDetails.includes('overloaded') ||
+                       message.includes('try again later');
+  
+  return isRetryableStatus || isOverloaded;
+};
+
+const callGeminiWithRetry = async (client, modelName, prompt, maxRetries = 3) => {
+  let lastError = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const model = client.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result?.response?.text?.();
+      
+      if (!text) {
+        throw new Error('Empty response from Gemini');
+      }
+      
+      return text;
+    } catch (error) {
+      lastError = error;
+      
+      // If it's a retryable error and we have retries left, wait and retry
+      if (isRetryableError(error) && attempt < maxRetries) {
+        const backoffMs = Math.min(1000 * Math.pow(2, attempt), 10000); // Exponential backoff, max 10s
+        console.warn(`[GeminiIntentService] Retryable error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${backoffMs}ms:`, error.message);
+        await delay(backoffMs);
+        continue;
+      }
+      
+      // If not retryable or out of retries, throw
+      throw error;
+    }
+  }
+  
+  throw lastError;
+};
+
 export async function generateIntents({ topic, skills = [] } = {}) {
   const trimmedTopic = typeof topic === 'string' ? topic.trim() : '';
   const normalizedSkills = Array.isArray(skills)
@@ -139,40 +193,59 @@ export async function generateIntents({ topic, skills = [] } = {}) {
     return fallback;
   }
 
-  try {
-    // Use configurable model, default to gemini-2.5-flash for latest features
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    const model = client.getGenerativeModel({ model: modelName });
-    const prompt = buildPrompt({ topic: trimmedTopic, skills: normalizedSkills });
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.text?.();
-
-    if (!text) {
-      throw new Error('Empty response from Gemini');
-    }
-
-    const jsonPayload = extractJsonPayload(text);
-    if (!jsonPayload) {
-      throw new Error('Unable to extract JSON payload from Gemini response');
-    }
-
-    const parsed = JSON.parse(jsonPayload);
-    const normalized = normalizeIntentPayload(parsed);
-
-    if (
-      normalized.queries.youtube.length === 0 &&
-      normalized.queries.github.length === 0 &&
-      normalized.suggestedUrls.youtube.length === 0 &&
-      normalized.suggestedUrls.github.length === 0
-    ) {
-      return fallback;
-    }
-
-    return normalized;
-  } catch (error) {
-    console.error('GeminiIntentService failed:', error);
-    return fallback;
+  // Try primary model first, then fallback to gemini-pro if it fails
+  const primaryModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const fallbackModel = 'gemini-pro';
+  const modelsToTry = [primaryModel];
+  
+  // Only add fallback if primary is different
+  if (primaryModel !== fallbackModel) {
+    modelsToTry.push(fallbackModel);
   }
+
+  const prompt = buildPrompt({ topic: trimmedTopic, skills: normalizedSkills });
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`[GeminiIntentService] Attempting with model: ${modelName}`);
+      const text = await callGeminiWithRetry(client, modelName, prompt);
+      
+      const jsonPayload = extractJsonPayload(text);
+      if (!jsonPayload) {
+        throw new Error('Unable to extract JSON payload from Gemini response');
+      }
+
+      const parsed = JSON.parse(jsonPayload);
+      const normalized = normalizeIntentPayload(parsed);
+
+      if (
+        normalized.queries.youtube.length === 0 &&
+        normalized.queries.github.length === 0 &&
+        normalized.suggestedUrls.youtube.length === 0 &&
+        normalized.suggestedUrls.github.length === 0
+      ) {
+        console.warn(`[GeminiIntentService] Model ${modelName} returned empty results, using fallback`);
+        return fallback;
+      }
+
+      console.log(`[GeminiIntentService] Successfully generated intents with ${modelName}`);
+      return normalized;
+    } catch (error) {
+      console.error(`[GeminiIntentService] Model ${modelName} failed:`, error.message);
+      
+      // If this is the last model to try, return fallback
+      if (modelName === modelsToTry[modelsToTry.length - 1]) {
+        console.warn('[GeminiIntentService] All models failed, using fallback queries');
+        return fallback;
+      }
+      
+      // Otherwise, try the next model
+      console.log(`[GeminiIntentService] Trying fallback model: ${fallbackModel}`);
+      continue;
+    }
+  }
+
+  return fallback;
 }
 
 export default {
