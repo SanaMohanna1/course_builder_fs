@@ -66,25 +66,26 @@ export default function EnrichmentButton({
     if (!asset) return null
 
     const {
-      type = 'lesson',
       title,
       lesson_name,
       name,
-      description,
-      summary,
-      content,
       metadata = {}
     } = asset
 
-    const resolvedTitle = title || lesson_name || name || metadata?.title
-    const resolvedDescription =
-      description || summary || metadata?.description || metadata?.summary || content
+    // Backend expects: { topic: string, skills: array, maxItems: number }
+    const resolvedTopic = title || lesson_name || name || metadata?.title || metadata?.course_title || 'Learning resources'
+    
+    // Extract skills from various possible locations
+    const skills = [
+      ...(Array.isArray(metadata?.skills) ? metadata.skills : []),
+      ...(Array.isArray(metadata?.lesson_skills) ? metadata.lesson_skills : []),
+      ...(Array.isArray(metadata?.tags) ? metadata.tags : [])
+    ].filter(Boolean).slice(0, 8) // Limit to 8 skills
 
     return {
-      type,
-      title: resolvedTitle,
-      description: resolvedDescription,
-      metadata
+      topic: resolvedTopic,
+      skills,
+      maxItems: 6
     }
   }, [asset])
 
