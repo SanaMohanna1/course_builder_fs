@@ -53,7 +53,10 @@ const normalizeRepo = (repo) => ({
   id: repo.id,
   name: repo.full_name || repo.name,
   url: repo.html_url,
-  description: repo.description,
+  description:
+    repo.description && repo.description.length > 200
+      ? repo.description.slice(0, 200) + '...'
+      : repo.description || 'No description available',
   stars: repo.stargazers_count,
   lastCommit: repo.pushed_at,
   language: repo.language,

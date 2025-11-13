@@ -300,11 +300,21 @@ export default function LessonAssetsPanel({ assets, loading, error }) {
                         {formatNumber(repo.stars)}
                       </span>
                     </div>
-                    {repo.description && (
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                        {repo.description}
-                      </p>
-                    )}
+                    {(() => {
+                      const safeDescription = repo.description
+                        ? repo.description.replace(/\s+/g, ' ').trim()
+                        : 'No description provided.'
+                      
+                      const truncatedDescription = safeDescription.length > 140
+                        ? safeDescription.slice(0, 140) + '...'
+                        : safeDescription
+                      
+                      return (
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                          {truncatedDescription}
+                        </p>
+                      )
+                    })()}
                     <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                       {repo.language && <span>{repo.language}</span>}
                       {repo.topics &&
