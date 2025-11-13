@@ -83,6 +83,7 @@ export async function enrichAssets({ topic, skills = [], maxItems = 6 } = {}) {
       });
     } catch (error) {
       // generateIntents should never throw (it returns fallback), but be defensive
+      console.warn('[Gemini] Error, continuing with fallback YouTube/GitHub enrichment.');
       console.error('[AssetEnrichmentService] Failed to generate intents, using fallback:', error.message);
       // Generate a basic fallback if generateIntents somehow throws
       intents = {
