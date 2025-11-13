@@ -140,7 +140,9 @@ export async function generateIntents({ topic, skills = [] } = {}) {
   }
 
   try {
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use configurable model, default to gemini-2.5-flash for latest features
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = client.getGenerativeModel({ model: modelName });
     const prompt = buildPrompt({ topic: trimmedTopic, skills: normalizedSkills });
     const result = await model.generateContent(prompt);
     const text = result?.response?.text?.();
