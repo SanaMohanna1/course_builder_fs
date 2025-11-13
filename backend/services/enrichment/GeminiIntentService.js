@@ -206,9 +206,9 @@ const callGeminiWithRetry = async (client, modelName, prompt) => {
         // Try fallback model before giving up
         if (attempt === MAX_RETRIES && modelName.includes('2.5-flash')) {
           try {
-            console.warn('[Gemini] Falling back to gemini-1.5-flash-8b');
+            console.warn('[Gemini] Falling back to gemini-1.5-flash-latest');
             const fallbackModel = client.getGenerativeModel({
-              model: 'models/gemini-1.5-flash-8b'
+              model: 'models/gemini-1.5-flash-latest'
             });
             
             // Add jitter before fallback request
@@ -228,10 +228,11 @@ const callGeminiWithRetry = async (client, modelName, prompt) => {
               .replace(/```$/i, '')
               .trim();
             
-            console.log('[Gemini] Fallback model activated: models/gemini-1.5-flash-8b');
+            console.log('[Gemini] Fallback model activated: models/gemini-1.5-flash-latest');
             return fallbackText;
           } catch (fallbackErr) {
-            console.error('[Gemini] Fallback model also failed:', fallbackErr.message);
+            console.warn('[Gemini] Fallback model failed:', fallbackErr.message);
+            console.warn('[Gemini] All Gemini models failed, using manual fallback enrichment.');
             throw err; // Throw original error
           }
         }
