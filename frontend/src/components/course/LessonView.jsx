@@ -36,6 +36,19 @@ export default function LessonView({
   onEnrichmentLoading = null,
   onEnrichmentError = null
 }) {
+  if (!lesson) {
+    return (
+      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
+        <Container>
+          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+            <p className="text-lg font-semibold text-[var(--text-primary)]">Lesson data unavailable</p>
+            <p className="text-sm text-[var(--text-secondary)]">Unable to display lesson content.</p>
+          </div>
+        </Container>
+      </div>
+    )
+  }
+
   const lessonTitle = lesson?.title || lesson?.lesson_name || 'Lesson'
   const lessonSummary =
     lesson?.summary ||
@@ -141,9 +154,9 @@ export default function LessonView({
                 {enrichmentAsset && (
                   <EnrichmentButton
                     asset={enrichmentAsset}
-                    onResults={onEnrichmentResults}
-                    onLoading={onEnrichmentLoading}
-                    onError={onEnrichmentError}
+                    onResults={onEnrichmentResults || undefined}
+                    onLoading={onEnrichmentLoading || undefined}
+                    onError={onEnrichmentError || undefined}
                     buttonLabel={enrichmentAssets ? 'Refresh assets' : 'Load AI assets'}
                     disabled={!enrichmentAsset}
                   />

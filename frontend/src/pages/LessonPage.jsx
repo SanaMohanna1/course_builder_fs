@@ -75,10 +75,16 @@ export default function LessonPage() {
   }, [courseId, lessonId, loadData])
 
   useEffect(() => {
-    if (!loading && learnerProgress && !learnerProgress.is_enrolled && userRole === 'learner') {
-      navigate(`/course/${courseId}/overview`, { replace: true })
+    // Redirect unenrolled learners to course overview
+    if (!loading && userRole === 'learner') {
+      if (learnerProgress && !learnerProgress.is_enrolled) {
+        navigate(`/course/${courseId}/overview`, { replace: true })
+      } else if (!learnerProgress && course) {
+        // If no progress data but course exists, also redirect to overview
+        navigate(`/course/${courseId}/overview`, { replace: true })
+      }
     }
-  }, [courseId, learnerProgress, loading, navigate, userRole])
+  }, [courseId, learnerProgress, loading, navigate, userRole, course])
 
   const flattenedLessons = useMemo(() => {
     if (!course) return []
@@ -137,10 +143,6 @@ export default function LessonPage() {
     }
   }
 
-  if (userRole === 'learner' && !learnerProgress?.is_enrolled && !loading) {
-    return null
-  }
-
   if (loading) {
     return (
       <div className="page-surface bg-[var(--bg-primary)] transition-colors">
@@ -152,6 +154,28 @@ export default function LessonPage() {
       </div>
     )
   }
+
+  if (!lesson || !course) {
+    return (
+      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
+        <Container>
+          <div className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-4">
+            <p className="text-lg font-semibold text-[var(--text-primary)]">Lesson not found</p>
+            <p className="text-sm text-[var(--text-secondary)]">Unable to load lesson data. Please try again.</p>
+            <button
+              onClick={() => navigate(`/course/${courseId}/structure`)}
+              className="mt-4 rounded-full bg-[var(--primary-cyan)] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-cyan-strong)]"
+            >
+              Back to Course Structure
+            </button>
+          </div>
+        </Container>
+      </div>
+    )
+  }
+
+  // Note: Unenrolled learners are redirected by useEffect above
+  // Don't return null here as it causes blank page before redirect completes
 
   const hasCompletedCurrent = completedLessons.includes(normalizedLessonId)
   const allLessonsCompleted = flattenedLessons.length > 0 && completedLessons.length >= flattenedLessons.length
