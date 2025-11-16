@@ -1,37 +1,27 @@
 export default function Input({ label, error, className = '', ...props }) {
   return (
-    <label style={{ display: 'block', marginBottom: 'var(--spacing-md)' }}>
+    <label className="block mb-4">
       {label && (
-        <span style={{
-          display: 'block',
-          marginBottom: 'var(--spacing-xs)',
-          color: 'var(--text-secondary)',
-          fontSize: '0.9rem',
-          fontWeight: 500
-        }}>
+        <span className="block mb-1 text-neutral-500 text-sm font-medium">
           {label}
         </span>
       )}
       <input
-        className={className}
-        style={{
-          width: '100%',
-          border: error ? '1px solid #EF4444' : '1px solid var(--bg-tertiary)',
-          borderRadius: 'var(--radius-sm)',
-          padding: 'var(--spacing-sm) var(--spacing-md)',
-          background: 'var(--bg-card)',
-          color: 'var(--text-primary)',
-          transition: 'all 0.3s ease'
-        }}
+        className={[
+          'w-full rounded-input bg-white text-neutral-900',
+          'border transition-colors',
+          error
+            ? 'border-state-error focus:border-state-error focus:ring-2 focus:ring-state-error/30'
+            : 'border-neutral-300 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20',
+          'px-4 py-3',
+          'dark:bg-surface-dark dark:text-neutral-50 dark:border-neutral-700',
+          'dark:focus:border-brand-primary-light dark:focus:ring-brand-primary/30',
+          className
+        ].join(' ')}
         {...props}
       />
       {error && (
-        <span style={{
-          display: 'block',
-          fontSize: '0.85rem',
-          color: '#EF4444',
-          marginTop: 'var(--spacing-xs)'
-        }}>
+        <span className="block text-xs text-state-error mt-1">
           {error}
         </span>
       )}

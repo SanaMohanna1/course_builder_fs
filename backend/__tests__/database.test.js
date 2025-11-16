@@ -200,7 +200,7 @@ describe('Database Schema Tests', () => {
       `);
       expect(result.exists).toBe(true);
     });
-  });
+    });
 
   describe('Check Constraints', () => {
     it('should have rating check constraint on feedback (1-5)', async () => {
@@ -218,7 +218,7 @@ describe('Database Schema Tests', () => {
         )
       `);
       expect(result.exists).toBe(true);
-    });
+  });
 
     it('should have content_data check constraint on lessons (must be array)', async () => {
       const result = await db.oneOrNone(`
@@ -303,7 +303,7 @@ describe('Database Schema Tests', () => {
         WHERE t.id IS NULL
       `);
       expect(invalidModules.length).toBe(0);
-      
+
       // Check that all lessons reference valid modules
       const invalidLessons = await db.any(`
         SELECT l.id 
@@ -360,7 +360,7 @@ describe('Database Schema Tests', () => {
         FROM pg_indexes 
         WHERE schemaname = 'public'
           AND tablename IN ('courses', 'modules', 'topics', 'lessons', 'registrations', 'feedback', 'assessments', 'versions')
-          AND indexname LIKE 'idx_%'
+        AND indexname LIKE 'idx_%'
       `);
       expect(indexes.length).toBeGreaterThan(0);
     });
