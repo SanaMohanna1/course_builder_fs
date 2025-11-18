@@ -113,11 +113,43 @@ export default function LessonPage() {
     currentIndex >= 0 && currentIndex < flattenedLessons.length - 1 ? flattenedLessons[currentIndex + 1] : null
   const isFinalLesson = currentIndex >= 0 && !nextLesson
 
-  // Enrichment is now on-demand only (triggered by EnrichmentButton)
-  // Removed automatic useEffect that was calling fetchEnrichmentAssets
+  // For learners: Use course-level AI assets (not per lesson)
+  // For trainers: Allow per-lesson enrichment in validation page
   const enrichmentAssetDescriptor = useMemo(() => {
-    if (!lesson || !course) return null
+    if (!course) return null
 
+    // For learners, use course-level enrichment
+    if (userRole === 'learner') {
+      // Use course-level assets if available
+      if (course.ai_assets && Object.keys(course.ai_assets).length > 0) {
+        return {
+          type: 'course',
+          title: course.title || course.course_name,
+          description: course.description || course.course_description,
+          metadata: {
+            course_id: course.id || course.course_id,
+            course_title: course.title || course.course_name,
+            skills: course?.skills || [],
+            tags: []
+          }
+        }
+      }
+      // If no course assets, create descriptor for course-level enrichment
+      return {
+        type: 'course',
+        title: course.title || course.course_name,
+        description: course.description || course.course_description,
+        metadata: {
+          course_id: course.id || course.course_id,
+          course_title: course.title || course.course_name,
+          skills: course?.skills || [],
+          tags: []
+        }
+      }
+    }
+
+    // For trainers: per-lesson enrichment (existing behavior)
+    if (!lesson) return null
     return {
       type: lesson.content_type || 'lesson',
       title: lesson.title || lesson.lesson_name || lesson.name,
@@ -126,12 +158,18 @@ export default function LessonPage() {
         course_id: course.id || course.course_id,
         course_title: course.title || course.course_name,
         skills: course?.metadata?.skills || course?.skills,
-        // ⚠️ Skills are ONLY stored at Lesson level (from Content Studio)
         lesson_skills: Array.isArray(lesson.skills) ? lesson.skills : [],
         tags: lesson?.enriched_content?.tags
       }
     }
-  }, [lesson, course])
+  }, [lesson, course, userRole])
+
+  // Load course-level assets for learners
+  useEffect(() => {
+    if (userRole === 'learner' && course?.ai_assets && Object.keys(course.ai_assets).length > 0) {
+      setEnrichmentAssets(course.ai_assets)
+    }
+  }, [course, userRole])
 
   const handleComplete = async () => {
     if (!lessonId) return

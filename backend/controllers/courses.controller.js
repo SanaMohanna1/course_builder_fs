@@ -375,6 +375,63 @@ export const getCourseFilters = async (req, res, next) => {
 };
 
 /**
+ * Get lesson exercises HTML (AJAX endpoint)
+ * GET /api/v1/lessons/:id/exercises
+ */
+export const getLessonExercises = async (req, res, next) => {
+  try {
+    const { id: lessonId } = req.params;
+
+    if (!lessonId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Lesson ID is required'
+      });
+    }
+
+    const lesson = await coursesService.getLessonDetails(lessonId);
+
+    if (!lesson) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Lesson not found'
+      });
+    }
+
+    // Extract devlab_exercises and convert to HTML
+    const exercises = Array.isArray(lesson.devlab_exercises) ? lesson.devlab_exercises : [];
+    
+    // Generate HTML from exercises
+    let exercisesHTML = '';
+    if (exercises.length === 0) {
+      exercisesHTML = '<div class="text-center py-8 text-gray-500">No exercises available for this lesson.</div>';
+    } else {
+      exercisesHTML = exercises.map((exercise, idx) => {
+        if (typeof exercise === 'string') {
+          // If exercise is already HTML string, use it
+          return `<div class="exercise-item mb-6">${exercise}</div>`;
+        } else if (exercise.html) {
+          // If exercise has html property
+          return `<div class="exercise-item mb-6">${exercise.html}</div>`;
+        } else if (exercise.content) {
+          // If exercise has content property
+          return `<div class="exercise-item mb-6"><pre class="bg-gray-100 p-4 rounded">${exercise.content}</pre></div>`;
+        } else {
+          // Fallback: convert exercise object to HTML
+          return `<div class="exercise-item mb-6"><pre class="bg-gray-100 p-4 rounded">${JSON.stringify(exercise, null, 2)}</pre></div>`;
+        }
+      }).join('');
+    }
+
+    // Return HTML response
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.status(200).send(exercisesHTML);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get lesson details
  * GET /api/v1/lessons/:id
  */

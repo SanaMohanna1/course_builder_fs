@@ -28,6 +28,9 @@ export class Course {
     this.studentsIDDictionary = data.studentsIDDictionary || {};
     this.feedbackDictionary = data.feedbackDictionary || {};
     this.lesson_completion_dictionary = data.lesson_completion_dictionary || {};
+    
+    // AI enrichment assets (course-level)
+    this.ai_assets = data.ai_assets || {};
   }
 
   static fromRow(row) {
@@ -46,7 +49,8 @@ export class Course {
       learning_path_designation: row.learning_path_designation,
       studentsIDDictionary: row.studentsIDDictionary,
       feedbackDictionary: row.feedbackDictionary,
-      lesson_completion_dictionary: row.lesson_completion_dictionary
+      lesson_completion_dictionary: row.lesson_completion_dictionary,
+      ai_assets: row.ai_assets || {}
     });
   }
 
@@ -66,7 +70,8 @@ export class Course {
       learning_path_designation: this.learning_path_designation,
       studentsIDDictionary: this.studentsIDDictionary,
       feedbackDictionary: this.feedbackDictionary,
-      lesson_completion_dictionary: this.lesson_completion_dictionary
+      lesson_completion_dictionary: this.lesson_completion_dictionary,
+      ai_assets: this.ai_assets
     };
   }
 }

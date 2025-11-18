@@ -124,6 +124,23 @@ export function getLessonById(lessonId) {
   return api.get(`/lessons/${lessonId}`).then(r => r.data)
 }
 
+export function getLessonExercises(lessonId) {
+  // Fetch exercises as HTML (AJAX)
+  const baseURL = getBaseURL()
+  return fetch(`${baseURL}/lessons/${lessonId}/exercises`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'text/html'
+    }
+  }).then(async (response) => {
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to load exercises')
+    }
+    return response.text() // Return HTML string
+  })
+}
+
 export function getLearnerProgress(learnerId) {
   return api.get(`/courses/learners/${learnerId}/progress`).then(r => r.data)
 }
@@ -154,6 +171,7 @@ export default {
   unpublishCourse,
   triggerPersonalizedCourse,
   getLessonById,
+  getLessonExercises,
   getLearnerProgress,
   updateCourseProgress,
   fetchEnrichmentAssets

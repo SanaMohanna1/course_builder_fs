@@ -1,10 +1,11 @@
 import express from 'express';
 import { enrichAssets } from '../services/enrichment/AssetEnrichmentService.js';
+import courseRepository from '../repositories/CourseRepository.js';
 
 const router = express.Router();
 
 router.post('/assets', async (req, res) => {
-  const { topic, skills = [], maxItems = 6 } = req.body || {};
+  const { topic, skills = [], maxItems = 6, course_id } = req.body || {};
 
   if (!topic || typeof topic !== 'string') {
     return res.status(400).json({ 
@@ -17,7 +18,8 @@ router.post('/assets', async (req, res) => {
     console.log('[enrichmentAssetsRoutes] Request received:', { 
       topic, 
       skillsCount: Array.isArray(skills) ? skills.length : 0,
-      maxItems 
+      maxItems,
+      course_id: course_id || 'none'
     });
 
     const result = await enrichAssets({
@@ -26,13 +28,36 @@ router.post('/assets', async (req, res) => {
       maxItems: Number.isInteger(maxItems) && maxItems > 0 ? maxItems : 6
     });
 
+    // Add generated_at timestamp
+    const enrichedResult = {
+      ...result,
+      generated_at: new Date().toISOString()
+    };
+
+    // If course_id is provided, save assets to course
+    if (course_id) {
+      try {
+        const course = await courseRepository.findById(course_id);
+        if (course) {
+          await courseRepository.update(course_id, { ai_assets: enrichedResult });
+          console.log('[enrichmentAssetsRoutes] Assets saved to course:', course_id);
+        } else {
+          console.warn('[enrichmentAssetsRoutes] Course not found:', course_id);
+        }
+      } catch (saveError) {
+        console.error('[enrichmentAssetsRoutes] Failed to save assets to course:', saveError.message);
+        // Don't fail the request if saving fails
+      }
+    }
+
     console.log('[enrichmentAssetsRoutes] Success:', {
       tagsCount: result?.tags?.length || 0,
       videosCount: result?.videos?.length || 0,
-      reposCount: result?.repos?.length || 0
+      reposCount: result?.repos?.length || 0,
+      savedToCourse: !!course_id
     });
 
-    return res.json(result);
+    return res.json(enrichedResult);
   } catch (error) {
     console.error('[enrichmentAssetsRoutes] Error:', {
       message: error.message,

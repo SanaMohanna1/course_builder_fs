@@ -87,7 +87,8 @@ export default function EnrichmentButton({
     return {
       topic: resolvedTopic,
       skills,
-      maxItems: 6
+      maxItems: 6,
+      course_id: metadata?.course_id || null // Pass course_id to save assets to course
     }
   }, [asset])
 

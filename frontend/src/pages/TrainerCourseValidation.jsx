@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { CheckCircle2, Circle, Layers, ListChecks, Rocket } from 'lucide-react'
-import { getCourseById, validateCourse } from '../services/apiService.js'
+import { CheckCircle2, Circle, Layers, ListChecks, Rocket, Pencil, Save, X } from 'lucide-react'
+import { getCourseById, validateCourse, updateCourse } from '../services/apiService.js'
 import CourseTreeView from '../components/CourseTreeView.jsx'
 import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
@@ -9,6 +9,7 @@ import Container from '../components/Container.jsx'
 import { useApp } from '../context/AppContext'
 import LessonAssetsPanel from '../components/course/LessonAssetsPanel.jsx'
 import EnrichmentButton from '../features/enrichment/components/EnrichmentButton.jsx'
+import Input from '../components/Input.jsx'
 
 export default function TrainerCourseValidation() {
   const { id } = useParams()
@@ -21,6 +22,13 @@ export default function TrainerCourseValidation() {
   const [assetData, setAssetData] = useState(null)
   const [assetLoading, setAssetLoading] = useState(false)
   const [assetError, setAssetError] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    course_name: '',
+    course_description: '',
+    level: ''
+  })
+  const [saving, setSaving] = useState(false)
 
   // Note: assetLoading and assetError are managed by EnrichmentButton internally
   // We keep them here for compatibility with LessonAssetsPanel
@@ -35,6 +43,11 @@ export default function TrainerCourseValidation() {
       const data = await getCourseById(id)
       setCourse(data)
       setValidated(data.status === 'validated')
+      setEditForm({
+        course_name: data.course_name || data.title || '',
+        course_description: data.course_description || data.description || '',
+        level: data.level || 'beginner'
+      })
       const lessons = flattenLessons(data)
       if (lessons.length > 0) {
         setSelectedLessonId(String(lessons[0].id || lessons[0].lesson_id))
@@ -45,6 +58,38 @@ export default function TrainerCourseValidation() {
       showToast('Failed to load course', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleStartEdit = () => {
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditForm({
+      course_name: course?.course_name || course?.title || '',
+      course_description: course?.course_description || course?.description || '',
+      level: course?.level || 'beginner'
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    setSaving(true)
+    try {
+      await updateCourse(id, {
+        course_name: editForm.course_name,
+        course_description: editForm.course_description,
+        level: editForm.level
+      })
+      showToast('Course updated successfully!', 'success')
+      setIsEditing(false)
+      await loadCourse() // Reload to get updated data
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Failed to update course'
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -71,34 +116,24 @@ export default function TrainerCourseValidation() {
   }, [lessons, selectedLessonId])
 
   const enrichmentAssetDescriptor = useMemo(() => {
-    if (!course || !selectedLesson) {
+    if (!course) {
       return null
     }
 
-    const {
-      lesson_name,
-      title,
-      name,
-      description,
-      summary,
-      content_type,
-      metadata = {},
-      enriched_content = {}
-    } = selectedLesson
-
+    // For trainer: Use course-level enrichment (save to course, not per lesson)
+    // This ensures assets are available to all learners and persist
     return {
-      type: content_type || 'lesson',
-      title: title || lesson_name || name,
-      description: description || summary || metadata.description,
+      type: 'course',
+      title: course.title || course.course_name,
+      description: course.description || course.course_description,
       metadata: {
         course_id: course.id || course.course_id,
         course_title: course.title || course.course_name,
-        skills: course?.metadata?.skills,
-        lesson_skills: selectedLesson.micro_skills,
-        tags: enriched_content?.tags
+        skills: course?.skills || [],
+        tags: []
       }
     }
-  }, [course, selectedLesson])
+  }, [course])
 
   // Enrichment is now on-demand only (triggered by EnrichmentButton)
   // Removed automatic useEffect that was calling fetchEnrichmentAssets
@@ -108,7 +143,10 @@ export default function TrainerCourseValidation() {
       setAssetData(response)
       setAssetError(null)
       if (response) {
-        showToast('AI enrichment refreshed for the selected lesson.', 'success')
+        // Assets are automatically saved to course by backend when course_id is provided
+        showToast('AI enrichment saved to course successfully.', 'success')
+        // Reload course to get updated ai_assets
+        loadCourse()
       }
     },
     [showToast]
@@ -206,33 +244,96 @@ export default function TrainerCourseValidation() {
 
           <article className="flex flex-col gap-5 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
-                  {course.title || course.course_name}
-                </h2>
-                <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
-                  {course.description ||
-                    course.course_description ||
-                    'Maintain an up-to-date description so learners know exactly what outcomes to expect.'}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(99,102,241,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#4338ca]">
-                    {course.level || 'Beginner'}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
-                      validated
-                        ? 'bg-[rgba(16,185,129,0.16)] text-[#047857]'
-                        : 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
-                    }`}
-                  >
-                    <CheckCircle2 className="h-3 w-3" />
-                    {validated ? 'Validated' : 'Pending validation'}
-                  </span>
-                </div>
+              <div className="flex-1 space-y-3">
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+                        Course Name
+                      </label>
+                      <Input
+                        type="text"
+                        value={editForm.course_name}
+                        onChange={(e) => setEditForm({ ...editForm, course_name: e.target.value })}
+                        placeholder="Enter course name"
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        value={editForm.course_description}
+                        onChange={(e) => setEditForm({ ...editForm, course_description: e.target.value })}
+                        placeholder="Enter course description"
+                        rows={4}
+                        className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+                        Level
+                      </label>
+                      <select
+                        value={editForm.level}
+                        onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
+                        className="w-full rounded-2xl border border-[rgba(148,163,184,0.35)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm focus:border-[var(--primary-cyan)] focus:outline-none focus:ring-2 focus:ring-[rgba(14,165,233,0.25)]"
+                      >
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button variant="primary" onClick={handleSaveEdit} disabled={saving}>
+                        <Save className="mr-2 h-4 w-4" />
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                      <Button variant="secondary" onClick={handleCancelEdit} disabled={saving}>
+                        <X className="mr-2 h-4 w-4" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+                          {course.title || course.course_name}
+                        </h2>
+                        <p className="max-w-3xl mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+                          {course.description ||
+                            course.course_description ||
+                            'Maintain an up-to-date description so learners know exactly what outcomes to expect.'}
+                        </p>
+                      </div>
+                      <Button variant="secondary" onClick={handleStartEdit} className="shrink-0">
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(99,102,241,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#4338ca]">
+                        {course.level || 'Beginner'}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
+                          validated
+                            ? 'bg-[rgba(16,185,129,0.16)] text-[#047857]'
+                            : 'bg-[rgba(234,179,8,0.18)] text-[#b45309]'
+                        }`}
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                        {validated ? 'Validated' : 'Pending validation'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-              {!validated && (
-                <Button variant="primary" onClick={handleValidate} className="self-start">
+              {!isEditing && !validated && (
+                <Button variant="primary" onClick={handleValidate} className="self-start shrink-0">
                   <CheckCircle2 className="mr-2 h-4 w-4" />
                   Mark as validated
                 </Button>
@@ -273,57 +374,33 @@ export default function TrainerCourseValidation() {
             <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                  AI asset sandbox
+                  Course AI Assets
                 </h2>
                 <p className="text-sm leading-6 text-[var(--text-secondary)]">
-                  Review enrichment assets for individual lessons to ensure learners receive fresh, high-quality practice materials.
+                  Generate and manage AI enrichment assets for this course. Assets are saved to the course and will be available to all learners.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 text-sm text-[var(--text-secondary)] md:flex-row md:items-center md:gap-3">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="trainer-lesson-selector" className="font-semibold text-[var(--text-primary)]">
-                    Select lesson
-                  </label>
-                  <select
-                    id="trainer-lesson-selector"
-                    value={selectedLessonId}
-                    onChange={(event) => setSelectedLessonId(event.target.value)}
-                    className="rounded-full border border-[rgba(148,163,184,0.35)] bg-[var(--bg-primary)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] shadow-sm focus:border-[var(--primary-cyan)] focus:outline-none"
-                    disabled={lessons.length === 0}
-                  >
-                    {lessons.map((lesson) => {
-                      const lessonId = String(lesson.id || lesson.lesson_id)
-                      const label =
-                        lesson.title ||
-                        lesson.lesson_name ||
-                        lesson.name ||
-                        `Lesson ${lessonId.slice(0, 6)}`
-                      const moduleLabel = lesson.moduleName ? ` · ${lesson.moduleName}` : ''
-
-                      return (
-                        <option key={lessonId} value={lessonId}>
-                          {label}
-                          {moduleLabel}
-                        </option>
-                      )
-                    })}
-                    {lessons.length === 0 && <option value="">No lessons available</option>}
-                  </select>
-                </div>
-                <EnrichmentButton
-                  asset={enrichmentAssetDescriptor}
-                  onResults={handleManualEnrichment}
-                  onLoading={handleEnrichmentLoading}
-                  onError={handleEnrichmentError}
-                  disabled={!enrichmentAssetDescriptor}
-                  buttonLabel="Regenerate assets"
-                  className="self-start"
-                />
-              </div>
+              <EnrichmentButton
+                asset={enrichmentAssetDescriptor}
+                onResults={handleManualEnrichment}
+                onLoading={handleEnrichmentLoading}
+                onError={handleEnrichmentError}
+                disabled={!enrichmentAssetDescriptor}
+                buttonLabel={course?.ai_assets && Object.keys(course.ai_assets).length > 0 ? "Regenerate assets" : "Generate AI assets"}
+                className="self-start"
+              />
             </header>
 
+            {/* Show existing course assets if available */}
+            {course?.ai_assets && Object.keys(course.ai_assets).length > 0 && !assetData && (
+              <div className="rounded-2xl border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.1)] p-4 text-sm text-[#047857]">
+                <CheckCircle2 className="mr-2 inline h-4 w-4" />
+                Course has AI assets saved. Click "Regenerate assets" to update them.
+              </div>
+            )}
+
             <LessonAssetsPanel
-              assets={assetData}
+              assets={assetData || (course?.ai_assets && Object.keys(course.ai_assets).length > 0 ? course.ai_assets : null)}
               loading={assetLoading}
               error={assetError}
             />

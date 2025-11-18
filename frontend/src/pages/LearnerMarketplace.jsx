@@ -154,6 +154,12 @@ export default function LearnerMarketplace() {
                         <i className="fa-solid fa-clock" />
                         {course.duration ? `${course.duration} mins` : '45 mins / lesson'}
                       </span>
+                      {course.ai_assets && Object.keys(course.ai_assets).length > 0 && (
+                        <span className="status-chip" style={{ background: 'rgba(168,85,247,0.12)', color: '#7c3aed' }}>
+                          <i className="fa-solid fa-sparkles" />
+                          AI Enriched
+                        </span>
+                      )}
                       <span className="status-chip">
                         <i className="fa-solid fa-tag" />
                         {displayTags.join(' · ')}

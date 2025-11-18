@@ -265,6 +265,7 @@ export const getCourseDetails = async (courseId, options = {}) => {
         })
       )).flat().flatMap(lesson => Array.isArray(lesson.skills) ? lesson.skills : []))],
       version: versionNumber.toString(),
+      ai_assets: course.ai_assets || {}, // Include course-level AI assets
       ...(learnerProgress && { learner_progress: learnerProgress })
     };
   } catch (error) {

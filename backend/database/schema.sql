@@ -77,7 +77,7 @@ CREATE TABLE courses (
     -- user_id -> { rating, comment, submitted_at }
     
     -- Lesson completion dictionary
-    lesson_completion_dictionary JSONB DEFAULT '{}'::jsonb
+    lesson_completion_dictionary JSONB DEFAULT '{}'::jsonb,
     -- lesson_completion_dictionary structure:
     -- lesson_id -> {
     --   topic_id,
@@ -87,6 +87,17 @@ CREATE TABLE courses (
     --       status,
     --       completed_at
     --   }
+    -- }
+    
+    -- AI enrichment assets (course-level)
+    ai_assets JSONB DEFAULT '{}'::jsonb
+    -- ai_assets structure:
+    -- {
+    --   videos: [{ title, url, description }],
+    --   repos: [{ name, url, description }],
+    --   suggestedUrls: { youtube: [], github: [] },
+    --   enrichedItems: [],
+    --   generated_at: ISO8601 timestamp
     -- }
 );
 

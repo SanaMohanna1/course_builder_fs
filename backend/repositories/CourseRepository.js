@@ -18,9 +18,9 @@ export class CourseRepository {
         id, course_name, course_description, course_type, status, level,
         duration_hours, start_date, created_by_user_id,
         learning_path_designation,
-        studentsIDDictionary, feedbackDictionary, lesson_completion_dictionary
+        studentsIDDictionary, feedbackDictionary, lesson_completion_dictionary, ai_assets
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
       ) RETURNING *
     `;
     
@@ -37,7 +37,8 @@ export class CourseRepository {
       JSON.stringify(courseData.learning_path_designation || {}),
       JSON.stringify(courseData.studentsIDDictionary || {}),
       JSON.stringify(courseData.feedbackDictionary || {}),
-      JSON.stringify(courseData.lesson_completion_dictionary || {})
+      JSON.stringify(courseData.lesson_completion_dictionary || {}),
+      JSON.stringify(courseData.ai_assets || {})
     ];
 
     const row = await db.one(query, values);
@@ -143,6 +144,11 @@ export class CourseRepository {
     if (updates.lesson_completion_dictionary !== undefined) {
       updateFields.push(`lesson_completion_dictionary = $${paramIndex++}`);
       values.push(JSON.stringify(updates.lesson_completion_dictionary));
+    }
+
+    if (updates.ai_assets !== undefined) {
+      updateFields.push(`ai_assets = $${paramIndex++}`);
+      values.push(JSON.stringify(updates.ai_assets));
     }
 
     if (updateFields.length === 0) {

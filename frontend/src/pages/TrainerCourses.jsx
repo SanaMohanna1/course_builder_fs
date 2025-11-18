@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Archive, ArrowLeft, BarChart3, Layers, Pencil, Rocket, Trash2, Users } from 'lucide-react'
+import { Archive, ArrowLeft, BarChart3, Layers, Pencil, Rocket, Trash2, Users, Sparkles } from 'lucide-react'
 import { getCourses, updateCourse, publishCourse } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext.jsx'
@@ -162,20 +162,28 @@ export default function TrainerCourses() {
                     className="flex flex-col gap-5 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(148,163,184,0.16)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                          {course.category || 'General'}
-                        </span>
+                      <div className="flex-1 space-y-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(148,163,184,0.16)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                            {course.category || 'General'}
+                          </span>
+                          {course.ai_assets && Object.keys(course.ai_assets).length > 0 && (
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(168,85,247,0.12)] px-3 py-1 text-xs font-semibold text-[#7c3aed]">
+                              <Sparkles className="h-3 w-3" />
+                              AI Enriched
+                            </span>
+                          )}
+                        </div>
                         <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                           {course.title || course.course_name}
                         </h2>
-                        <p className="text-sm text-[var(--text-secondary)]">
+                        <p className="text-sm leading-6 text-[var(--text-secondary)]">
                           {course.description ||
                             course.course_description ||
                             'Keep this course updated with the latest insights and best practices.'}
                         </p>
                       </div>
-                      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${badgeStyles(status)}`}>
+                      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest shrink-0 ${badgeStyles(status)}`}>
                         <Layers className="h-3 w-3" />
                         {status}
                       </span>
