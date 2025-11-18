@@ -195,12 +195,20 @@ export default function FeedbackPage() {
           return
         }
 
-        await updateFeedback(actualCourseId, {
+        const updatedFeedback = await updateFeedback(actualCourseId, {
           rating: numericRating,
           tags: tags.length > 0 ? tags : ['General'],
           comment: comment.trim()
         })
         showToast('Feedback updated successfully!', 'success')
+        // Update local state with new feedback data
+        setExistingFeedback({
+          ...existingFeedback,
+          rating: numericRating,
+          tags: tags.length > 0 ? tags : ['General'],
+          comment: comment.trim()
+        })
+        setIsEditing(false) // Exit edit mode after successful update
       } else {
         await submitFeedback(actualCourseId, {
           learner_id: learnerId,
@@ -210,9 +218,21 @@ export default function FeedbackPage() {
           comment: comment.trim()
         })
         showToast('Feedback submitted successfully! Thank you!', 'success')
+        // Reload feedback data to get the newly created feedback
+        const [learnerFeedback] = await Promise.all([
+          getMyFeedback(actualCourseId).catch(() => null)
+        ])
+        if (learnerFeedback) {
+          setExistingFeedback(learnerFeedback)
+          setRating(Number(learnerFeedback.rating) || 5)
+          setComment(learnerFeedback.comment || '')
+          setTags(Array.isArray(learnerFeedback.tags) ? learnerFeedback.tags : [])
+          setIsEditing(false)
+        } else {
+          // If reload fails, navigate away
+          navigate(`/course/${actualCourseId}/overview`, { replace: true })
+        }
       }
-
-      navigate(`/course/${actualCourseId}/overview`, { replace: true })
     } catch (error) {
       const message = error?.response?.data?.message || 'Failed to submit feedback'
       showToast(message, 'error')

@@ -12,7 +12,7 @@ export class CourseRepository {
    * Create a new course
    */
   async create(courseData) {
-    const courseId = uuidv4();
+    const courseId = courseData.id || uuidv4();
     const query = `
       INSERT INTO courses (
         id, course_name, course_description, course_type, status, level,

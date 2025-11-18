@@ -1,6 +1,8 @@
 import db from '../config/database.js';
 import feedbackRepository from '../repositories/FeedbackRepository.js';
 import courseRepository from '../repositories/CourseRepository.js';
+import { sendToDirectory } from '../integration/clients/directoryClient.js';
+import { sendCourseAnalytics } from '../integration/clients/learningAnalyticsClient.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const validateRating = (rating) => {
@@ -73,6 +75,34 @@ export const submitFeedback = async (courseId, { learner_id, rating, comment }) 
       rating: normalizedRating,
       comment: comment || null
     });
+
+    // Share feedback with Directory and Learning Analytics (async, don't block response)
+    try {
+      // Get course for sharing
+      const courseForSharing = await courseRepository.findById(courseId);
+      
+      // Share with Directory
+      try {
+        await sendToDirectory(feedback, courseForSharing);
+        console.log('[Feedback Service] Feedback shared with Directory successfully');
+      } catch (dirError) {
+        console.error('[Feedback Service] Failed to share feedback with Directory:', dirError.message);
+        // Don't throw - feedback is saved, sharing is best-effort
+      }
+
+      // Share with Learning Analytics
+      try {
+        const feedbackArray = [feedback];
+        await sendCourseAnalytics(courseForSharing, [], [], [], feedbackArray, []);
+        console.log('[Feedback Service] Feedback shared with Learning Analytics successfully');
+      } catch (analyticsError) {
+        console.error('[Feedback Service] Failed to share feedback with Learning Analytics:', analyticsError.message);
+        // Don't throw - feedback is saved, sharing is best-effort
+      }
+    } catch (shareError) {
+      console.error('[Feedback Service] Error during feedback sharing:', shareError.message);
+      // Don't throw - feedback is saved, sharing is best-effort
+    }
 
     return {
       message: 'Feedback submitted successfully',
@@ -192,6 +222,30 @@ export const updateFeedback = async (courseId, learnerId, { rating, comment }) =
     rating: normalizedRating,
     comment: comment || null
   });
+
+  // Share updated feedback with Directory and Learning Analytics (async, don't block response)
+  try {
+    const courseForSharing = await courseRepository.findById(courseId);
+    
+    // Share with Directory
+    try {
+      await sendToDirectory(updated, courseForSharing);
+      console.log('[Feedback Service] Updated feedback shared with Directory successfully');
+    } catch (dirError) {
+      console.error('[Feedback Service] Failed to share updated feedback with Directory:', dirError.message);
+    }
+
+    // Share with Learning Analytics
+    try {
+      const feedbackArray = [updated];
+      await sendCourseAnalytics(courseForSharing, [], [], [], feedbackArray, []);
+      console.log('[Feedback Service] Updated feedback shared with Learning Analytics successfully');
+    } catch (analyticsError) {
+      console.error('[Feedback Service] Failed to share updated feedback with Learning Analytics:', analyticsError.message);
+    }
+  } catch (shareError) {
+    console.error('[Feedback Service] Error during updated feedback sharing:', shareError.message);
+  }
 
   return {
     message: 'Feedback updated successfully',

@@ -20,7 +20,13 @@ export default function LearnerMarketplace() {
     setLoading(true)
     try {
       const data = await getCourses({ limit: 60, ...filters })
+      // Filter: Only show active courses (published) that are not personalized
       const marketplaceCourses = (data.courses || []).filter((course) => {
+        // Must be active (published)
+        if (course.status !== 'active') return false
+        // Must be trainer course (not learner_specific)
+        if (course.course_type === 'learner_specific') return false
+        // Exclude personalized courses
         const meta = course.metadata || {}
         return meta.personalized !== true && meta.source !== 'learner_ai'
       })
