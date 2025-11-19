@@ -11,7 +11,9 @@ import {
   PlayCircle,
   BookOpen,
   CheckCircle2,
-  Target
+  Target,
+  MessageSquare,
+  Edit3
 } from 'lucide-react'
 import Container from '../Container.jsx'
 
@@ -100,7 +102,9 @@ export default function CourseOverview({
   showStructureCta = true,
   learnerProfile,
   progressSummary,
-  backLink
+  backLink,
+  hasFeedback = false,
+  courseId = null
 }) {
   if (!course) {
     return null
@@ -125,7 +129,7 @@ export default function CourseOverview({
   const completedLessons = progressSummary?.completed_lessons?.length || 0
   const coursePrice = course?.price ?? 0
 
-  // For personalized courses, always show "Start learning" - never show enroll button
+  // For personalized courses, always show "Start Course" - never show enroll button
   const primaryCta = showStructureCta
     ? personalized
       ? (
@@ -135,7 +139,7 @@ export default function CourseOverview({
             onClick={onContinue}
           >
             <PlayCircle size={18} />
-            Start learning
+            Start Course
           </button>
         )
       : isEnrolled
@@ -314,8 +318,33 @@ export default function CourseOverview({
                     Progress {Math.round(progressPercent)}% · {completedLessons} lessons complete
                   </div>
                   <p className="mt-2 text-xs text-[#0f5132]">
-                    Status: {progressSummary?.status?.replace('_', ' ')}
+                    {personalized
+                      ? 'This is a personalized course, progress is tracked automatically.'
+                      : 'Your progress is saved automatically. Continue learning anytime.'}
                   </p>
+                </div>
+              )}
+
+              {/* Feedback Button - Show for enrolled learners */}
+              {isEnrolled && courseId && showStructureCta && (
+                <div className="flex items-center justify-center pt-4 border-t border-[rgba(148,163,184,0.16)]">
+                  {hasFeedback ? (
+                    <Link
+                      to={`/course/${courseId}/feedback`}
+                      className="btn btn-secondary flex items-center justify-center gap-2 w-full"
+                    >
+                      <Edit3 size={18} />
+                      Edit Feedback
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/course/${courseId}/feedback`}
+                      className="btn btn-secondary flex items-center justify-center gap-2 w-full"
+                    >
+                      <MessageSquare size={18} />
+                      Give Feedback
+                    </Link>
+                  )}
                 </div>
               )}
 

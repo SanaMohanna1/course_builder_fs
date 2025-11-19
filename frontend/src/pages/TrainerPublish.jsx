@@ -35,12 +35,18 @@ export default function TrainerPublish() {
   const handlePublish = async () => {
     setPublishing(true)
     try {
-      await publishCourse(id)
+      const result = await publishCourse(id)
       showToast('Course published successfully!', 'success')
-      navigate('/trainer/dashboard')
+      // Reload course to get updated status
+      await loadCourse()
+      // Show updated status
+      if (result?.status) {
+        showToast(`Course status updated to: ${result.status}`, 'success')
+      }
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Failed to publish course'
       showToast(message, 'error')
+      console.error('Publish error:', err)
     } finally {
       setPublishing(false)
     }

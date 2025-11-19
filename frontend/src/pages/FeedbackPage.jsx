@@ -174,6 +174,12 @@ export default function FeedbackPage() {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    // Only allow submit when in editing mode
+    if (!isEditing) {
+      showToast('Click "Edit feedback" to make changes.', 'info')
+      return
+    }
+
     const numericRating = Number(rating)
     if (Number.isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
       showToast('Rating must be between 1 and 5.', 'error')
@@ -190,11 +196,7 @@ export default function FeedbackPage() {
 
     try {
       if (existingFeedback) {
-        if (!isEditing) {
-          showToast('Feedback already submitted. Edit or delete it to make changes.', 'info')
-          return
-        }
-
+        // Update existing feedback
         const updatedFeedback = await updateFeedback(actualCourseId, {
           rating: numericRating,
           tags: tags.length > 0 ? tags : ['General'],
@@ -209,7 +211,12 @@ export default function FeedbackPage() {
           comment: comment.trim()
         })
         setIsEditing(false) // Exit edit mode after successful update
+        // Redirect to course overview after save
+        setTimeout(() => {
+          navigate(`/course/${actualCourseId}/overview`, { replace: true })
+        }, 1000)
       } else {
+        // Submit new feedback
         await submitFeedback(actualCourseId, {
           learner_id: learnerId,
           learner_name: userProfile?.name,
@@ -218,20 +225,10 @@ export default function FeedbackPage() {
           comment: comment.trim()
         })
         showToast('Feedback submitted successfully! Thank you!', 'success')
-        // Reload feedback data to get the newly created feedback
-        const [learnerFeedback] = await Promise.all([
-          getMyFeedback(actualCourseId).catch(() => null)
-        ])
-        if (learnerFeedback) {
-          setExistingFeedback(learnerFeedback)
-          setRating(Number(learnerFeedback.rating) || 5)
-          setComment(learnerFeedback.comment || '')
-          setTags(Array.isArray(learnerFeedback.tags) ? learnerFeedback.tags : [])
-          setIsEditing(false)
-        } else {
-          // If reload fails, navigate away
+        // Redirect to course overview immediately after submit
+        setTimeout(() => {
           navigate(`/course/${actualCourseId}/overview`, { replace: true })
-        }
+        }, 1000)
       }
     } catch (error) {
       const message = error?.response?.data?.message || 'Failed to submit feedback'

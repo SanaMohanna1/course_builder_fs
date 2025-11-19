@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { getCourseById, registerLearner } from '../services/apiService.js'
+import { getCourseById, registerLearner, getMyFeedback } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import CourseOverview from '../components/course/CourseOverview.jsx'
 import EnrollModal from '../components/course/EnrollModal.jsx'
@@ -19,6 +19,7 @@ export default function CourseDetailsPage() {
   const [isModalOpen, setModalOpen] = useState(false)
   const [isSubmitting, setSubmitting] = useState(false)
   const [learnerProgress, setLearnerProgress] = useState(null)
+  const [hasFeedback, setHasFeedback] = useState(false)
 
   const isPersonalizedFlow = useMemo(() => {
     const params = new URLSearchParams(location.search)
@@ -57,37 +58,23 @@ export default function CourseDetailsPage() {
 
         const existing = enrichedCourse.learner_progress || {}
         
-        // If personalized course and learner is not enrolled, auto-enroll them
+        // For personalized courses: Auto-enroll silently in background if not enrolled
+        // But don't block UI - treat as enrolled immediately
         if (!existing.is_enrolled && learnerId) {
-          try {
-            await registerLearner(id, {
-              learner_id: learnerId,
-              learner_name: userProfile?.name,
-              learner_company: userProfile?.company
-            })
-            // After enrollment, reload to get updated progress
-            const updatedData = await getCourseById(id, { learner_id: learnerId })
-            return updatedData.learner_progress || {
-              is_enrolled: true,
-              status: 'in_progress',
-              progress: 0,
-              completed_lessons: []
+          // Auto-enroll in background (fire and forget)
+          registerLearner(id, {
+            learner_id: learnerId,
+            learner_name: userProfile?.name,
+            learner_company: userProfile?.company
+          }).catch((err) => {
+            // Silently handle errors - don't block user experience
+            if (err.response?.status !== 409) {
+              console.warn('Background auto-enrollment failed for personalized course:', err)
             }
-          } catch (err) {
-            // If already enrolled (409), just return enrolled status
-            if (err.response?.status === 409) {
-              return {
-                is_enrolled: true,
-                status: existing.status || 'in_progress',
-                progress: existing.progress ?? 0,
-                completed_lessons: existing.completed_lessons || []
-              }
-            }
-            // For other errors, still treat as enrolled for personalized courses
-            console.warn('Auto-enrollment failed for personalized course:', err)
-          }
+          })
         }
         
+        // Always return enrolled status for personalized courses (no API call blocking)
         return {
           ...existing,
           is_enrolled: true,
@@ -99,8 +86,27 @@ export default function CourseDetailsPage() {
       
       const progress = await personalizedProgress()
 
+      // Determine if course is personalized
+      const isPersonalized = isPersonalizedFlow || Boolean(
+        enrichedCourse?.metadata?.personalized || enrichedCourse?.metadata?.source === 'learner_ai'
+      )
+      const isEnrolledCheck = isPersonalized || progress?.is_enrolled
+
+      // Check if learner has existing feedback
+      let feedbackExists = false
+      if (learnerId && isEnrolledCheck) {
+        try {
+          const feedback = await getMyFeedback(id)
+          feedbackExists = Boolean(feedback)
+        } catch (err) {
+          // No feedback exists or error - treat as no feedback
+          feedbackExists = false
+        }
+      }
+
       setCourse(enrichedCourse)
       setLearnerProgress(progress)
+      setHasFeedback(feedbackExists)
     } catch (err) {
       const message = err.message || 'Failed to load course'
       setError(message)
@@ -120,6 +126,7 @@ export default function CourseDetailsPage() {
   const isEnrolled = isPersonalizedCourse || learnerProgress?.is_enrolled
 
   const handleEnrollment = async () => {
+    // Personalized courses: Navigate directly to course structure (no enrollment API call)
     if (isPersonalizedCourse) {
       navigate(`/course/${id}/structure`)
       return
@@ -221,6 +228,8 @@ export default function CourseDetailsPage() {
         learnerProfile={userProfile}
         progressSummary={learnerProgress}
         backLink={isPersonalizedFlow ? '/learner/personalized' : '/learner/marketplace'}
+        hasFeedback={hasFeedback}
+        courseId={id}
       />
 
       {!isPersonalizedFlow && (
