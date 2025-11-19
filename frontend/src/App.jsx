@@ -42,7 +42,7 @@ function AppShell() {
 
       <Header />
 
-      <main id="main" className="pt-24">
+      <main id="main" className="pt-16 md:pt-20">
         <Routes>
           <Route
             path="/"

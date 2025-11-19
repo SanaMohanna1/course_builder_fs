@@ -81,7 +81,7 @@ export default function TrainerPublish() {
   return (
     <div className="page-surface">
       <Container>
-        <div className="mx-auto flex max-w-4xl flex-col gap-10 py-10">
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
           <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div className="space-y-3">

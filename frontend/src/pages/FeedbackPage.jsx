@@ -293,7 +293,7 @@ export default function FeedbackPage() {
   return (
     <div className="page-surface bg-[var(--bg-primary)] transition-colors">
       <Container>
-        <div className="mx-auto flex max-w-4xl flex-col gap-10 py-10">
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
           <div className="flex items-center justify-between gap-4">
             <Link
               to={`/course/${actualCourseId}/overview`}
