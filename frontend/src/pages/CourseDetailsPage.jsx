@@ -86,10 +86,7 @@ export default function CourseDetailsPage() {
       
       const progress = await personalizedProgress()
 
-      // Determine if course is personalized
-      const isPersonalized = isPersonalizedFlow || Boolean(
-        enrichedCourse?.metadata?.personalized || enrichedCourse?.metadata?.source === 'learner_ai'
-      )
+      // Determine if course is enrolled (reuse isPersonalized from above)
       const isEnrolledCheck = isPersonalized || progress?.is_enrolled
 
       // Check if learner has existing feedback
