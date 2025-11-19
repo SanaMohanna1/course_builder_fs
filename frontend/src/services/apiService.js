@@ -44,6 +44,15 @@ api.interceptors.request.use((config) => {
       config.headers['X-User-Id'] = profile.id
       config.headers['X-User-Name'] = profile.name
     }
+    
+    // Add trainer-specific headers for trainer requests
+    if (role === 'trainer') {
+      config.headers['x-user-role'] = 'trainer'
+      config.headers['x-service-id'] = 'CourseBuilder'
+      if (import.meta.env.VITE_SERVICE_API_KEY) {
+        config.headers['x-api-key'] = import.meta.env.VITE_SERVICE_API_KEY
+      }
+    }
   }
   return config
 })
@@ -64,6 +73,7 @@ export function submitFeedback(courseId, body) {
   return api.post(`/courses/${courseId}/feedback`, body).then(r => r.data)
 }
 
+// Get aggregated feedback for a course (for trainers/admins)
 export function getFeedback(courseId) {
   return api.get(`/feedback/${courseId}`).then(r => r.data)
 }
@@ -80,10 +90,10 @@ export function deleteFeedback(courseId) {
   return api.delete(`/courses/${courseId}/feedback`).then(r => r.data)
 }
 
+// Trainer API calls - these require trainer headers (added via interceptor)
 export function createCourse(payload) {
   return api.post('/courses', payload).then(r => r.data)
 }
-
 export function validateCourse(courseId) {
   return api.post(`/courses/${courseId}/validate`).then(r => r.data)
 }

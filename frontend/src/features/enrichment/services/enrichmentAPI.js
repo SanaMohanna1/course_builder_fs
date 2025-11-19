@@ -24,11 +24,30 @@ const ENRICHMENT_ENDPOINT = resolveEndpoint()
 
 export const enrichAssets = async (assetData = {}) => {
   try {
+    // Get user role from localStorage for trainer headers
+    const getStoredRole = () => {
+      if (typeof window === 'undefined') return 'learner'
+      const stored = window.localStorage.getItem('coursebuilder:userRole')
+      return stored && ['learner', 'trainer'].includes(stored) ? stored : 'learner'
+    }
+    
+    const role = getStoredRole()
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    
+    // Add trainer headers if role is trainer
+    if (role === 'trainer') {
+      headers['x-user-role'] = 'trainer'
+      headers['x-service-id'] = 'CourseBuilder'
+      if (import.meta.env.VITE_SERVICE_API_KEY) {
+        headers['x-api-key'] = import.meta.env.VITE_SERVICE_API_KEY
+      }
+    }
+    
     const response = await fetch(ENRICHMENT_ENDPOINT, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify(assetData)
     })
 
