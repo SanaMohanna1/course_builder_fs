@@ -65,6 +65,14 @@ export default function FeedbackPage() {
   const [existingFeedback, setExistingFeedback] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
 
+  // Draft state for editing (only updated when user makes changes, not saved until "Save Changes" is clicked)
+  const [draftFeedback, setDraftFeedback] = useState({
+    rating: 5,
+    comment: '',
+    tags: []
+  })
+
+  // Display state (for view mode)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [tags, setTags] = useState([])
@@ -103,13 +111,25 @@ export default function FeedbackPage() {
           setRating(Number(learnerFeedback.rating) || 5)
           setComment(learnerFeedback.comment || '')
           setTags(Array.isArray(learnerFeedback.tags) ? learnerFeedback.tags : [])
-          setIsEditing(false)
+          // Initialize draft with existing feedback data
+          setDraftFeedback({
+            rating: Number(learnerFeedback.rating) || 5,
+            comment: learnerFeedback.comment || '',
+            tags: Array.isArray(learnerFeedback.tags) ? learnerFeedback.tags : []
+          })
+          setIsEditing(false) // Start in view mode
         } else {
           setExistingFeedback(null)
           setRating(5)
           setComment('')
           setTags([])
-          setIsEditing(true)
+          // Initialize draft for new feedback
+          setDraftFeedback({
+            rating: 5,
+            comment: '',
+            tags: []
+          })
+          setIsEditing(true) // Start in edit mode for new feedback
         }
       } catch (error) {
         if (isMounted) {
@@ -130,25 +150,37 @@ export default function FeedbackPage() {
   }, [actualCourseId, showToast])
 
   const toggleTag = (tag) => {
-    setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
+    if (!isEditing) return
+    setDraftFeedback((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag) ? prev.tags.filter((t) => t !== tag) : [...prev.tags, tag]
+    }))
   }
 
   const startEdit = () => {
+    // Only toggle edit mode - NO API call
     if (existingFeedback) {
-      setRating(Number(existingFeedback.rating) || 5)
-      setComment(existingFeedback.comment || '')
-      setTags(Array.isArray(existingFeedback.tags) ? existingFeedback.tags : [])
+      // Initialize draft with existing feedback data
+      setDraftFeedback({
+        rating: Number(existingFeedback.rating) || 5,
+        comment: existingFeedback.comment || '',
+        tags: Array.isArray(existingFeedback.tags) ? existingFeedback.tags : []
+      })
     }
     setIsEditing(true)
   }
 
   const cancelEdit = () => {
     if (existingFeedback) {
-      setRating(Number(existingFeedback.rating) || 5)
-      setComment(existingFeedback.comment || '')
-      setTags(Array.isArray(existingFeedback.tags) ? existingFeedback.tags : [])
+      // Reset draft to existing feedback values
+      setDraftFeedback({
+        rating: Number(existingFeedback.rating) || 5,
+        comment: existingFeedback.comment || '',
+        tags: Array.isArray(existingFeedback.tags) ? existingFeedback.tags : []
+      })
       setIsEditing(false)
     } else {
+      // For new feedback, navigate away
       navigate(`/course/${actualCourseId}/overview`)
     }
   }
@@ -171,16 +203,14 @@ export default function FeedbackPage() {
     }
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-
-    // Only allow submit when in editing mode
+  const handleSaveChanges = async () => {
+    // Only allow save when in editing mode
     if (!isEditing) {
       showToast('Click "Edit feedback" to make changes.', 'info')
       return
     }
 
-    const numericRating = Number(rating)
+    const numericRating = Number(draftFeedback.rating)
     if (Number.isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
       showToast('Rating must be between 1 and 5.', 'error')
       return
@@ -196,21 +226,28 @@ export default function FeedbackPage() {
 
     try {
       if (existingFeedback) {
-        // Update existing feedback
+        // Update existing feedback - ONLY called when user clicks "Save Changes"
         const updatedFeedback = await updateFeedback(actualCourseId, {
           rating: numericRating,
-          tags: tags.length > 0 ? tags : ['General'],
-          comment: comment.trim()
+          tags: draftFeedback.tags.length > 0 ? draftFeedback.tags : ['General'],
+          comment: draftFeedback.comment.trim()
         })
         showToast('Feedback updated successfully!', 'success')
+        
         // Update local state with new feedback data
-        setExistingFeedback({
+        const updatedData = {
           ...existingFeedback,
           rating: numericRating,
-          tags: tags.length > 0 ? tags : ['General'],
-          comment: comment.trim()
-        })
+          tags: draftFeedback.tags.length > 0 ? draftFeedback.tags : ['General'],
+          comment: draftFeedback.comment.trim()
+        }
+        setExistingFeedback(updatedData)
+        setRating(numericRating)
+        setComment(draftFeedback.comment.trim())
+        setTags(draftFeedback.tags.length > 0 ? draftFeedback.tags : ['General'])
+        
         setIsEditing(false) // Exit edit mode after successful update
+        
         // Redirect to course overview after save
         setTimeout(() => {
           navigate(`/course/${actualCourseId}/overview`, { replace: true })
@@ -221,8 +258,8 @@ export default function FeedbackPage() {
           learner_id: learnerId,
           learner_name: userProfile?.name,
           rating: numericRating,
-          tags: tags.length > 0 ? tags : ['General'],
-          comment: comment.trim()
+          tags: draftFeedback.tags.length > 0 ? draftFeedback.tags : ['General'],
+          comment: draftFeedback.comment.trim()
         })
         showToast('Feedback submitted successfully! Thank you!', 'success')
         // Redirect to course overview immediately after submit
@@ -304,72 +341,131 @@ export default function FeedbackPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-sm backdrop-blur transition-colors">
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                      Overall rating
+            <div className="space-y-6">
+              {isEditing ? (
+                // EDIT MODE: Show editable inputs using draftFeedback
+                <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-sm backdrop-blur transition-colors">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <div className="text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                        Overall rating
+                      </div>
+                      {renderStars(draftFeedback.rating, (value) => setDraftFeedback(prev => ({ ...prev, rating: value })), true)}
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {draftFeedback.rating === 0
+                          ? 'Select a rating'
+                          : draftFeedback.rating === 1
+                            ? 'Needs significant improvement'
+                            : draftFeedback.rating === 2
+                              ? 'Below expectations'
+                              : draftFeedback.rating === 3
+                                ? 'Met expectations'
+                                : draftFeedback.rating === 4
+                                  ? 'Strong experience'
+                                  : 'Exceptional experience'}
+                      </div>
                     </div>
-                    {renderStars(rating, isEditing ? setRating : undefined, isEditing)}
-                    <div className="text-sm text-[var(--text-secondary)]">
-                      {rating === 0
-                        ? 'Select a rating'
-                        : rating === 1
-                          ? 'Needs significant improvement'
-                          : rating === 2
-                            ? 'Below expectations'
-                            : rating === 3
-                              ? 'Met expectations'
-                              : rating === 4
-                                ? 'Strong experience'
-                                : 'Exceptional experience'}
-                    </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-[var(--text-primary)]">
-                      Additional comments (optional)
-                    </label>
-                    <textarea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      rows={6}
-                      className="w-full resize-none rounded-2xl border border-[rgba(148,163,184,0.2)] bg-[var(--bg-card)]/90 p-4 text-sm text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--primary-cyan)] focus:ring-2 focus:ring-[var(--primary-cyan)]/30"
-                      placeholder="Tell us about your experience, what resonated, or what could be improved..."
-                      readOnly={!isEditing}
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-semibold text-[var(--text-primary)]">Tag this experience</label>
-                      <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                        Optional
-                      </span>
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-[var(--text-primary)]">
+                        Additional comments (optional)
+                      </label>
+                      <textarea
+                        value={draftFeedback.comment}
+                        onChange={(e) => setDraftFeedback(prev => ({ ...prev, comment: e.target.value }))}
+                        rows={6}
+                        className="w-full resize-none rounded-2xl border border-[rgba(148,163,184,0.2)] bg-[var(--bg-card)]/90 p-4 text-sm text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--primary-cyan)] focus:ring-2 focus:ring-[var(--primary-cyan)]/30"
+                        placeholder="Tell us about your experience, what resonated, or what could be improved..."
+                      />
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {tagOptions.map((tag) => {
-                        const active = tags.includes(tag)
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => (isEditing ? toggleTag(tag) : null)}
-                            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                              active
-                                ? 'bg-[rgba(14,165,233,0.18)] text-[#0f766e] border border-[rgba(14,165,233,0.3)]'
-                                : 'bg-[rgba(148,163,184,0.12)] text-[var(--text-muted)]'
-                            } ${!isEditing ? 'cursor-default opacity-70' : 'hover:opacity-80'}`}
-                          >
-                            #{tag}
-                          </button>
-                        )
-                      })}
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold text-[var(--text-primary)]">Tag this experience</label>
+                        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                          Optional
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {tagOptions.map((tag) => {
+                          const active = draftFeedback.tags.includes(tag)
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleTag(tag)}
+                              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                                active
+                                  ? 'bg-[rgba(14,165,233,0.18)] text-[#0f766e] border border-[rgba(14,165,233,0.3)]'
+                                  : 'bg-[rgba(148,163,184,0.12)] text-[var(--text-muted)]'
+                              } hover:opacity-80`}
+                            >
+                              #{tag}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                // VIEW MODE: Show read-only display using existingFeedback
+                <div className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-sm backdrop-blur transition-colors">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <div className="text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                        Overall rating
+                      </div>
+                      {renderStars(rating, undefined, false)}
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {rating === 0
+                          ? 'Select a rating'
+                          : rating === 1
+                            ? 'Needs significant improvement'
+                            : rating === 2
+                              ? 'Below expectations'
+                              : rating === 3
+                                ? 'Met expectations'
+                                : rating === 4
+                                  ? 'Strong experience'
+                                  : 'Exceptional experience'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-[var(--text-primary)]">
+                        Additional comments (optional)
+                      </label>
+                      <div className="w-full rounded-2xl border border-[rgba(148,163,184,0.2)] bg-[var(--bg-card)]/90 p-4 text-sm text-[var(--text-primary)]">
+                        {comment || <span className="text-[var(--text-muted)] italic">No comments provided</span>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold text-[var(--text-primary)]">Tag this experience</label>
+                        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                          Optional
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {tags.length > 0 ? (
+                          tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full px-3 py-1 text-xs font-semibold bg-[rgba(14,165,233,0.18)] text-[#0f766e] border border-[rgba(14,165,233,0.3)]"
+                            >
+                              #{tag}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[var(--text-muted)] italic">No tags selected</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-3 border-t border-[rgba(148,163,184,0.16)] pt-6 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
@@ -379,6 +475,7 @@ export default function FeedbackPage() {
 
                 <div className="flex flex-wrap items-center gap-3">
                   {readonlyView ? (
+                    // VIEW MODE: Show Edit and Delete buttons
                     <>
                       <Button variant="secondary" onClick={startEdit}>
                         <Edit3 className="mr-2 h-4 w-4" />
@@ -399,11 +496,12 @@ export default function FeedbackPage() {
                       </Button>
                     </>
                   ) : (
+                    // EDIT MODE: Show Cancel and Save Changes buttons
                     <>
                       <Button variant="secondary" onClick={cancelEdit} disabled={formLoading}>
                         Cancel
                       </Button>
-                      <Button variant="primary" type="submit" disabled={formLoading}>
+                      <Button variant="primary" onClick={handleSaveChanges} disabled={formLoading}>
                         {formLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -412,7 +510,7 @@ export default function FeedbackPage() {
                         ) : hasExistingFeedback ? (
                           <>
                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Update feedback
+                            Save Changes
                           </>
                         ) : (
                           <>
@@ -425,7 +523,7 @@ export default function FeedbackPage() {
                   )}
                 </div>
               </div>
-            </form>
+            </div>
           </section>
         </div>
       </Container>
