@@ -261,7 +261,7 @@ export default function CourseDetailsPage() {
       <div className="page-surface">
         <Container>
           <section className="surface-card soft flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
-            <i className="fa-solid fa-triangle-exclamation text-4xl text-[#f97316]" aria-hidden="true" />
+            <i className="fa-solid fa-triangle-exclamation text-4xl" style={{ color: 'var(--accent-orange)' }} aria-hidden="true" />
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
               {error || 'Course not found'}
             </h2>

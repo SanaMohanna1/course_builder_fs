@@ -220,8 +220,8 @@ export default function CourseOverview({
                       <span
                         className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                         style={{
-                          background: 'rgba(124,58,237,0.14)',
-                          color: '#6d28d9'
+                          background: 'var(--chip-surface, rgba(56, 189, 248, 0.16))',
+                          color: 'var(--primary-purple, var(--primary-cyan))'
                         }}
                       >
                         PERSONALIZED
@@ -231,8 +231,8 @@ export default function CourseOverview({
                       <span
                         className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                         style={{
-                          background: 'rgba(14,165,233,0.14)',
-                          color: '#0f766e'
+                          background: 'var(--chip-surface, rgba(56, 189, 248, 0.16))',
+                          color: 'var(--primary-cyan)'
                         }}
                       >
                         MARKETPLACE
@@ -241,8 +241,8 @@ export default function CourseOverview({
                 <span
                   className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                   style={{
-                    background: 'rgba(16,185,129,0.12)',
-                    color: '#047857'
+                    background: 'var(--surface-muted, rgba(25, 36, 54, 0.9))',
+                    color: 'var(--accent-green)'
                   }}
                 >
                   {course?.metadata?.difficulty || course?.level || 'Intermediate'}
@@ -278,7 +278,8 @@ export default function CourseOverview({
                 {metadata.map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-2xl border border-[rgba(148,163,184,0.14)] bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors"
+                    className="rounded-2xl border bg-[var(--bg-card)]/90 p-4 text-sm shadow-sm backdrop-blur transition-colors"
+                    style={{ borderColor: 'var(--border-subtle, var(--border-color))' }}
                     style={{ background: 'var(--bg-card)' }}
                   >
                     <div className="flex items-center gap-2 text-[var(--primary-cyan)]">
@@ -295,7 +296,7 @@ export default function CourseOverview({
               </div>
             </div>
 
-            <aside className="space-y-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/90 p-6 shadow-lg backdrop-blur transition-colors">
+            <aside className="space-y-4 rounded-3xl border bg-[var(--bg-card)]/90 p-6 shadow-lg backdrop-blur transition-colors" style={{ borderColor: 'var(--border-subtle, var(--border-color))' }}>
               <div className="space-y-2 text-sm">
                 <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   Course access
@@ -329,12 +330,16 @@ export default function CourseOverview({
               </div>
 
               {progressSummary?.status && (
-                <div className="rounded-2xl border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.08)] p-4 text-sm text-[#047857]">
+                <div className="rounded-2xl border p-4 text-sm" style={{ 
+                  borderColor: 'var(--accent-green)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--accent-green)'
+                }}>
                   <div className="flex items-center gap-2 font-semibold">
                     <CheckCircle2 size={16} />
                     Progress {Math.round(progressPercent)}% · {completedLessons} lessons complete
                   </div>
-                  <p className="mt-2 text-xs text-[#0f5132]">
+                  <p className="mt-2 text-xs" style={{ color: 'var(--accent-green)' }}>
                     {personalized
                       ? 'This is a personalized course, progress is tracked automatically.'
                       : 'Your progress is saved automatically. Continue learning anytime.'}
@@ -344,7 +349,7 @@ export default function CourseOverview({
 
               {/* Feedback Button - Show for enrolled learners */}
               {isEnrolled && courseId && showStructureCta && (
-                <div className="flex items-center justify-center pt-4 border-t border-[rgba(148,163,184,0.16)]">
+                <div className="flex items-center justify-center pt-4 border-t" style={{ borderColor: 'var(--border-subtle, var(--border-color))' }}>
                   {hasFeedback ? (
                     <Link
                       to={`/course/${courseId}/feedback`}
@@ -436,7 +441,10 @@ export default function CourseOverview({
                               </p>
                             )}
                           </div>
-                          <span className="rounded-full bg-[rgba(14,165,233,0.12)] px-3 py-1 text-xs font-semibold text-[#0f766e]">
+                          <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ 
+                            background: 'var(--chip-surface, rgba(56, 189, 248, 0.16))',
+                            color: 'var(--primary-cyan)'
+                          }}>
                             {(topic.modules?.length || 1)} module{(topic.modules?.length || 1) > 1 ? 's' : ''}
                           </span>
                         </div>
@@ -516,7 +524,7 @@ export default function CourseOverview({
                 <div className="flex items-center gap-3">
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-full"
-                    style={{ background: 'var(--gradient-primary)', color: '#fff' }}
+                    style={{ background: 'var(--gradient-primary)', color: 'var(--text-primary)' }}
                   >
                     <Award size={20} />
                   </div>

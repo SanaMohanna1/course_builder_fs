@@ -135,7 +135,7 @@ export default function CourseStructureSidebar({
   if (hierarchy.length === 0) {
     return (
       <div className="rounded-xl border p-4 text-center" style={{ 
-        borderColor: 'var(--border-color, rgba(148,163,184,0.18))',
+        borderColor: 'var(--border-subtle, var(--border-color))',
         backgroundColor: 'var(--bg-secondary)'
       }}>
         <BookOpen className="mx-auto mb-3 h-6 w-6" style={{ color: 'var(--text-muted)' }} />
@@ -152,7 +152,7 @@ export default function CourseStructureSidebar({
     <div 
       className="rounded-xl border p-4 transition-colors sticky top-6 overflow-y-auto"
       style={{
-        borderColor: 'var(--border-color)',
+        borderColor: 'var(--border-subtle, var(--border-color))',
         backgroundColor: 'var(--bg-secondary)',
         maxHeight: 'calc(100vh - 120px)'
       }}
@@ -168,7 +168,7 @@ export default function CourseStructureSidebar({
                 key={topic.id}
                 className="rounded-lg border transition-colors"
                 style={{
-                  borderColor: 'var(--border-color, rgba(148,163,184,0.12))',
+                  borderColor: 'var(--border-subtle, var(--border-color))',
                   backgroundColor: 'var(--bg-secondary)'
                 }}
               >
@@ -207,7 +207,7 @@ export default function CourseStructureSidebar({
                           key={module.id}
                           className="rounded-lg border transition-colors"
                           style={{
-                            borderColor: 'var(--border-color, rgba(148,163,184,0.08))',
+                            borderColor: 'var(--border-subtle, var(--border-color))',
                             backgroundColor: 'var(--bg-card)'
                           }}
                         >
@@ -259,40 +259,43 @@ export default function CourseStructureSidebar({
                                       }`}
                                       style={{
                                         background: isActive
-                                          ? 'rgba(14,165,233,0.15)'
+                                          ? 'var(--chip-surface, rgba(56, 189, 248, 0.16))'
                                           : completed
-                                            ? 'rgba(16,185,129,0.1)'
+                                            ? 'var(--accent-green)'
                                             : 'transparent',
-                                        border: isActive ? '1px solid var(--primary-cyan, #0ea5e9)' : '1px solid transparent',
+                                        border: isActive ? '1px solid var(--primary-cyan)' : '1px solid transparent',
                                         color: 'var(--text-primary)'
                                       }}
+                                      className={completed && !isActive ? 'opacity-80' : ''}
                                       onClick={() => handleLessonClick(lessonId)}
                                       disabled={disabled}
                                       onMouseEnter={(e) => {
                                         if (!disabled && !isActive) {
-                                          e.currentTarget.style.backgroundColor = 'var(--bg-secondary, rgba(148,163,184,0.1))'
+                                          e.currentTarget.style.backgroundColor = 'var(--bg-primary)'
+                                          e.currentTarget.style.opacity = '0.8'
                                         }
                                       }}
                                       onMouseLeave={(e) => {
                                         if (!isActive) {
                                           e.currentTarget.style.backgroundColor = completed
-                                            ? 'rgba(16,185,129,0.1)'
+                                            ? 'color-mix(in srgb, var(--accent-green) 10%, transparent)'
                                             : 'transparent'
+                                          e.currentTarget.style.opacity = '1'
                                         }
                                       }}
                                     >
                                       <span className="flex-shrink-0">
                                         {completed ? (
-                                          <CheckCircle2 size={14} className="text-[#10b981]" />
+                                          <CheckCircle2 size={14} style={{ color: 'var(--badge-color, var(--accent-green))' }} />
                                         ) : accessible ? (
-                                          <PlayCircle size={14} className="text-[var(--primary-cyan)]" />
+                                          <PlayCircle size={14} style={{ color: 'var(--primary-cyan)' }} />
                                         ) : (
-                                          <Lock size={14} className="text-[var(--text-muted)]" />
+                                          <Lock size={14} style={{ color: 'var(--text-muted)' }} />
                                         )}
                                       </span>
                                       <span className="flex-1 text-xs font-medium leading-tight">{lesson.title}</span>
                                       {completed && (
-                                        <CheckCircle2 size={12} className="flex-shrink-0 text-[#10b981]" />
+                                        <CheckCircle2 size={12} className="flex-shrink-0" style={{ color: 'var(--badge-color, var(--accent-green))' }} />
                                       )}
                                     </button>
                                   </li>
