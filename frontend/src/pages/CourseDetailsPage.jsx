@@ -94,16 +94,14 @@ export default function CourseDetailsPage() {
       if (learnerId && isEnrolledCheck) {
         try {
           const feedbackData = await getMyFeedback(id)
-          feedbackExists = Boolean(feedbackData)
-        } catch (err) {
-          // 404 is normal - learner hasn't submitted feedback yet
-          if (err.response?.status === 404) {
-            feedbackExists = false
-          } else {
-            // Other errors - log but don't break the UI
-            console.warn('Failed to load feedback:', err)
-            feedbackExists = false
+          if (feedbackData && typeof feedbackData === 'object' && (feedbackData.id || feedbackData.rating)) {
+            feedbackExists = true
           }
+        } catch (err) {
+          // All errors (including 404) mean no feedback exists yet
+          // This is normal behavior - don't treat 404 as an error
+          // Silently handle all errors - no feedback exists
+          feedbackExists = false
         }
       }
 
