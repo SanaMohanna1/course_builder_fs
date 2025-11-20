@@ -276,30 +276,31 @@ export default function LessonPage() {
 
           <div className="p-6">
             <LessonView
-            courseTitle={course?.title || course?.course_name}
-            lesson={lesson}
-            onPrevious={previousLesson ? () => navigate(`/course/${courseId}/lesson/${previousLesson.id || previousLesson.lesson_id}`) : undefined}
-            onNext={
-              nextLesson ? () => navigate(`/course/${courseId}/lesson/${nextLesson.id || nextLesson.lesson_id}`) : undefined
-            }
-            onComplete={handleComplete}
-            isCompleted={hasCompletedCurrent}
-            completionSummary={completionSummary}
-            onTakeTest={isFinalLesson ? handleTakeTest : undefined}
-            isFinalLesson={isFinalLesson}
-            structureHref={`/course/${courseId}/overview`}
-            overviewHref={`/course/${courseId}/overview`}
-            enrichmentAssets={enrichmentAssets}
-            enrichmentLoading={enrichmentLoading}
-            enrichmentError={enrichmentError}
-            enrichmentAsset={enrichmentAssetDescriptor}
-            onEnrichmentResults={handleEnrichmentResults}
-            onEnrichmentLoading={handleEnrichmentLoading}
-            onEnrichmentError={handleEnrichmentError}
-            course={course}
-            courseId={courseId}
-            userRole={userRole}
-          />
+              courseTitle={course?.title || course?.course_name}
+              lesson={lesson}
+              onPrevious={previousLesson ? () => navigate(`/course/${courseId}/lesson/${previousLesson.id || previousLesson.lesson_id}`) : undefined}
+              onNext={
+                nextLesson ? () => navigate(`/course/${courseId}/lesson/${nextLesson.id || nextLesson.lesson_id}`) : undefined
+              }
+              onComplete={handleComplete}
+              isCompleted={hasCompletedCurrent}
+              completionSummary={completionSummary}
+              onTakeTest={isFinalLesson ? handleTakeTest : undefined}
+              isFinalLesson={isFinalLesson}
+              structureHref={`/course/${courseId}/overview`}
+              overviewHref={`/course/${courseId}/overview`}
+              enrichmentAssets={enrichmentAssets}
+              enrichmentLoading={enrichmentLoading}
+              enrichmentError={enrichmentError}
+              enrichmentAsset={enrichmentAssetDescriptor}
+              onEnrichmentResults={handleEnrichmentResults}
+              onEnrichmentLoading={handleEnrichmentLoading}
+              onEnrichmentError={handleEnrichmentError}
+              course={course}
+              courseId={courseId}
+              userRole={userRole}
+            />
+          </div>
         </div>
       </Container>
     </div>
