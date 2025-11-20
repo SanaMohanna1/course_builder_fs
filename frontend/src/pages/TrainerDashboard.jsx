@@ -116,11 +116,11 @@ export default function TrainerDashboard() {
             </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link to="/trainer/courses" className="btn btn-primary inline-flex items-center gap-2">
+              <Link to="/trainer/courses" className="btn-trainer-primary inline-flex items-center gap-2">
                 <PlusCircle className="h-4 w-4" />
                 Manage courses
               </Link>
-              <button type="button" className="btn btn-secondary inline-flex items-center gap-2" onClick={loadCourses}>
+              <button type="button" className="btn-trainer-secondary inline-flex items-center gap-2" onClick={loadCourses}>
                 <RefreshCw className="h-4 w-4" />
                 Refresh data
               </button>
@@ -232,7 +232,7 @@ export default function TrainerDashboard() {
                         type="button"
                             onClick={() => onPublish(courseId)}
                         disabled={publishing}
-                            className="btn btn-primary flex-1 min-w-[140px] items-center justify-center gap-2"
+                            className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2"
                       >
                             <Rocket className="h-4 w-4" />
                             Publish
@@ -240,7 +240,7 @@ export default function TrainerDashboard() {
                     )}
                         <Link
                           to={`/trainer/course/${courseId}`}
-                          className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                          className="btn-trainer-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
                         >
                           <Layers className="h-4 w-4" />
                           Structure
@@ -248,7 +248,7 @@ export default function TrainerDashboard() {
                         {isLive && (
                           <Link
                             to={`/trainer/feedback/${courseId}`}
-                            className="btn btn-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
+                            className="btn-trainer-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
                           >
                             <BarChart3 className="h-4 w-4" />
                             Feedback

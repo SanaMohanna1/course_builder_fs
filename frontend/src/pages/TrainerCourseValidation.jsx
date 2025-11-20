@@ -213,9 +213,13 @@ export default function TrainerCourseValidation() {
                 scheduling and publishing.
               </p>
             </div>
-            <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
+            <button
+              type="button"
+              className="btn-trainer-secondary"
+              onClick={() => navigate('/trainer/dashboard')}
+            >
               Back to dashboard
-            </Button>
+            </button>
           </header>
 
           <article className="flex flex-col gap-5 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
@@ -262,14 +266,24 @@ export default function TrainerCourseValidation() {
                       </select>
                     </div>
                     <div className="flex gap-3">
-                      <Button variant="primary" onClick={handleSaveEdit} disabled={saving}>
-                        <Save className="mr-2 h-4 w-4" />
+                      <button
+                        type="button"
+                        className="btn-trainer-primary"
+                        onClick={handleSaveEdit}
+                        disabled={saving}
+                      >
+                        <Save className="h-4 w-4" />
                         {saving ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                      <Button variant="secondary" onClick={handleCancelEdit} disabled={saving}>
-                        <X className="mr-2 h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-trainer-secondary"
+                        onClick={handleCancelEdit}
+                        disabled={saving}
+                      >
+                        <X className="h-4 w-4" />
                         Cancel
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -285,10 +299,14 @@ export default function TrainerCourseValidation() {
                             'Maintain an up-to-date description so learners know exactly what outcomes to expect.'}
                         </p>
                       </div>
-                      <Button variant="secondary" onClick={handleStartEdit} className="shrink-0">
-                        <Pencil className="mr-2 h-4 w-4" />
+                      <button
+                        type="button"
+                        className="btn-trainer-secondary shrink-0"
+                        onClick={handleStartEdit}
+                      >
+                        <Pencil className="h-4 w-4" />
                         Edit
-                      </Button>
+                      </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(99,102,241,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#4338ca]">
@@ -367,13 +385,21 @@ export default function TrainerCourseValidation() {
           </section>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button variant="primary" onClick={() => navigate(`/trainer/publish/${id}`)}>
-              <Rocket className="mr-2 h-4 w-4" />
+            <button
+              type="button"
+              className="btn-trainer-primary"
+              onClick={() => navigate(`/trainer/publish/${id}`)}
+            >
+              <Rocket className="h-4 w-4" />
               Proceed to publishing
-            </Button>
-            <Button variant="secondary" onClick={() => navigate('/trainer/dashboard')}>
+            </button>
+            <button
+              type="button"
+              className="btn-trainer-secondary"
+              onClick={() => navigate('/trainer/dashboard')}
+            >
               Save & return
-            </Button>
+            </button>
           </div>
         </div>
       </Container>

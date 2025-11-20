@@ -49,7 +49,7 @@ export default function LearnerMarketplace() {
   return (
     <div className="personalized-dashboard">
       <Container>
-        <div className="section-panel space-y-6">
+        <div className="section-panel space-y-4 pt-2">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--primary-cyan)]">
               Marketplace

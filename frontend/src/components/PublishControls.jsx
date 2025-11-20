@@ -156,8 +156,9 @@ export default function PublishControls({ courseId, onPublish, onSchedule, loadi
 
       {/* Action Buttons */}
       <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
-        <Button
-          variant="primary"
+        <button
+          type="button"
+          className="btn-trainer-primary"
           onClick={handlePublish}
           disabled={loading}
           style={{ flex: 1 }}
@@ -173,7 +174,7 @@ export default function PublishControls({ courseId, onPublish, onSchedule, loadi
               {publishMode === 'immediate' ? 'Publish Now' : 'Schedule Publish'}
             </>
           )}
-        </Button>
+        </button>
       </div>
     </div>
   )

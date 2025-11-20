@@ -1220,6 +1220,37 @@ body {
   outline-offset: 2px;
 }
 
+.course-card-enhanced {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 253, 250, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(15, 118, 110, 0.14);
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.course-card-enhanced .course-card {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  gap: var(--spacing-md);
+}
+
+.course-card-enhanced .course-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
 .mobile-menu-button {
   display: none;
   align-items: center;
@@ -1716,6 +1747,97 @@ body {
   background: var(--accent-orange);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4);
+}
+
+/* Enhanced Trainer Button Styles */
+.btn-trainer-primary {
+  background: linear-gradient(135deg, #047857, #059669);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3), 0 2px 4px rgba(4, 120, 87, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.btn-trainer-primary:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(4, 120, 87, 0.4), 0 3px 6px rgba(4, 120, 87, 0.3);
+}
+
+.btn-trainer-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3);
+}
+
+.btn-trainer-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-trainer-secondary {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3), 0 2px 4px rgba(15, 118, 110, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.btn-trainer-secondary:hover {
+  background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.4), 0 3px 6px rgba(15, 118, 110, 0.3);
+}
+
+.btn-trainer-secondary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
+}
+
+.btn-trainer-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-trainer-accent {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3), 0 2px 4px rgba(217, 119, 6, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.btn-trainer-accent:hover {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4), 0 3px 6px rgba(217, 119, 6, 0.3);
+}
+
+.btn-trainer-accent:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
 }
 
 .hero {

@@ -71,31 +71,32 @@ function LibraryCourseCard({ course }) {
   ]
 
   return (
-    <article className="course-card" style={{ gap: 'var(--spacing-lg)' }}>
-      <header style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 'var(--spacing-md)' }}>
-        <div>
-          <p style={{ fontSize: '0.7rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: 'var(--primary-cyan)', fontWeight: 600 }}>Enrolled</p>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: 'var(--spacing-sm)' }}>{course.title}</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Level: {course.level || 'beginner'} · Status: {(course.status || 'in_progress').replace('_', ' ')}
-          </p>
-        </div>
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <span className="status-chip" style={{ background: 'rgba(14,165,233,0.12)', color: '#0f766e' }}>
-            <i className="fa-solid fa-chart-line" /> Progress
-          </span>
-          <span style={{ fontSize: '2.4rem', fontWeight: 700, color: 'var(--primary-cyan)' }}>{Math.round(course.progress)}%</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            {completedLessons} / {totalLessons} lessons
-          </span>
-        </div>
-      </header>
+    <article className="course-card-enhanced">
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-wrap justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">Enrolled</p>
+            <h3 className="text-xl font-semibold text-[var(--text-primary)] mt-2">{course.title}</h3>
+            <p className="text-sm text-[var(--text-muted)] mt-1">
+              Level: {course.level || 'beginner'} · Status: {(course.status || 'in_progress').replace('_', ' ')}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className="status-chip status-chip-info">
+              <i className="fa-solid fa-chart-line" /> Progress
+            </span>
+            <span className="text-3xl font-bold text-[var(--primary-cyan)]">{Math.round(course.progress)}%</span>
+            <span className="text-xs text-[var(--text-muted)]">
+              {completedLessons} / {totalLessons} lessons
+            </span>
+          </div>
+        </header>
 
-      <div className="progress-track">
-        <div className="progress-fill" style={{ width: `${course.progress}%` }} />
-      </div>
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${course.progress}%` }} />
+        </div>
 
-      <div className="stage-grid">
+        <div className="stage-grid">
         {stageButtons.map((btn) => {
           if (btn.component) {
             return <div key={btn.key}>{btn.component}</div>
@@ -118,14 +119,15 @@ function LibraryCourseCard({ course }) {
                   : undefined
               }
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+              <div className="flex justify-between w-full">
                 <span>{btn.label}</span>
-                <i className={btn.icon} style={{ color: 'var(--text-muted)' }} />
+                <i className={`${btn.icon} text-[var(--text-muted)]`} />
               </div>
               <small>{btn.description}</small>
             </button>
           )
         })}
+        </div>
       </div>
     </article>
   )
@@ -213,35 +215,23 @@ export default function LearnerLibrary() {
   }
 
   return (
-    <div className="personalized-dashboard">
-      <section className="hero">
-        <div className="hero-container">
-          <div className="hero-content">
-            <p className="subtitle">Welcome back{userProfile?.name ? `, ${userProfile.name}` : ''}</p>
-            <h1>Continue where you left off</h1>
-            <p className="subtitle">
-              Access enrolled courses, monitor progress, and complete pending assessments to unlock certificates.
-            </p>
-            <div className="hero-actions">
-              <Link to="/learner/marketplace" className="btn btn-primary">
-                Enrol in new course
-              </Link>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => loadProgress(userProfile?.id)}
-                disabled={!userProfile?.id}
-              >
-                Refresh progress
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
+    <div className="page-surface">
       <Container>
-        <div className="section-panel">
-          <div className="surface-card soft flex flex-wrap items-center justify-between gap-4">
+        <div className="stack-lg pt-4">
+          <section className="surface-card space-y-6">
+            <div className="space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">
+                My Library
+              </p>
+              <h1 className="text-3xl font-bold text-[var(--text-primary)]">
+                Continue where you left off
+              </h1>
+              <p className="max-w-3xl text-base leading-7 text-[var(--text-secondary)]">
+                Access enrolled courses, monitor progress, and complete pending assessments to unlock certificates.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)]/95 p-6 shadow-[var(--shadow-card)]">
             <div className="flex flex-wrap gap-2">
               {['all', 'in_progress', 'completed'].map((option) => (
                 <button

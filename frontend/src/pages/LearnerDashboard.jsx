@@ -100,7 +100,7 @@ export default function LearnerDashboard() {
   return (
     <div className="dashboard-surface">
       <Container>
-        <div className="stack-xl">
+        <div className="stack-xl pt-4">
           <section className="hero-spotlight text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[var(--primary-cyan)]">Learner HQ</p>
             <h1 className="text-4xl font-bold text-[var(--text-primary)]">

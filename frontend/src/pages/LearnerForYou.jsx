@@ -162,7 +162,7 @@ export default function LearnerForYou() {
   return (
     <div className="page-surface">
       <Container>
-        <div className="stack-lg">
+        <div className="stack-lg pt-4">
           <section className="surface-card space-y-6">
             <div className="space-y-3">
               <p className="text-sm font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">
@@ -249,11 +249,21 @@ export default function LearnerForYou() {
                 {courses.map((course) => {
                   const courseId = course.id || course.course_id
                   return (
-                    <CourseCard
-                      key={courseId}
-                      course={course}
-                      to={`/courses/${courseId}?personalized=true`}
-                    />
+                    <div key={courseId} className="course-card-enhanced">
+                      <CourseCard
+                        course={course}
+                        to={`/courses/${courseId}?personalized=true`}
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <Link
+                          to={`/courses/${courseId}?personalized=true`}
+                          className="btn btn-primary btn-sm flex items-center gap-2"
+                        >
+                          <i className="fa-solid fa-play" />
+                          Start Course
+                        </Link>
+                      </div>
+                    </div>
                   )
                 })}
               </div>

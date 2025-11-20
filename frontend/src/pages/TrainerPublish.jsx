@@ -94,9 +94,13 @@ export default function TrainerPublish() {
                   Confirm the course metadata, choose a launch window, and publish instantly or schedule a future release.
                 </p>
               </div>
-              <Button variant="secondary" onClick={() => navigate(`/trainer/course/${id}`)}>
+              <button
+                type="button"
+                className="btn-trainer-secondary"
+                onClick={() => navigate(`/trainer/course/${id}`)}
+              >
                 Back to validation
-              </Button>
+              </button>
             </div>
             {course && (
               <div className="grid gap-4 sm:grid-cols-3">
