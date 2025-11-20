@@ -283,9 +283,9 @@ export default function CourseDetailsPage() {
   return (
     <>
       <div className="page-surface bg-[var(--bg-primary)] min-h-screen transition-colors">
-        <div className="flex flex-col lg:flex-row gap-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-8 py-4">
           {/* Left Sidebar - Fixed to left edge */}
-          <aside className="w-full lg:w-[300px] lg:pl-6 shrink-0">
+          <aside className="w-full lg:w-[320px] lg:pl-6 shrink-0">
             <CourseStructureSidebar
               course={course}
               learnerProgress={learnerProgress}
@@ -296,9 +296,9 @@ export default function CourseDetailsPage() {
           </aside>
 
           {/* Main Content - Centered in remaining space */}
-          <main className="flex-1 mt-2">
+          <main className="flex-1">
             <Container>
-              <div className="max-w-5xl mx-auto">
+              <div className="max-w-5xl mx-auto pt-2">
                 {hasFeedback && (
                   <div className="mb-4">
                     <button
