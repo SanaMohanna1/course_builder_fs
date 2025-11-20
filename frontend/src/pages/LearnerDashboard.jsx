@@ -14,6 +14,8 @@ dayjs.extend(relativeTime)
 export default function LearnerDashboard() {
   const { showToast, userProfile } = useApp()
   const [recommended, setRecommended] = useState([])
+  const [personalizedCoursesList, setPersonalizedCoursesList] = useState([])
+  const [marketplaceCoursesList, setMarketplaceCoursesList] = useState([])
   const [continueLearning, setContinueLearning] = useState([])
   const [trendingTopics, setTrendingTopics] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,13 +32,17 @@ export default function LearnerDashboard() {
       const allCourses = coursesData.courses || []
       
       // Separate personalized and marketplace courses
-      const personalizedCourses = filterPersonalizedCourses(allCourses)
-      const marketplaceCourses = filterMarketplaceCourses(allCourses)
+      const personalized = filterPersonalizedCourses(allCourses)
+      const marketplace = filterMarketplaceCourses(allCourses)
       
-      // Set recommended: personalized first, then marketplace
+      // Store separate lists for display in different sections
+      setPersonalizedCoursesList(personalized)
+      setMarketplaceCoursesList(marketplace)
+      
+      // Set recommended: personalized first, then marketplace (for backward compatibility)
       const recommended = [
-        ...personalizedCourses.slice(0, 3),
-        ...marketplaceCourses.slice(0, 3)
+        ...personalized.slice(0, 3),
+        ...marketplace.slice(0, 3)
       ]
       setRecommended(recommended)
 
@@ -183,7 +189,7 @@ export default function LearnerDashboard() {
                     </div>
                   </div>
                   <div className="stack-md">
-                    {personalizedCourses.slice(0, 3).map((course) => (
+                    {personalizedCoursesList.slice(0, 3).map((course) => (
                       <div key={course.id || course.course_id} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
@@ -222,7 +228,7 @@ export default function LearnerDashboard() {
                     </div>
                   </div>
                   <div className="stack-md">
-                    {marketplaceCourses.slice(0, 3).map((course) => (
+                    {marketplaceCoursesList.slice(0, 3).map((course) => (
                       <div key={`market-${course.id || course.course_id}`} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
