@@ -261,10 +261,11 @@ export default function LessonPage() {
   // Early returns AFTER all hooks have been called
   // This ensures hooks are always called in the same order
   return (
-    <div className="page-surface bg-[var(--bg-primary)] transition-colors">
+    <div className="page-surface bg-[var(--bg-primary)] min-h-screen transition-colors">
       <Container>
-        <div className="grid gap-6 lg:grid-cols-[280px,1fr] py-6">
-          <aside className="lg:sticky lg:top-6 h-fit">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto py-6">
+          {/* Left Sidebar */}
+          <aside className="w-full lg:w-[300px] shrink-0">
             <CourseStructureSidebar
               course={course}
               learnerProgress={learnerProgress}
@@ -274,7 +275,8 @@ export default function LessonPage() {
             />
           </aside>
 
-          <div className="p-6">
+          {/* Main Content */}
+          <main className="flex-1 mt-2">
             <LessonView
               courseTitle={course?.title || course?.course_name}
               lesson={lesson}
@@ -300,7 +302,7 @@ export default function LessonPage() {
               courseId={courseId}
               userRole={userRole}
             />
-          </div>
+          </main>
         </div>
       </Container>
     </div>

@@ -206,7 +206,7 @@ export default function CourseOverview({
               Back to {personalized ? 'personalized courses' : 'marketplace'}
             </Link>
             <div className="text-sm font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-              Overview · Structure · Lessons
+              Overview
             </div>
           </div>
 

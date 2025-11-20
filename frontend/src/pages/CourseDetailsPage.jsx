@@ -282,10 +282,11 @@ export default function CourseDetailsPage() {
 
   return (
     <>
-      <div className="page-surface bg-[var(--bg-primary)] transition-colors">
+      <div className="page-surface bg-[var(--bg-primary)] min-h-screen transition-colors">
         <Container>
-          <div className="grid gap-6 lg:grid-cols-[280px,1fr] py-6">
-            <aside className="lg:sticky lg:top-6 h-fit">
+          <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto py-6">
+            {/* Left Sidebar */}
+            <aside className="w-full lg:w-[300px] shrink-0">
               <CourseStructureSidebar
                 course={course}
                 learnerProgress={learnerProgress}
@@ -295,9 +296,10 @@ export default function CourseDetailsPage() {
               />
             </aside>
 
-            <div className="p-6">
+            {/* Main Content */}
+            <main className="flex-1 mt-2">
               {hasFeedback && (
-                <div className="mb-6">
+                <div className="mb-4">
                   <button
                     type="button"
                     onClick={() => navigate(`/course/${id}/feedback`)}
@@ -309,22 +311,22 @@ export default function CourseDetailsPage() {
                 </div>
               )}
               <CourseOverview
-              course={course}
-              isEnrolled={isEnrolled}
-              onEnrollClick={() => setModalOpen(true)}
-              onContinue={
-                firstLessonId
-                  ? () => navigate(`/course/${id}/lesson/${firstLessonId}`)
-                  : () => navigate(`/course/${id}/overview`)
-              }
-              showStructureCta={userRole === 'learner'}
-              learnerProfile={userProfile}
-              progressSummary={learnerProgress}
-              backLink={isPersonalizedFlow ? '/learner/personalized' : '/learner/marketplace'}
-              hasFeedback={hasFeedback}
-              courseId={id}
+                course={course}
+                isEnrolled={isEnrolled}
+                onEnrollClick={() => setModalOpen(true)}
+                onContinue={
+                  firstLessonId
+                    ? () => navigate(`/course/${id}/lesson/${firstLessonId}`)
+                    : () => navigate(`/course/${id}/overview`)
+                }
+                showStructureCta={userRole === 'learner'}
+                learnerProfile={userProfile}
+                progressSummary={learnerProgress}
+                backLink={isPersonalizedFlow ? '/learner/personalized' : '/learner/marketplace'}
+                hasFeedback={hasFeedback}
+                courseId={id}
               />
-            </div>
+            </main>
           </div>
         </Container>
       </div>

@@ -136,7 +136,7 @@ export default function CourseStructureSidebar({
     return (
       <div className="rounded-xl border p-4 text-center" style={{ 
         borderColor: 'var(--border-color, rgba(148,163,184,0.18))',
-        backgroundColor: 'var(--bg-card, var(--bg-primary))'
+        backgroundColor: 'var(--bg-secondary)'
       }}>
         <BookOpen className="mx-auto mb-3 h-6 w-6" style={{ color: 'var(--text-muted)' }} />
         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -149,15 +149,18 @@ export default function CourseStructureSidebar({
   const normalizedCurrentLessonId = currentLessonId ? String(currentLessonId) : null
 
   return (
-    <div className="h-full">
-      <div className="rounded-xl border p-4 shadow-sm transition-colors sticky top-4" style={{
-        borderColor: 'var(--border-color, rgba(148,163,184,0.18))',
-        backgroundColor: 'var(--bg-card, var(--bg-primary))'
-      }}>
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-          Course Structure
-        </h3>
-        <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+    <div 
+      className="rounded-xl border p-4 transition-colors sticky top-6 overflow-y-auto"
+      style={{
+        borderColor: 'var(--border-color)',
+        backgroundColor: 'var(--bg-secondary)',
+        maxHeight: 'calc(100vh - 120px)'
+      }}
+    >
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        Course Structure
+      </h3>
+      <div className="space-y-3">
           {hierarchy.map((topic) => {
             const topicExpanded = expandedTopics.has(topic.id)
             return (
@@ -172,15 +175,18 @@ export default function CourseStructureSidebar({
                 <button
                   type="button"
                   onClick={() => toggleTopic(topic.id)}
-                  className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors"
+                  className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:opacity-80"
                   style={{
-                    color: 'var(--text-primary)'
+                    color: 'var(--text-primary)',
+                    backgroundColor: 'transparent'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-secondary, rgba(148,163,184,0.1))'
+                    e.currentTarget.style.backgroundColor = 'var(--bg-primary)'
+                    e.currentTarget.style.opacity = '0.8'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.opacity = '1'
                   }}
                 >
                   <div className="flex items-center gap-2">
@@ -208,15 +214,18 @@ export default function CourseStructureSidebar({
                           <button
                             type="button"
                             onClick={() => toggleModule(module.id)}
-                            className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors"
+                            className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:opacity-80"
                             style={{
-                              color: 'var(--text-primary)'
+                              color: 'var(--text-primary)',
+                              backgroundColor: 'transparent'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'var(--bg-secondary, rgba(148,163,184,0.1))'
+                              e.currentTarget.style.backgroundColor = 'var(--bg-primary)'
+                              e.currentTarget.style.opacity = '0.8'
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent'
+                              e.currentTarget.style.opacity = '1'
                             }}
                           >
                             <div className="flex items-center gap-2">
@@ -300,7 +309,6 @@ export default function CourseStructureSidebar({
             )
           })}
         </div>
-      </div>
     </div>
   )
 }
