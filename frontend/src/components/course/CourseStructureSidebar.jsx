@@ -261,12 +261,11 @@ export default function CourseStructureSidebar({
                                         background: isActive
                                           ? 'var(--chip-surface, rgba(56, 189, 248, 0.16))'
                                           : completed
-                                            ? 'var(--accent-green)'
+                                            ? 'var(--bg-tertiary)'
                                             : 'transparent',
                                         border: isActive ? '1px solid var(--primary-cyan)' : '1px solid transparent',
                                         color: 'var(--text-primary)'
                                       }}
-                                      className={completed && !isActive ? 'opacity-80' : ''}
                                       onClick={() => handleLessonClick(lessonId)}
                                       disabled={disabled}
                                       onMouseEnter={(e) => {
@@ -278,7 +277,7 @@ export default function CourseStructureSidebar({
                                       onMouseLeave={(e) => {
                                         if (!isActive) {
                                           e.currentTarget.style.backgroundColor = completed
-                                            ? 'color-mix(in srgb, var(--accent-green) 10%, transparent)'
+                                            ? 'var(--bg-tertiary)'
                                             : 'transparent'
                                           e.currentTarget.style.opacity = '1'
                                         }
