@@ -48,23 +48,15 @@ export default function LearnerMarketplace() {
 
   return (
     <div className="personalized-dashboard">
-      <Container>
-        <div className="section-panel space-y-4 pt-2">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--primary-cyan)]">
-              Marketplace
-            </p>
-            <h1 className="text-3xl font-semibold text-[var(--text-primary)]">
-              Marketplace Courses
-            </h1>
-            <p className="max-w-3xl text-[var(--text-secondary)]">
-              Search the course catalog, filter by level, and enrol in programs that match your learning goals.
-            </p>
-          </div>
+      <Container className="pt-6 md:pt-8">
+        <h1 className="text-2xl font-bold mb-4 text-[var(--text-primary)]">
+          Marketplace Courses
+        </h1>
 
+        <div className="mb-6">
           <form
             onSubmit={handleSearch}
-            className="grid gap-4 rounded-[var(--radius-xl)] border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-card)] md:grid-cols-[1.5fr,1fr,auto]"
+            className="grid gap-4 rounded-[var(--radius-xl)] border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-4 md:p-6 shadow-[var(--shadow-card)] md:grid-cols-[1.5fr,1fr,auto]"
           >
             <div className="relative">
               <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -91,20 +83,16 @@ export default function LearnerMarketplace() {
             </button>
           </form>
         </div>
-      </Container>
 
-      {loading ? (
-        <Container>
-          <div className="section-panel">
+        {loading ? (
+          <div>
             <div className="surface-card soft flex min-h-[50vh] items-center justify-center">
               <LoadingSpinner message="Discovering courses..." />
             </div>
           </div>
-        </Container>
-      ) : courses.length === 0 ? (
-        <Container>
-          <div className="section-panel">
-            <section className="surface-card soft text-center space-y-4">
+        ) : courses.length === 0 ? (
+          <div>
+            <section className="surface-card soft text-center space-y-4 py-8">
               <i className="fa-solid fa-magnifying-glass text-3xl text-[var(--primary-cyan)]" />
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">No courses match your filters</h2>
               <p className="text-sm text-[var(--text-secondary)]">
@@ -112,11 +100,8 @@ export default function LearnerMarketplace() {
               </p>
             </section>
           </div>
-        </Container>
-      ) : (
-        <Container>
-          <div className="section-panel">
-            <div className="course-grid">
+        ) : (
+          <div className="course-grid">
               {courses.map(course => {
                 const tags = Array.isArray(course.tags) ? course.tags : []
                 const displayTags = tags.length > 0 ? tags.slice(0, 2) : ['Skill builder', 'Project-based']
@@ -178,10 +163,9 @@ export default function LearnerMarketplace() {
                   </div>
                 )
               })}
-            </div>
           </div>
-        </Container>
-      )}
+        )}
+      </Container>
     </div>
   )
 }
