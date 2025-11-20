@@ -161,7 +161,33 @@ export default function CourseDetailsPage() {
       setModalOpen(false)
       navigate(`/course/${id}/structure`)
     } catch (err) {
-      if (err.response?.status === 409) {
+      // Safely check error properties to avoid initialization errors
+      let is409 = false
+      let errorMsg = 'Registration failed'
+      
+      try {
+        if (err && typeof err === 'object') {
+          const response = 'response' in err ? err.response : null
+          if (response && typeof response === 'object' && 'status' in response) {
+            is409 = response.status === 409
+          }
+          
+          // Safely extract error message
+          if (response && typeof response === 'object' && 'data' in response) {
+            const data = response.data
+            if (data && typeof data === 'object' && 'message' in data) {
+              errorMsg = String(data.message)
+            }
+          } else if ('message' in err) {
+            errorMsg = String(err.message)
+          }
+        }
+      } catch (checkErr) {
+        // If we can't safely access error properties, use default message
+        console.warn('Error accessing error properties:', checkErr)
+      }
+      
+      if (is409) {
         showToast('You are already enrolled in this course.', 'info')
         setLearnerProgress((prev) => prev || {
           is_enrolled: true,
@@ -173,7 +199,6 @@ export default function CourseDetailsPage() {
         setModalOpen(false)
         navigate(`/course/${id}/structure`)
       } else {
-        const errorMsg = err.response?.data?.message || err.message || 'Registration failed'
         setError(errorMsg)
         showToast(errorMsg, 'error')
       }
