@@ -111,11 +111,10 @@ export default function CourseOverview({
     return null
   }
 
-  const courseIsPersonalized = isPersonalized(course)
-  const courseIsMarketplace = isMarketplace(course)
-  const isPersonalized = courseIsPersonalized
-  const isMarketplace = courseIsMarketplace
-  const personalized = isPersonalized // Keep for backward compatibility
+  // Avoid variable shadowing — rename properly
+  const isPersonalizedCourse = isPersonalized(course)
+  const isMarketplaceCourse = isMarketplace(course)
+  const personalized = isPersonalizedCourse // Keep for backward compatibility
   const metadata = getMetadataItems(course)
   const metadataTags = course?.metadata?.tags || course?.metadata?.skills || []
   const tags = course?.tags || course?.skills || metadataTags
@@ -217,7 +216,7 @@ export default function CourseOverview({
           >
             <div className="space-y-6">
                   <div className="flex flex-wrap items-center gap-3">
-                    {isPersonalized && (
+                    {isPersonalizedCourse && (
                       <span
                         className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                         style={{
@@ -228,7 +227,7 @@ export default function CourseOverview({
                         PERSONALIZED
                       </span>
                     )}
-                    {isMarketplace && (
+                    {isMarketplaceCourse && (
                       <span
                         className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                         style={{
