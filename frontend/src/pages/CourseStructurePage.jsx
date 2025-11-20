@@ -13,6 +13,7 @@ import {
 import { getCourseById } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import CourseStructure from '../components/course/CourseStructure.jsx'
+import LessonAssetsPanel from '../components/course/LessonAssetsPanel.jsx'
 import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
 
@@ -324,6 +325,34 @@ export default function CourseStructurePage() {
               unlocked={Boolean(learnerProgress?.is_enrolled)}
             />
           </section>
+
+          {/* AI Assets Section - Only show for personalized courses */}
+          {isPersonalized && (
+            <section className="flex flex-col gap-5 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
+              <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                    AI-Enriched Learning Resources
+                  </h2>
+                  <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                    Curated videos, repositories, and resources to deepen your understanding of this personalized course.
+                  </p>
+                </div>
+                {course?.ai_assets && Object.keys(course.ai_assets).length > 0 && (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(168,85,247,0.12)] px-4 py-2 text-xs font-semibold text-[#7c3aed]">
+                    <Sparkles size={14} />
+                    AI Enriched
+                  </span>
+                )}
+              </header>
+
+              <LessonAssetsPanel
+                assets={course?.ai_assets && Object.keys(course.ai_assets).length > 0 ? course.ai_assets : null}
+                loading={false}
+                error={null}
+              />
+            </section>
+          )}
         </div>
       </Container>
     </div>
