@@ -42,21 +42,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare cache path
-        run: mkdir -p backend/node_modules
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Cache backend node_modules
+      - name: Cache node modules
         uses: actions/cache@v4
         with:
-          path: backend/node_modules
-          key: ${{ runner.os }}-backend-npm-${{ hashFiles('backend/package-lock.json') }}
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-backend-npm-
+            ${{ runner.os }}-modules-
 
       - name: Install backend dependencies
         working-directory: ./backend
