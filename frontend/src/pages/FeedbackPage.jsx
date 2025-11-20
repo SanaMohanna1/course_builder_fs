@@ -109,15 +109,13 @@ export default function FeedbackPage() {
         }
 
         // Handle learner feedback - 404 is normal when no feedback exists yet
+        // getMyFeedback returns null for 404, so it should always be fulfilled (never rejected)
         let learnerFeedback = null
-        if (learnerFeedbackResult.status === 'fulfilled' && learnerFeedbackResult.value) {
-          learnerFeedback = learnerFeedbackResult.value
-        } else if (learnerFeedbackResult.status === 'rejected') {
-          // 404 is normal - learner hasn't submitted feedback yet
-          if (learnerFeedbackResult.reason?.response?.status !== 404) {
-            // Only log non-404 errors
-            console.warn('Failed to load learner feedback:', learnerFeedbackResult.reason)
-          }
+        if (learnerFeedbackResult.status === 'fulfilled') {
+          // getMyFeedback returns null for 404, so check if value exists
+          learnerFeedback = learnerFeedbackResult.value || null
+        } else {
+          // Should not happen since getMyFeedback handles 404, but handle gracefully
           learnerFeedback = null
         }
 

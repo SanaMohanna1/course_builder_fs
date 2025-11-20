@@ -84,9 +84,23 @@ export function getMyFeedback(courseId) {
     .catch(err => {
       // 404 is normal - learner hasn't submitted feedback yet
       // Return null instead of throwing to avoid initialization errors
-      if (err?.response?.status === 404) {
+      // Safely check for 404 without accessing properties that might cause issues
+      let is404 = false
+      try {
+        if (err && typeof err === 'object') {
+          const response = 'response' in err ? err.response : null
+          if (response && typeof response === 'object' && 'status' in response) {
+            is404 = response.status === 404
+          }
+        }
+      } catch (checkErr) {
+        // Ignore property access errors - assume it's not a 404
+      }
+      
+      if (is404) {
         return null
       }
+      
       // Re-throw other errors
       throw err
     })
