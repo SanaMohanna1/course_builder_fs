@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { isPersonalized, isMarketplace } from '../utils/courseTypeUtils.js'
 
 export default function CourseCard({ course, showProgress = false, progress = 0, to }) {
   const courseId = course.id || course.course_id
@@ -11,8 +12,8 @@ export default function CourseCard({ course, showProgress = false, progress = 0,
   const displayProgress = showProgress && progress > 0
   const destination = to ?? `/courses/${courseId}`
   const metadata = course.metadata || {}
-  const isPersonalized = Boolean(metadata.personalized) || metadata.source === 'learner_ai'
-  const isMarketplace = !isPersonalized
+  const courseIsPersonalized = isPersonalized(course)
+  const courseIsMarketplace = isMarketplace(course)
   const skillChips = Array.isArray(metadata.skills) ? metadata.skills.slice(0, 4) : []
 
   return (
@@ -26,12 +27,12 @@ export default function CourseCard({ course, showProgress = false, progress = 0,
             <span className="rounded-full bg-[rgba(15,118,110,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--primary-cyan)]">
               {level}
             </span>
-            {isPersonalized && (
+            {courseIsPersonalized && (
               <span className="badge badge-purple">
                 PERSONALIZED
               </span>
             )}
-            {isMarketplace && (
+            {courseIsMarketplace && (
               <span className="badge badge-cyan">
                 MARKETPLACE
               </span>

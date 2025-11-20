@@ -10,6 +10,7 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import LessonView from '../components/course/LessonView.jsx'
 import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import { isPersonalized } from '../utils/courseTypeUtils.js'
 
 export default function LessonPage() {
   const { id: courseId, lessonId } = useParams()
@@ -77,8 +78,8 @@ export default function LessonPage() {
   useEffect(() => {
     // Redirect unenrolled learners to course overview (except personalized courses - auto-enrolled)
     if (!loading && userRole === 'learner') {
-      const isPersonalized = Boolean(course?.metadata?.personalized || course?.metadata?.source === 'learner_ai')
-      if (!isPersonalized) {
+      const courseIsPersonalized = isPersonalized(course)
+      if (!courseIsPersonalized) {
         if (learnerProgress && !learnerProgress.is_enrolled) {
           navigate(`/course/${courseId}/overview`, { replace: true })
         } else if (!learnerProgress && course) {

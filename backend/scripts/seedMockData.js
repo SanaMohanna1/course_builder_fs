@@ -14,11 +14,11 @@ import { LessonRepository } from '../repositories/LessonRepository.js';
 
 dotenv.config();
 
-// Mock User IDs
-const TRAINER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const TRAINER_2_ID = 'e5f6a7b8-c9d0-1234-efab-345678901234';
-const LEARNER_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
-const LEARNER_2_ID = 'f6a7b8c9-d0e1-2345-fabc-456789012345';
+// Mock User IDs (matching frontend AppContext)
+const TRAINER_ID = '20000000-0000-0000-0000-000000000001'; // Tristan Trainer
+const TRAINER_2_ID = '20000000-0000-0000-0000-000000000002'; // Trainer 2
+const LEARNER_ID = '10000000-0000-0000-0000-000000000001'; // Alice Learner
+const LEARNER_2_ID = '10000000-0000-0000-0000-000000000002'; // Learner 2
 
 // Mock Course IDs
 const MARKETPLACE_COURSE_1_ID = 'c3d4e5f6-a7b8-9012-cdef-123456789012'; // JavaScript course

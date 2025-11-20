@@ -6,6 +6,7 @@ import CourseOverview from '../components/course/CourseOverview.jsx'
 import EnrollModal from '../components/course/EnrollModal.jsx'
 import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import { isPersonalized } from '../utils/courseTypeUtils.js'
 
 export default function CourseDetailsPage() {
   const { id } = useParams()
@@ -27,7 +28,7 @@ export default function CourseDetailsPage() {
   }, [location.search])
 
   const metadataPersonalized = useMemo(
-    () => Boolean(course?.metadata?.personalized || course?.metadata?.source === 'learner_ai'),
+    () => isPersonalized(course),
     [course]
   )
 
@@ -37,10 +38,8 @@ export default function CourseDetailsPage() {
     try {
       const params = learnerId ? { learner_id: learnerId } : undefined
       const data = await getCourseById(id, params)
-      const isPersonalized = isPersonalizedFlow || Boolean(
-        data?.metadata?.personalized || data?.metadata?.source === 'learner_ai'
-      )
-      const enrichedCourse = isPersonalized
+      const courseIsPersonalized = isPersonalizedFlow || isPersonalized(data)
+      const enrichedCourse = courseIsPersonalized
         ? {
             ...data,
             metadata: {
@@ -52,7 +51,7 @@ export default function CourseDetailsPage() {
         : data
 
       const personalizedProgress = async () => {
-        if (!isPersonalized) {
+        if (!courseIsPersonalized) {
           return enrichedCourse.learner_progress || null
         }
 
@@ -86,8 +85,8 @@ export default function CourseDetailsPage() {
       
       const progress = await personalizedProgress()
 
-      // Determine if course is enrolled (reuse isPersonalized from above)
-      const isEnrolledCheck = isPersonalized || progress?.is_enrolled
+      // Determine if course is enrolled
+      const isEnrolledCheck = courseIsPersonalized || progress?.is_enrolled
 
       // Check if learner has existing feedback
       let feedbackExists = false
@@ -112,12 +111,13 @@ export default function CourseDetailsPage() {
       setLoading(false)
     }
   }, [id, learnerId, showToast, isPersonalizedFlow, userProfile])
+  
+  // Determine if course is personalized
+  const isPersonalizedCourse = isPersonalizedFlow || metadataPersonalized
 
   useEffect(() => {
     loadCourse()
   }, [id, loadCourse])
-
-  const isPersonalizedCourse = isPersonalizedFlow || metadataPersonalized
 
   // Personalized courses are automatically enrolled - no enrollment needed
   const isEnrolled = isPersonalizedCourse || learnerProgress?.is_enrolled

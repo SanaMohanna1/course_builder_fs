@@ -4,6 +4,7 @@ import { getCourses, publishCourse } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext'
 import Container from '../components/Container.jsx'
+import { filterTrainerCourses } from '../utils/courseTypeUtils.js'
 import {
   BarChart3,
   Layers,
@@ -42,12 +43,12 @@ export default function TrainerDashboard() {
       const data = await getCourses({ limit: 50 })
       const allCourses = data.courses || []
       
-      // Filter courses to show only the trainer's own courses
-      // Match by created_by_user_id (temporary until JWT auth is implemented)
+      // Filter courses to show ONLY marketplace courses owned by this trainer
+      // Excludes ALL personalized courses (they never belong to a trainer)
       const trainerId = userProfile?.id
       const trainerCourses = trainerId
-        ? allCourses.filter((course) => course.created_by_user_id === trainerId || course.created_by === trainerId)
-        : allCourses
+        ? filterTrainerCourses(allCourses, trainerId)
+        : []
       
       setCourses(trainerCourses)
     } catch (err) {

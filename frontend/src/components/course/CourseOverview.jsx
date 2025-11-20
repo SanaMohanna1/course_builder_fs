@@ -16,6 +16,7 @@ import {
   Edit3
 } from 'lucide-react'
 import Container from '../Container.jsx'
+import { isPersonalized, isMarketplace } from '../../utils/courseTypeUtils.js'
 
 const getMetadataItems = (course) => {
   const topics = Array.isArray(course?.topics) ? course.topics : []
@@ -110,8 +111,10 @@ export default function CourseOverview({
     return null
   }
 
-  const isPersonalized = Boolean(course?.metadata?.personalized) || course?.metadata?.source === 'learner_ai'
-  const isMarketplace = !isPersonalized
+  const courseIsPersonalized = isPersonalized(course)
+  const courseIsMarketplace = isMarketplace(course)
+  const isPersonalized = courseIsPersonalized
+  const isMarketplace = courseIsMarketplace
   const personalized = isPersonalized // Keep for backward compatibility
   const metadata = getMetadataItems(course)
   const metadataTags = course?.metadata?.tags || course?.metadata?.skills || []

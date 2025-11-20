@@ -7,6 +7,7 @@ import Container from '../components/Container.jsx'
 import { useApp } from '../context/AppContext'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { filterPersonalizedCourses, filterMarketplaceCourses } from '../utils/courseTypeUtils.js'
 
 dayjs.extend(relativeTime)
 
@@ -24,10 +25,20 @@ export default function LearnerDashboard() {
   const loadDashboard = async () => {
     setLoading(true)
     try {
-      // Load recommended courses from marketplace
+      // Load courses and separate personalized from marketplace
       const coursesData = await getCourses({ limit: 12 })
       const allCourses = coursesData.courses || []
-      setRecommended(allCourses.slice(0, 6))
+      
+      // Separate personalized and marketplace courses
+      const personalizedCourses = filterPersonalizedCourses(allCourses)
+      const marketplaceCourses = filterMarketplaceCourses(allCourses)
+      
+      // Set recommended: personalized first, then marketplace
+      const recommended = [
+        ...personalizedCourses.slice(0, 3),
+        ...marketplaceCourses.slice(0, 3)
+      ]
+      setRecommended(recommended)
 
       // Load REAL enrolled courses with progress
       if (userProfile?.id) {
@@ -172,11 +183,7 @@ export default function LearnerDashboard() {
                     </div>
                   </div>
                   <div className="stack-md">
-                    {recommended.slice(0, 3).map((course) => {
-                      const metadata = course.metadata || {}
-                      const isPersonalized = Boolean(metadata.personalized) || metadata.source === 'learner_ai'
-                      const isMarketplace = !isPersonalized
-                      return (
+                    {personalizedCourses.slice(0, 3).map((course) => (
                       <div key={course.id || course.course_id} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
@@ -187,13 +194,12 @@ export default function LearnerDashboard() {
                                 'Build practical skills with guided lessons and projects.'}
                             </p>
                           </div>
-                          {isPersonalized && <span className="badge badge-purple">PERSONALIZED</span>}
-                          {isMarketplace && <span className="badge badge-blue">MARKETPLACE</span>}
+                          <span className="badge badge-purple">PERSONALIZED</span>
                         </div>
                         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                           <span>{course.duration ? `${course.duration} mins` : 'Approx. 45 mins'}</span>
                           <Link
-                            to={`/courses/${course.id || course.course_id}`}
+                            to={`/courses/${course.id || course.course_id}?personalized=true`}
                             className="btn btn-primary flex items-center gap-2 text-xs"
                           >
                             <Play size={14} />
@@ -201,8 +207,7 @@ export default function LearnerDashboard() {
                           </Link>
                         </div>
                       </div>
-                      )
-                    })}
+                    ))}
                   </div>
                 </article>
 
@@ -217,11 +222,7 @@ export default function LearnerDashboard() {
                     </div>
                   </div>
                   <div className="stack-md">
-                    {recommended.slice(3, 6).map((course) => {
-                      const metadata = course.metadata || {}
-                      const isPersonalized = Boolean(metadata.personalized) || metadata.source === 'learner_ai'
-                      const isMarketplace = !isPersonalized
-                      return (
+                    {marketplaceCourses.slice(0, 3).map((course) => (
                       <div key={`market-${course.id || course.course_id}`} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
@@ -232,8 +233,7 @@ export default function LearnerDashboard() {
                                 'Learn from specialists with real-world experience.'}
                             </p>
                           </div>
-                          {isPersonalized && <span className="badge badge-purple">PERSONALIZED</span>}
-                          {isMarketplace && <span className="badge badge-blue">MARKETPLACE</span>}
+                          <span className="badge badge-blue">MARKETPLACE</span>
                         </div>
                         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                           <span>{(course.rating || course.average_rating || 4.6).toFixed(1)} rating</span>
@@ -242,8 +242,7 @@ export default function LearnerDashboard() {
                           </Link>
                         </div>
                       </div>
-                      )
-                    })}
+                    ))}
                   </div>
                 </article>
               </section>

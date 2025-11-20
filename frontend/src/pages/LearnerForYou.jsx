@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import Container from '../components/Container.jsx'
 import CourseCard from '../components/CourseCard.jsx'
+import { filterPersonalizedCourses } from '../utils/courseTypeUtils.js'
 
 
 export default function LearnerForYou() {
@@ -16,23 +17,17 @@ export default function LearnerForYou() {
     setLoading(true)
     try {
       const data = await getCourses({ limit: 100 })
-      const personalised = (data.courses || [])
-        .filter((course) => {
-          // Primary check: learner_specific course type (personalized courses)
-          if (course.course_type === 'learner_specific') {
-            return true
-          }
-          
-          // Fallback: check metadata for backward compatibility
-          const meta = course.metadata || {}
-          return meta.personalized === true || meta.source === 'learner_ai'
-        })
-        .sort((a, b) => {
-          const first = new Date(b.created_at || b.updated_at || Date.now())
-          const second = new Date(a.created_at || a.updated_at || Date.now())
-          return first - second
-        })
-      setCourses(personalised)
+      const allCourses = data.courses || []
+      
+      // Filter: ONLY show personalized courses
+      // Excludes ALL marketplace courses
+      const personalized = filterPersonalizedCourses(allCourses).sort((a, b) => {
+        const first = new Date(b.created_at || b.updated_at || Date.now())
+        const second = new Date(a.created_at || a.updated_at || Date.now())
+        return first - second
+      })
+      
+      setCourses(personalized)
     } catch (err) {
       showToast('Failed to load personalized recommendations', 'error')
     } finally {

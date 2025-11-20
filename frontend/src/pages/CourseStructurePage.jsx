@@ -13,6 +13,7 @@ import {
 import { getCourseById } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import CourseStructure from '../components/course/CourseStructure.jsx'
+import { isPersonalized } from '../utils/courseTypeUtils.js'
 import LessonAssetsPanel from '../components/course/LessonAssetsPanel.jsx'
 import EnrichmentButton from '../features/enrichment/components/EnrichmentButton.jsx'
 import { useApp } from '../context/AppContext'
@@ -64,10 +65,8 @@ export default function CourseStructurePage() {
   }, [id, loadCourse])
 
   // Determine if course is personalized (declare once at component level)
-  const isPersonalized = Boolean(
-    course?.metadata?.personalized ||
-    course?.metadata?.source === 'learner_ai'
-  )
+  const courseIsPersonalized = isPersonalized(course)
+  const isPersonalized = courseIsPersonalized
   const isMarketplace = !isPersonalized
   const personalized = isPersonalized // Keep for backward compatibility
 

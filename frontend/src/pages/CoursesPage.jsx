@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext'
 import { getContextualErrorMessage } from '../utils/errorHandler.js'
 import Container from '../components/Container.jsx'
 import CourseCard from '../components/CourseCard.jsx'
+import { filterMarketplaceCourses } from '../utils/courseTypeUtils.js'
 
 export default function CoursesPage() {
   const { showToast } = useApp()
@@ -30,8 +31,14 @@ export default function CoursesPage() {
     setError(null)
     try {
       const data = await getCourses(filters)
-      setCourses(data.courses || [])
-      setTotal(data.total || 0)
+      const allCourses = data.courses || []
+      
+      // Filter: Only show marketplace courses
+      // Excludes ALL personalized courses (they never appear in general course listing)
+      const marketplaceCourses = filterMarketplaceCourses(allCourses)
+      
+      setCourses(marketplaceCourses)
+      setTotal(marketplaceCourses.length)
     } catch (err) {
       const errorMsg = getContextualErrorMessage(err, {
         network: 'Unable to connect. Please check your internet connection.',

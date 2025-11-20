@@ -4,6 +4,7 @@ import { getCourses } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import Container from '../components/Container.jsx'
+import { filterMarketplaceCourses } from '../utils/courseTypeUtils.js'
 
 export default function LearnerMarketplace() {
   const { showToast } = useApp()
@@ -20,16 +21,15 @@ export default function LearnerMarketplace() {
     setLoading(true)
     try {
       const data = await getCourses({ limit: 60, ...filters })
-      // Filter: Only show active courses (published) that are not personalized
-      const marketplaceCourses = (data.courses || []).filter((course) => {
+      const allCourses = data.courses || []
+      
+      // Filter: Only show active marketplace courses (published)
+      // Excludes ALL personalized courses (they never appear in marketplace)
+      const marketplaceCourses = filterMarketplaceCourses(allCourses).filter((course) => {
         // Must be active (published)
-        if (course.status !== 'active') return false
-        // Must be trainer course (not learner_specific)
-        if (course.course_type === 'learner_specific') return false
-        // Exclude personalized courses
-        const meta = course.metadata || {}
-        return meta.personalized !== true && meta.source !== 'learner_ai'
+        return course.status === 'active'
       })
+      
       setCourses(marketplaceCourses)
     } catch (err) {
       showToast('Failed to load marketplace courses', 'error')

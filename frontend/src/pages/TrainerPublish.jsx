@@ -7,23 +7,40 @@ import Button from '../components/Button.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import Container from '../components/Container.jsx'
 import { useApp } from '../context/AppContext'
+import { isPersonalized, belongsToTrainer } from '../utils/courseTypeUtils.js'
 
 export default function TrainerPublish() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { showToast } = useApp()
+  const { showToast, userProfile } = useApp()
   const [course, setCourse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [publishing, setPublishing] = useState(false)
 
   useEffect(() => {
     loadCourse()
-  }, [id])
+  }, [id, userProfile?.id])
 
   const loadCourse = async () => {
     setLoading(true)
     try {
       const data = await getCourseById(id)
+      
+      // Validation: Trainers cannot access personalized courses
+      if (isPersonalized(data)) {
+        showToast('Personalized courses are not accessible from trainer pages', 'error')
+        navigate('/trainer/dashboard')
+        return
+      }
+      
+      // Validation: Only show courses owned by this trainer
+      const trainerId = userProfile?.id
+      if (trainerId && !belongsToTrainer(data, trainerId)) {
+        showToast('You do not have permission to access this course', 'error')
+        navigate('/trainer/dashboard')
+        return
+      }
+      
       setCourse(data)
     } catch (err) {
       showToast('Failed to load course', 'error')
