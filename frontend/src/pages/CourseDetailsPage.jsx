@@ -127,6 +127,26 @@ export default function CourseDetailsPage() {
   // Personalized courses are automatically enrolled - no enrollment needed
   const isEnrolled = isPersonalizedCourse || learnerProgress?.is_enrolled
 
+  // Get first lesson ID for navigation - MUST be before any early returns
+  const flattenedLessons = useMemo(() => {
+    if (!course) return []
+    const topics = Array.isArray(course.topics) ? course.topics : []
+    if (topics.length > 0) {
+      const lessons = topics.flatMap((topic) => (topic.modules || []).flatMap((module) => module.lessons || []))
+      return lessons
+    }
+    if (Array.isArray(course.modules)) {
+      return course.modules.flatMap((module) => module.lessons || [])
+    }
+    if (Array.isArray(course.lessons)) {
+      return course.lessons
+    }
+    return []
+  }, [course])
+
+  const firstLesson = flattenedLessons[0]
+  const firstLessonId = firstLesson?.id || firstLesson?.lesson_id
+
   const handleEnrollment = async () => {
     // Personalized courses: Navigate directly to first lesson (no enrollment API call)
     if (isPersonalizedCourse) {
@@ -259,26 +279,6 @@ export default function CourseDetailsPage() {
   }
 
   const learnerName = userRole === 'learner' ? userProfile?.name : null
-
-  // Get first lesson ID for navigation
-  const flattenedLessons = useMemo(() => {
-    if (!course) return []
-    const topics = Array.isArray(course.topics) ? course.topics : []
-    if (topics.length > 0) {
-      const lessons = topics.flatMap((topic) => (topic.modules || []).flatMap((module) => module.lessons || []))
-      return lessons
-    }
-    if (Array.isArray(course.modules)) {
-      return course.modules.flatMap((module) => module.lessons || [])
-    }
-    if (Array.isArray(course.lessons)) {
-      return course.lessons
-    }
-    return []
-  }, [course])
-
-  const firstLesson = flattenedLessons[0]
-  const firstLessonId = firstLesson?.id || firstLesson?.lesson_id
 
   return (
     <>
