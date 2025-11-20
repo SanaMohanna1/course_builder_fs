@@ -1,10 +1,11 @@
 name: Backend Tests
 
 on:
-  push:
-    branches: [ "master", "main", "develop" ]
-  pull_request:
-    branches: [ "master", "main", "develop" ]
+  workflow_dispatch:  # Manual trigger only - disabled from automatic pushes
+  # push:
+  #   branches: [ "master", "main", "develop" ]
+  # pull_request:
+  #   branches: [ "master", "main", "develop" ]
 
 jobs:
   test:
