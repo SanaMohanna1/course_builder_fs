@@ -18,26 +18,64 @@ if (!GEMINI_API_KEY) {
 const DB_SCHEMA_CONTEXT = `
 Course Builder Database Schema (PostgreSQL):
 
-Tables:
-- courses: id, title, course_name, description, level, rating, status, course_type, created_by_user_id, metadata, created_at, updated_at
-- topics: id, course_id, title, order_index
-- modules: id, course_id, topic_id, title, order_index
-- lessons: id, course_id, module_id, title, content, order_index, status
-- feedback: id, learner_id, course_id, rating, comment, submitted_at
-- enrollments: learner_id, course_id, enrolled_at, progress, status
+REAL TABLES (use ONLY these - never invent table names):
+- courses: id (UUID), course_name (TEXT), course_description (TEXT), course_type (ENUM: 'learner_specific', 'trainer'), status (ENUM: 'active', 'archived', 'draft'), level (ENUM: 'beginner', 'intermediate', 'advanced'), duration_hours (INT), created_by_user_id (UUID), created_at (TIMESTAMP), updated_at (TIMESTAMP)
+- topics: id (UUID), course_id (UUID), topic_name (TEXT), topic_description (TEXT)
+- modules: id (UUID), topic_id (UUID), module_name (TEXT), module_description (TEXT)
+- lessons: id (UUID), module_id (UUID), topic_id (UUID), lesson_name (TEXT), lesson_description (TEXT), skills (JSONB), trainer_ids (UUID[]), content_type (TEXT), content_data (JSONB), devlab_exercises (JSONB)
+- feedback: id (UUID), learner_id (UUID), course_id (UUID), rating (INT 1-5), comment (TEXT), submitted_at (TIMESTAMP)
+- registrations: id (UUID), learner_id (UUID), learner_name (TEXT), course_id (UUID), company_id (UUID), company_name (TEXT), status (ENUM: 'completed', 'in_progress', 'failed'), enrolled_date (TIMESTAMP), completed_date (TIMESTAMP)
+- assessments: id (UUID), learner_id (UUID), learner_name (TEXT), course_id (UUID), exam_type (ENUM: 'postcourse'), passing_grade (NUMERIC), final_grade (NUMERIC), passed (BOOLEAN)
 
-Relationships:
-- topics.course_id -> courses.id
-- modules.course_id -> courses.id, modules.topic_id -> topics.id
-- lessons.course_id -> courses.id, lessons.module_id -> modules.id
-- feedback.course_id -> courses.id, feedback.learner_id -> learners.id
-- enrollments.course_id -> courses.id, enrollments.learner_id -> learners.id
+REAL RELATIONSHIPS (use ONLY these):
+- topics.course_id -> courses.id (ON DELETE CASCADE)
+- modules.topic_id -> topics.id (ON DELETE CASCADE)
+- lessons.module_id -> modules.id (ON DELETE CASCADE)
+- lessons.topic_id -> topics.id (ON DELETE CASCADE)
+- feedback.course_id -> courses.id (ON DELETE CASCADE)
+- feedback.learner_id -> learner UUID (NOT a table - just UUID)
+- registrations.course_id -> courses.id (ON DELETE CASCADE)
+- registrations.learner_id -> learner UUID (NOT a table - just UUID)
+- assessments.course_id -> courses.id (ON DELETE CASCADE)
+- assessments.learner_id -> learner UUID (NOT a table - just UUID)
 
-Common aggregations:
-- COUNT(lessons.id) for total lessons
-- AVG(feedback.rating) for average rating
-- COUNT(enrollments.learner_id) for total enrollments
-- SUM(CASE WHEN lessons.status = 'completed' THEN 1 ELSE 0 END) for completed lessons
+FIELD NAME NORMALIZATION RULES (CRITICAL):
+When requester uses different field names, you MUST map them to real Course Builder schema:
+
+Learner Identifiers:
+- user_id, student_id, employee_id, user_uuid → learner_id (UUID field in feedback/registrations/assessments tables)
+
+Enrollment/Registration:
+- enrolled, enrollment_count, total_enrollments → COUNT(registrations.learner_id) WHERE course_id = $1
+- active_enrollments → COUNT(registrations.learner_id) WHERE course_id = $1 AND status = 'in_progress'
+- completed_enrollments → COUNT(registrations.learner_id) WHERE course_id = $1 AND status = 'completed'
+
+Instructor/Trainer:
+- instructor, teacher, instructor_id, trainer_uuid → created_by_user_id (in courses table) OR trainer_ids (in lessons table - array)
+
+Ratings/Scores:
+- rating, score, average_rating → AVG(feedback.rating) WHERE course_id = $1
+- rating_value → feedback.rating
+
+Lesson Counts:
+- lessons_count, total_lessons, lesson_total → COUNT(lessons.id) WHERE course_id = $1 (join through topics/modules)
+- completed_lessons → Use registrations table or lesson_completion_dictionary in courses table
+
+Course Information:
+- course_title, title → course_name (in courses table)
+- course_desc, description → course_description (in courses table)
+
+IMPORTANT MAPPING EXAMPLES:
+- payload: { "user_id": "123" } → WHERE learner_id = $1 (NOT user_id - learner_id is the real column)
+- response: { "enrolled": 0 } → SELECT COUNT(registrations.learner_id) AS enrolled ...
+- response: { "instructor": "uuid" } → SELECT created_by_user_id AS instructor ...
+- response: { "lessons_count": 0 } → SELECT COUNT(lessons.id) AS lessons_count ... (join through modules/topics)
+
+NEVER USE THESE (they don't exist):
+- ❌ learners table (learner_id is just a UUID, not a foreign key to a table)
+- ❌ enrollments table (use registrations table instead)
+- ❌ users table (use learner_id directly)
+- ❌ trainers table (use created_by_user_id or trainer_ids array)
 `;
 
 /**
@@ -119,38 +157,71 @@ function buildQueryGenerationPrompt(payloadObject, responseTemplate) {
 
   return `You are the "Course Builder SQL Generator" — an expert system that produces safe SQL SELECT queries for the Course Builder microservice.
 
-You receive:
-1. payload: JSON object with parameters, identifiers, or filters
-2. response_template: JSON object with the exact fields that must be filled
+CRITICAL RULES - YOU MUST FOLLOW THESE EXACTLY:
 
-Your job:
-- Generate a single SQL SELECT query that retrieves exactly the fields needed to fill the response_template.
-- Use only the fields provided in the payload + the Course Builder DB schema.
-- Do not invent fields or tables.
-- Only SELECT queries are allowed.
-- No INSERT/UPDATE/DELETE/TRUNCATE/ALTER/CREATE.
-- Output ONLY raw SQL. No Markdown. No explanations.
+1. USE ONLY REAL COURSE BUILDER TABLES AND COLUMNS
+   - NEVER invent table names or column names
+   - If a table/field doesn't exist → map to the closest real field based on context
+   - Always use the actual Course Builder schema (provided below)
+
+2. FIELD NAME NORMALIZATION (MANDATORY)
+   - DO NOT use requester field names literally
+   - INTERPRET requester fields and map them to real Course Builder schema
+   - Examples:
+     * requester says "user_id" → use "learner_id" (real column name)
+     * requester says "enrolled" → use COUNT(registrations.learner_id)
+     * requester says "instructor" → use "created_by_user_id" (in courses table)
+     * requester says "rating" → use "rating" (in feedback table)
+     * requester says "lessons_count" → use COUNT(lessons.id)
+
+3. IF REQUESTER USES DIFFERENT FIELD NAMES:
+   - Normalize them using the mapping rules below
+   - NEVER create invalid SQL with unknown tables/columns
+   - Choose the nearest correct Course Builder table/field
+
+4. ALWAYS GENERATE VALID SQL
+   - Use ONLY tables that exist in the schema
+   - Use ONLY columns that exist in those tables
+   - If uncertain, default to the most logical Course Builder table
+
+5. OUTPUT FORMAT
+   - ONLY raw SQL SELECT query
+   - No Markdown code fences
+   - No explanations or comments
+   - Use column aliases (AS) to match response template field names
+   - Use parameter placeholders ($1, $2, etc.) for payload values
 
 Database Schema:
 ${DB_SCHEMA_CONTEXT}
 
-Payload:
+Payload (requester fields - normalize to real schema):
 ${payloadStr}
 
-Response Template (fields that must be filled):
+Response Template (fields that must be filled - use aliases to match these names):
 ${templateStr}
 
-Generate a SQL SELECT query that:
-- Uses fields from the payload to filter/join data (use parameter placeholders $1, $2, etc.)
-- Returns columns that match the field names in the response template
-- Use column aliases (AS) to match template field names if needed
-- Only uses SELECT statements (no INSERT, UPDATE, DELETE, TRUNCATE, ALTER, CREATE)
-- Uses PostgreSQL syntax
-- Returns exactly the fields needed to fill the response template
-- Parameter placeholders ($1, $2, etc.) for any values that come from the payload
-- Do NOT hard-code values - always use placeholders
+FIELD NORMALIZATION EXAMPLES:
+- payload.user_id → WHERE learner_id = $1 (NOT user_id)
+- response.enrolled → SELECT COUNT(registrations.learner_id) AS enrolled ...
+- response.instructor → SELECT created_by_user_id AS instructor ...
+- response.lessons_count → SELECT COUNT(lessons.id) AS lessons_count ... (join properly)
+- payload.course_id → WHERE course_id = $1 (real column name - use as-is)
 
-IMPORTANT: Output ONLY raw SQL. No Markdown code fences. No explanations. Just the SQL query.
+JOIN REQUIREMENTS:
+- To get lessons for a course: JOIN topics ON topics.course_id = courses.id JOIN modules ON modules.topic_id = topics.id JOIN lessons ON lessons.module_id = modules.id
+- To get registrations: JOIN registrations ON registrations.course_id = courses.id
+- To get feedback: JOIN feedback ON feedback.course_id = courses.id
+
+Generate SQL SELECT query that:
+1. Normalizes all requester field names to real Course Builder schema
+2. Uses proper JOINs to connect tables through foreign keys
+3. Uses parameter placeholders ($1, $2, etc.) for payload values
+4. Uses column aliases (AS) to match response template field names
+5. Uses ONLY SELECT statements (no INSERT/UPDATE/DELETE/TRUNCATE/ALTER/CREATE)
+6. Uses PostgreSQL syntax
+7. Returns exactly the fields needed to fill the response template
+
+CRITICAL: Normalize field names from payload/response template to real Course Builder schema. Never use unknown tables or columns.
 
 SQL Query:`;
 }
