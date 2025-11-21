@@ -90,10 +90,14 @@ export async function handleContentStudioIntegration(payloadObject, responseTemp
       createdLessons.push(lesson);
     }
 
-    // Fill response template with course data only
-    // Response should only contain course array, not topics or learner fields
-    // Clean up response template to only include course field
+    // If trainer course: return empty response (one-way communication)
+    // Content Studio sends trainer course → Course Builder processes it → No response needed
+    if (isTrainerCourse) {
+      return {};  // ✅ Empty response for trainer courses (one-way)
+    }
     
+    // If learner course: return course data (two-way communication)
+    // Course Builder → Content Studio request → Course Builder receives course data
     // Build course object from created course and lessons
     const courseData = {
       course_id: course.id,
@@ -131,13 +135,24 @@ export async function handleContentStudioIntegration(payloadObject, responseTemp
       const variant = isLearnerCourse ? 'learner_specific' : 'trainer';
       const fallback = getFallbackData('ContentStudio', variant);
       
-      // Return only course field (remove any extra fields)
+      // If trainer course: return empty response (one-way)
+      if (payloadObject.trainer_id) {
+        return {};
+      }
+      
+      // If learner course: return fallback course data
       return {
         course: fallback.course || []
       };
     }
     
-    // For non-network errors, return empty course array (only course field)
+    // For non-network errors:
+    // If trainer course: return empty response (one-way)
+    if (payloadObject.trainer_id) {
+      return {};
+    }
+    
+    // If learner course: return empty course array
     return {
       course: []
     };

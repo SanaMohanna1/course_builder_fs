@@ -99,24 +99,26 @@ export async function handleFillContentMetrics(req, res) {
     }
 
     // Validate required fields and structure
-    // Only three fields allowed: requester_service, payload, response
+    // requester_service and payload are required
+    // response is optional (for one-way communications like Learner AI, Directory, etc.)
     const requesterService = envelope.requester_service;
     const hasRequesterService = typeof requesterService === 'string' && requesterService.trim().length > 0;
     const hasPayload = envelope.payload && typeof envelope.payload === 'object';
-    const hasResponse = envelope.response && typeof envelope.response === 'object';
+    const hasResponse = envelope.response !== undefined;  // Response is optional (can be {} or missing)
 
-    if (!hasRequesterService || !hasPayload || !hasResponse) {
+    if (!hasRequesterService || !hasPayload) {
       const errorPayload = {
         error: 'Bad Request',
-        message: 'Envelope must include "requester_service" (string, lowercase with underscores), "payload" (JSON object), and "response" (JSON object)'
+        message: 'Envelope must include "requester_service" (string, lowercase with underscores) and "payload" (JSON object). "response" is optional (can be {} or omitted for one-way communications).'
       };
       res.setHeader('Content-Type', 'application/json');
       return res.status(400).json(errorPayload);
     }
 
     // Payload and response are already objects (NOT stringified)
+    // Response can be undefined for one-way communications (Learner AI, Directory, etc.)
     const payloadObject = envelope.payload;
-    const responseObject = envelope.response;
+    const responseObject = envelope.response || {};  // Default to {} if response is missing
 
     // Infer target service from payload structure (routing is internal)
     // Pass responseTemplate to allow defaulting to CourseBuilder if no pattern matches
@@ -135,13 +137,14 @@ export async function handleFillContentMetrics(req, res) {
 
     // Handler returns the filled response object
     // Response is already a regular object (NOT stringified)
+    // For one-way communications (Learner AI, Directory, etc.), filledResponse will be {}
     
-    // Return only the three required fields: requester_service, payload, response
+    // Return only the three fields: requester_service, payload, response
     // Routing information (target_service) is internal and not exposed
     const responseEnvelope = {
       requester_service: envelope.requester_service, // Keep original requester_service
       payload: payloadObject, // Keep original payload
-      response: filledResponse // Return filled response object
+      response: filledResponse || {} // Return filled response object (or {} for one-way)
     };
 
     // Return the full envelope as regular JSON object

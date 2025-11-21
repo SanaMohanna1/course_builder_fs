@@ -90,56 +90,14 @@ export async function handleLearnerAIIntegration(payloadObject, responseTemplate
       console.log('[LearnerAI Handler] Course structure created successfully');
     }
 
-    // Step 3: Fill response template with Learner AI contract fields
-    responseTemplate.user_id = data.user_id;
-    responseTemplate.user_name = data.user_name || '';
-    responseTemplate.company_id = data.company_id || null;
-    responseTemplate.company_name = data.company_name || null;
-    responseTemplate.skills = data.skills || [];
-    responseTemplate.competency_name = data.competency_name || null;
-    
-    // Return the filled response template
-    return responseTemplate;
+    // Learner AI → Course Builder is one-way communication
+    // Course Builder processes the request and creates course, no response needed
+    return {};  // ✅ Empty response for Learner AI (one-way)
   } catch (error) {
     console.error('[LearnerAI Handler] Error:', error);
     
-    // Check if we should use fallback data (network/service errors)
-    if (shouldUseFallback(error, 'LearnerAI')) {
-      console.warn('[LearnerAI Handler] Using fallback data due to service unavailability');
-      const fallback = getFallbackData('LearnerAI');
-      
-      responseTemplate.user_id = fallback.user_id || payloadObject.user_id || '';
-      responseTemplate.user_name = fallback.user_name || payloadObject.user_name || '';
-      responseTemplate.company_id = fallback.company_id || payloadObject.company_id || null;
-      responseTemplate.company_name = fallback.company_name || payloadObject.company_name || null;
-      responseTemplate.skills = fallback.skills || payloadObject.skills || [];
-      responseTemplate.competency_name = fallback.competency_name || payloadObject.competency_name || null;
-      
-      return responseTemplate;
-    }
-    
-    // For non-network errors, use payload data
-    try {
-      responseTemplate.user_id = payloadObject.user_id || '';
-      responseTemplate.user_name = payloadObject.user_name || '';
-      responseTemplate.company_id = payloadObject.company_id || null;
-      responseTemplate.company_name = payloadObject.company_name || null;
-      responseTemplate.skills = payloadObject.skills || [];
-      responseTemplate.competency_name = payloadObject.competency_name || null;
-      
-      return responseTemplate;
-    } catch (fallbackError) {
-      // Last resort: use mock fallback data
-      const fallback = getFallbackData('LearnerAI');
-      return {
-        user_id: fallback.user_id || '',
-        user_name: fallback.user_name || '',
-        company_id: fallback.company_id || null,
-        company_name: fallback.company_name || null,
-        skills: fallback.skills || [],
-        competency_name: fallback.competency_name || null
-      };
-    }
+    // Learner AI is one-way communication, return empty response even on error
+    return {};  // ✅ Empty response for Learner AI (one-way)
   }
 }
 
