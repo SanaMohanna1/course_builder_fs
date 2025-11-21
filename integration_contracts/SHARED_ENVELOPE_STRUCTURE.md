@@ -75,12 +75,24 @@ Every request and response uses this **common envelope structure**:
       {
         "course_id": "...",
         "course_name": "...",
-        // ... full course content
+        "course_description": "...",
+        "course_type": "learner_specific",
+        "status": "draft",
+        "level": "intermediate",
+        "lessons": [
+          {
+            "lesson_id": "...",
+            "lesson_name": "...",
+            // ... lesson content
+          }
+        ]
       }
     ]
   }
 }
 ```
+
+**Note**: The response only contains `course` array. Do not include `topics`, `learner_id`, `learner_name`, or `learner_company` in the response.
 
 ---
 

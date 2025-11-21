@@ -45,7 +45,16 @@ Content-Type: application/json
         "course_id": "d0e1f2a3-b4c5-6789-ef01-890123456789",
         "course_name": "Advanced React Development",
         "course_description": "Master advanced React concepts...",
-        // ... full course content
+        "course_type": "learner_specific",
+        "status": "draft",
+        "level": "intermediate",
+        "lessons": [
+          {
+            "lesson_id": "...",
+            "lesson_name": "...",
+            // ... lesson content
+          }
+        ]
       }
     ]
   }
@@ -75,7 +84,7 @@ Content-Type: application/json
 
 1. **Open Postman**
 2. **Create new request**: POST
-3. **Set URL**: `http://localhost:3000/api/fill-content-metrics`
+3. **Set URL**: `https://coursebuilderfs-production.up.railway.app/api/fill-content-metrics`
 4. **Add Headers**: 
    - Key: `Content-Type`
    - Value: `application/json`

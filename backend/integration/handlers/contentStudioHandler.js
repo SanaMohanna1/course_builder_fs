@@ -90,25 +90,36 @@ export async function handleContentStudioIntegration(payloadObject, responseTemp
       createdLessons.push(lesson);
     }
 
-    // Fill response template with contract-matching fields
-    // Always include topics from the payload (Content Studio sends topics)
-    if (Array.isArray(payloadObject.topics)) {
-      responseTemplate.topics = payloadObject.topics;
-    } else if (payloadObject.topics) {
-      responseTemplate.topics = [payloadObject.topics];
-    } else {
-      responseTemplate.topics = [];
-    }
+    // Fill response template with course data only
+    // Response should only contain course array, not topics or learner fields
+    // Clean up response template to only include course field
     
-    // For learner-specific courses: also fill learner fields
-    if (!isTrainerCourse && payloadObject.learner_id) {
-      responseTemplate.learner_id = payloadObject.learner_id;
-      responseTemplate.learner_name = payloadObject.learner_name || '';
-      responseTemplate.learner_company = payloadObject.learner_company || '';
-    }
+    // Build course object from created course and lessons
+    const courseData = {
+      course_id: course.id,
+      course_name: course.course_name,
+      course_description: course.course_description,
+      course_type: course.course_type,
+      status: course.status,
+      level: course.level,
+      duration_hours: course.duration_hours,
+      created_by_user_id: course.created_by_user_id,
+      // Add lessons structure
+      lessons: createdLessons.map(lesson => ({
+        lesson_id: lesson.id,
+        lesson_name: lesson.lesson_name,
+        lesson_description: lesson.lesson_description,
+        skills: lesson.skills,
+        content_type: lesson.content_type,
+        content_data: lesson.content_data,
+        devlab_exercises: lesson.devlab_exercises
+      }))
+    };
     
-    // Return the filled response template
-    return responseTemplate;
+    // Return only course field (remove any topics, learner_id, learner_name, learner_company if present)
+    return {
+      course: [courseData]
+    };
   } catch (error) {
     console.error('[ContentStudio Handler] Error:', error);
     
@@ -120,54 +131,16 @@ export async function handleContentStudioIntegration(payloadObject, responseTemp
       const variant = isLearnerCourse ? 'learner_specific' : 'trainer';
       const fallback = getFallbackData('ContentStudio', variant);
       
-      // Fill response template with fallback data
-      if (isLearnerCourse && fallback.learner_id) {
-        responseTemplate.learner_id = fallback.learner_id;
-        responseTemplate.learner_name = fallback.learner_name || '';
-        responseTemplate.learner_company = fallback.learner_company || '';
-        responseTemplate.topics = fallback.topics || [];
-      } else if (!isLearnerCourse && fallback.topics) {
-        responseTemplate.topics = fallback.topics || [];
-      } else {
-        // Use payload data as secondary fallback
-        responseTemplate.topics = payloadObject.topics || [];
-        if (payloadObject.learner_id) {
-          responseTemplate.learner_id = payloadObject.learner_id;
-          responseTemplate.learner_name = payloadObject.learner_name || '';
-          responseTemplate.learner_company = payloadObject.learner_company || '';
-        }
-      }
-      
-      return responseTemplate;
-    }
-    
-    // For non-network errors, try to use payload data
-    try {
-      if (Array.isArray(payloadObject.topics)) {
-        responseTemplate.topics = payloadObject.topics;
-      } else if (payloadObject.topics) {
-        responseTemplate.topics = [payloadObject.topics];
-      } else {
-        responseTemplate.topics = [];
-      }
-      
-      if (payloadObject.learner_id) {
-        responseTemplate.learner_id = payloadObject.learner_id || '';
-        responseTemplate.learner_name = payloadObject.learner_name || '';
-        responseTemplate.learner_company = payloadObject.learner_company || '';
-      }
-      
-      return responseTemplate;
-    } catch (fallbackError) {
-      // Last resort: use mock fallback data
-      const fallback = getFallbackData('ContentStudio', 'learner_specific');
+      // Return only course field (remove any extra fields)
       return {
-        learner_id: fallback.learner_id || payloadObject.learner_id || '',
-        learner_name: fallback.learner_name || payloadObject.learner_name || '',
-        learner_company: fallback.learner_company || payloadObject.learner_company || '',
-        topics: fallback.topics || []
+        course: fallback.course || []
       };
     }
+    
+    // For non-network errors, return empty course array (only course field)
+    return {
+      course: []
+    };
   }
 }
 
