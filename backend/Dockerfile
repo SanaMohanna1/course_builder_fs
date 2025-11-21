@@ -9,12 +9,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --omit=dev --no-audit --no-fund --prefer-offline
+# Use npm install instead of npm ci for better Railway compatibility
+RUN npm install --omit=dev --no-audit --no-fund --legacy-peer-deps || npm install --production --no-audit --no-fund
 
 # Copy backend source
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+# Use node directly instead of npm start for better Railway compatibility
+CMD ["node", "server.js"]
 
