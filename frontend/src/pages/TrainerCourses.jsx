@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Archive, ArrowLeft, BarChart3, Layers, Pencil, Rocket, Trash2, Users, Sparkles } from 'lucide-react'
+import { Archive, ArrowLeft, BarChart3, CheckCircle2, Layers, Pencil, Rocket, Trash2, Users, Sparkles } from 'lucide-react'
 import { getCourses, updateCourse, publishCourse } from '../services/apiService.js'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApp } from '../context/AppContext.jsx'
@@ -43,7 +43,20 @@ export default function TrainerCourses() {
 
   const filteredCourses = useMemo(() => {
     let result = courses
-    if (statusFilter !== 'all') {
+    if (statusFilter === 'draft') {
+      // Draft → shows only unpublished courses (status is 'draft' or not 'live')
+      result = result.filter((course) => {
+        const status = course.status || 'draft'
+        return status !== 'live' && status !== 'published'
+      })
+    } else if (statusFilter === 'live') {
+      // Live → shows only courses with status 'live' or 'published'
+      result = result.filter((course) => {
+        const status = course.status || 'draft'
+        return status === 'live' || status === 'published'
+      })
+    } else if (statusFilter !== 'all') {
+      // For 'archived' or other filters
       result = result.filter((course) => (course.status || 'draft') === statusFilter)
     }
     return result
@@ -97,7 +110,7 @@ export default function TrainerCourses() {
   return (
     <div className="page-surface">
       <Container>
-        <div className="flex flex-col gap-6 py-6">
+        <div className="flex flex-col gap-4 py-4">
           <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
@@ -225,19 +238,31 @@ export default function TrainerCourses() {
                         <Pencil className="h-4 w-4" />
                         Edit course
                       </Link>
-                      <Link
-                        to={`/trainer/publish/${courseId}`}
-                        className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2"
-                      >
-                        <Rocket className="h-4 w-4" />
-                        Publish
-                      </Link>
+                      {status === 'live' || status === 'published' ? (
+                        <button
+                          type="button"
+                          disabled
+                          title="Course already published"
+                          className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Published
+                        </button>
+                      ) : (
+                        <Link
+                          to={`/trainer/publish/${courseId}`}
+                          className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2"
+                        >
+                          <Rocket className="h-4 w-4" />
+                          Publish
+                        </Link>
+                      )}
                       <Link
                         to={`/trainer/feedback/${courseId}`}
                         className="btn-trainer-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
                       >
                         <BarChart3 className="h-4 w-4" />
-                        Analytics
+                        Feedbacks
                       </Link>
                       <button
                         type="button"

@@ -283,7 +283,7 @@ export default function CourseDetailsPage() {
   return (
     <>
       <div className="page-surface bg-[var(--bg-primary)] min-h-screen transition-colors">
-        <div className="flex flex-col lg:flex-row gap-8 py-4">
+        <div className="flex flex-col lg:flex-row gap-6 py-4">
           {/* Left Sidebar - Fixed to left edge */}
           <aside className="w-full lg:w-[320px] lg:pl-6 shrink-0">
             <CourseStructureSidebar
@@ -299,7 +299,7 @@ export default function CourseDetailsPage() {
           <main className="flex-1">
             <Container>
               <div className="max-w-5xl mx-auto pt-2">
-                {hasFeedback && (
+                {isEnrolled && (
                   <div className="mb-4">
                     <button
                       type="button"
@@ -307,7 +307,7 @@ export default function CourseDetailsPage() {
                       className="btn btn-secondary flex items-center justify-center gap-2"
                     >
                       <i className="fa-solid fa-comment-dots" />
-                      Edit Feedback
+                      {hasFeedback ? 'Edit Feedback' : 'Give Feedback'}
                     </button>
                   </div>
                 )}

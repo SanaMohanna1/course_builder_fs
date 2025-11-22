@@ -262,7 +262,7 @@ export default function LessonPage() {
   // This ensures hooks are always called in the same order
   return (
     <div className="page-surface bg-[var(--bg-primary)] min-h-screen transition-colors">
-      <div className="flex flex-col lg:flex-row gap-8 py-4">
+      <div className="flex flex-col lg:flex-row gap-6 py-4">
         {/* Left Sidebar - Fixed to left edge */}
         <aside className="w-full lg:w-[320px] lg:pl-6 shrink-0">
           <CourseStructureSidebar

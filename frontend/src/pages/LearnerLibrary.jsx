@@ -98,9 +98,9 @@ export default function LearnerLibrary() {
   return (
     <div className="page-surface">
       <Container>
-        <div className="stack-lg pt-4">
-          <section className="surface-card space-y-6">
-            <div className="space-y-3">
+        <div className="flex flex-col gap-4 pt-4">
+          <section className="surface-card space-y-4">
+            <div className="space-y-2">
               <p className="text-sm font-semibold uppercase tracking-widest text-[var(--primary-cyan)]">
                 My Courses
               </p>
@@ -113,7 +113,7 @@ export default function LearnerLibrary() {
             </div>
           </section>
 
-          <section className="surface-card space-y-6">
+          <section className="surface-card space-y-4">
             {courses.length === 0 ? (
               <div className="text-center space-y-4">
                 <i className="fa-solid fa-book-open text-3xl text-[var(--primary-cyan)]" aria-hidden="true" />

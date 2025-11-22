@@ -117,7 +117,7 @@ export default function LearnerDashboard() {
   return (
     <div className="dashboard-surface">
       <Container>
-        <div className="stack-xl pt-4">
+        <div className="flex flex-col gap-6 pt-4">
           <section className="hero-spotlight text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[var(--primary-cyan)]">Learner HQ</p>
             <h1 className="text-4xl font-bold text-[var(--text-primary)]">
@@ -166,7 +166,7 @@ export default function LearnerDashboard() {
               <p className="mt-2 text-[var(--text-secondary)]">
                 Build your learner profile by visiting the marketplace and saving courses to your library.
               </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link to="/learner/marketplace" className="btn btn-primary">
                   Browse marketplace
                 </Link>
@@ -188,7 +188,7 @@ export default function LearnerDashboard() {
                       <p className="progress-text">AI-powered recommendations tailored to your goals</p>
                     </div>
                   </div>
-                  <div className="stack-md">
+                  <div className="flex flex-col gap-3">
                     {personalizedCoursesList.slice(0, 3).map((course) => (
                       <div key={course.id || course.course_id} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
@@ -227,7 +227,7 @@ export default function LearnerDashboard() {
                       <p className="progress-text">Discover courses from expert instructors</p>
                     </div>
                   </div>
-                  <div className="stack-md">
+                  <div className="flex flex-col gap-3">
                     {marketplaceCoursesList.slice(0, 3).map((course) => (
                       <div key={`market-${course.id || course.course_id}`} className="course-card compact">
                         <div className="flex items-start justify-between gap-4">
@@ -265,7 +265,7 @@ export default function LearnerDashboard() {
                     </Link>
                   </div>
 
-                  <div className="stack-md">
+                  <div className="flex flex-col gap-3">
                     {continueLearning.slice(0, 4).map((course) => (
                       <div key={course.id || course.course_id} className="course-card compact">
                         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -301,7 +301,7 @@ export default function LearnerDashboard() {
                       <p>Communities growing in the last 7 days.</p>
                     </div>
                   </div>
-                  <div className="stack-md">
+                  <div className="flex flex-col gap-3">
                     {trendingTopics.map((topic) => (
                       <div key={topic.topic} className="course-card compact">
                         <div className="flex items-start justify-between">
@@ -327,7 +327,7 @@ export default function LearnerDashboard() {
               <section className="microservice-card cta">
                 <div className="text-center text-white">
                   <h2 className="card-title mb-4 text-white">Ready to start learning?</h2>
-                  <p className="progress-text mb-6 text-white/90">
+                  <p className="progress-text mb-4 text-white/90">
                     Choose your learning path and begin your journey to mastery.
                   </p>
                   <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

@@ -110,9 +110,9 @@ export default function TrainerDashboard() {
   return (
     <div className="page-surface">
       <Container>
-        <div className="flex flex-col gap-6 py-6">
-          <header className="flex flex-col gap-6 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-8 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
+        <div className="flex flex-col gap-4 py-4">
+          <header className="flex flex-col gap-4 rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
               <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 <Sparkles className="h-4 w-4 text-[var(--primary-cyan)]" />
                 Trainer workspace
@@ -137,7 +137,7 @@ export default function TrainerDashboard() {
             </div>
           </header>
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {metrics.map(({ label, value, icon: Icon, accent }) => (
               <article
                 key={label}
@@ -155,7 +155,7 @@ export default function TrainerDashboard() {
       </section>
 
           <section className="rounded-3xl border border-[rgba(148,163,184,0.18)] bg-[var(--bg-card)] p-6 shadow-sm backdrop-blur">
-            <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <header className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 className="text-xl font-semibold text-[var(--text-primary)]">Portfolio overview</h2>
                 <p className="text-sm text-[var(--text-secondary)]">
@@ -166,7 +166,7 @@ export default function TrainerDashboard() {
                 to="/trainer/feedback/overview"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary-cyan)] hover:text-[var(--primary-blue)]"
               >
-                View analytics
+                View feedbacks
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
           </header>
@@ -237,7 +237,7 @@ export default function TrainerDashboard() {
                   </div>
 
                       <div className="flex flex-wrap gap-3">
-                        {!isLive && (
+                        {!isLive ? (
                       <button
                         type="button"
                             onClick={() => onPublish(courseId)}
@@ -247,7 +247,17 @@ export default function TrainerDashboard() {
                             <Rocket className="h-4 w-4" />
                             Publish
                       </button>
-                    )}
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            title="Course already published"
+                            className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            Published
+                          </button>
+                        )}
                         <Link
                           to={`/trainer/course/${courseId}`}
                           className="btn-trainer-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
@@ -261,9 +271,9 @@ export default function TrainerDashboard() {
                             className="btn-trainer-secondary flex-1 min-w-[140px] items-center justify-center gap-2"
                           >
                             <BarChart3 className="h-4 w-4" />
-                            Feedback
-                      </Link>
-                    )}
+                            Feedbacks
+                          </Link>
+                        )}
                   </div>
                 </article>
                   )

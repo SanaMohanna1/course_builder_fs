@@ -63,8 +63,28 @@ const formatDuration = (duration) => {
   return `${duration} mins`
 }
 
-const getLessonState = (lessonId, completedLessonIds, unlocked, status) => {
+// Check if a lesson is accessible based on previous lesson completion
+const getLessonState = (lessonId, completedLessonIds, unlocked, status, allLessons, currentIndex) => {
   const completed = completedLessonIds.includes(String(lessonId))
+  
+  // For learners: Check if previous lesson is completed before unlocking next lesson
+  // First lesson is always accessible if enrolled
+  if (unlocked && allLessons && currentIndex !== undefined) {
+    if (currentIndex === 0) {
+      // First lesson is always accessible if enrolled
+      return { completed, accessible: true }
+    } else {
+      // Check if previous lesson is completed
+      const previousLesson = allLessons[currentIndex - 1]
+      if (previousLesson) {
+        const previousLessonId = String(previousLesson.id)
+        const previousCompleted = completedLessonIds.includes(previousLessonId)
+        return { completed, accessible: previousCompleted || status === 'unlocked' || completed }
+      }
+    }
+  }
+  
+  // Default: accessible if unlocked or already completed
   const accessible = unlocked || status === 'unlocked' || completed
   return { completed, accessible }
 }
@@ -93,6 +113,20 @@ export default function CourseStructureSidebar({
   }, [learnerProgress])
 
   const hierarchy = useMemo(() => normalizeHierarchy(course), [course])
+  
+  // Flatten all lessons in order for progression check
+  const allLessonsFlat = useMemo(() => {
+    const lessons = []
+    hierarchy.forEach((topic) => {
+      topic.modules?.forEach((module) => {
+        module.lessons?.forEach((lesson) => {
+          lessons.push({ ...lesson, moduleId: module.id, topicId: topic.id })
+        })
+      })
+    })
+    return lessons
+  }, [hierarchy])
+  
   const [expandedTopics, setExpandedTopics] = useState(() =>
     new Set(hierarchy.map((topic) => topic.id))
   )
@@ -290,19 +324,29 @@ export default function CourseStructureSidebar({
                             <ul className="space-y-1 px-4 pb-3 pt-1">
                               {(module.lessons || []).map((lesson) => {
                                 const lessonId = String(lesson.id)
+                                // Find index in flattened lessons array
+                                const lessonIndex = allLessonsFlat.findIndex((l) => String(l.id) === lessonId)
                                 const { completed, accessible } = getLessonState(
                                   lessonId,
                                   completedLessons,
                                   canAccessLessons,
-                                  lesson.status
+                                  lesson.status,
+                                  allLessonsFlat,
+                                  lessonIndex
                                 )
                                 const disabled = !accessible && userRole === 'learner'
                                 const isActive = normalizedCurrentLessonId === lessonId
+                                
+                                // Add tooltip for locked lessons
+                                const lockTooltip = disabled && userRole === 'learner' && !completed
+                                  ? 'Complete previous lesson to continue'
+                                  : ''
 
                                 return (
                                   <li key={lessonId}>
                                     <button
                                       type="button"
+                                      title={lockTooltip}
                                       className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left transition-all duration-200 ${
                                         disabled ? 'cursor-not-allowed opacity-60' : ''
                                       } ${isActive ? 'shadow-md scale-[1.02]' : 'hover:scale-[1.01]'}`}
@@ -315,7 +359,13 @@ export default function CourseStructureSidebar({
                                         border: isActive ? '2px solid var(--primary-cyan)' : '1px solid transparent',
                                         color: 'var(--text-primary)'
                                       }}
-                                      onClick={() => handleLessonClick(lessonId)}
+                                      onClick={() => {
+                                        if (disabled && userRole === 'learner') {
+                                          showToast('Complete previous lesson to continue.', 'info')
+                                          return
+                                        }
+                                        handleLessonClick(lessonId)
+                                      }}
                                       disabled={disabled}
                                       onMouseEnter={(e) => {
                                         if (!disabled && !isActive) {
@@ -338,7 +388,7 @@ export default function CourseStructureSidebar({
                                         ) : accessible ? (
                                           <PlayCircle size={16} style={{ color: 'var(--primary-cyan)' }} />
                                         ) : (
-                                          <Lock size={16} style={{ color: 'var(--text-muted)' }} />
+                                          <Lock size={16} style={{ color: 'var(--text-muted)' }} className="flex-shrink-0" />
                                         )}
                                       </span>
                                       <span className="flex-1 text-xs font-medium leading-tight truncate">{lesson.title}</span>
