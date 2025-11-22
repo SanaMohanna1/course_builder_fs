@@ -625,6 +625,13 @@ export const publishCourse = async (courseId) => {
       throw error;
     }
 
+    // Prevent re-publishing: Check if course is already published/live
+    if (course.status === 'published' || course.status === 'live' || course.status === 'active') {
+      const error = new Error('Course already published');
+      error.status = 400;
+      throw error;
+    }
+
     await courseRepository.update(courseId, { status: 'active' });
 
     // Update latest version

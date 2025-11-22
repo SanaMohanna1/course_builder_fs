@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -16,7 +16,6 @@ import Container from '../Container.jsx'
 import LessonAssetsPanel from './LessonAssetsPanel.jsx'
 import EnrichmentButton from '../../features/enrichment/components/EnrichmentButton.jsx'
 import { isPersonalized, isMarketplace } from '../../utils/courseTypeUtils.js'
-import EnrichmentModal from '../../features/enrichment/components/EnrichmentModal.jsx'
 
 export default function LessonView({
   courseTitle,
@@ -50,19 +49,6 @@ export default function LessonView({
   
   // For marketplace courses: Check if enrichment exists (view-only)
   const hasMarketplaceEnrichment = courseIsMarketplace && isLearner && course?.ai_assets && Object.keys(course.ai_assets).length > 0
-  
-  // State for marketplace enrichment view
-  const [showMarketplaceEnrichmentModal, setShowMarketplaceEnrichmentModal] = useState(false)
-  
-  const handleMarketplaceEnrichmentClick = () => {
-    if (!hasMarketplaceEnrichment) {
-      // Show modal with "No enriched content available" message
-      setShowMarketplaceEnrichmentModal(true)
-    } else {
-      // Show enrichment content
-      setShowMarketplaceEnrichmentModal(true)
-    }
-  }
   
   // Map course.ai_assets to enrichment format for marketplace courses
   const marketplaceEnrichmentItems = useMemo(() => {
@@ -199,25 +185,14 @@ export default function LessonView({
               isFinalLesson={isFinalLesson}
             />
 
-            {/* Show AI enrichment button - different behavior for marketplace vs personalized */}
+            {/* Show AI enrichment - embedded in card for marketplace, button for trainers */}
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
                   Learning Resources
                 </h2>
-                {/* For learners: Different enrichment button based on course type */}
-                {isLearner && courseIsMarketplace ? (
-                  // MARKETPLACE COURSES: View-only "See Enriched Content" button
-                  <button
-                    type="button"
-                    onClick={handleMarketplaceEnrichmentClick}
-                    className="inline-flex items-center gap-2 rounded-full border border-[var(--primary-cyan)] bg-[var(--bg-secondary)] px-4 py-2 text-sm font-semibold text-[var(--primary-cyan)] transition-colors hover:bg-[var(--primary-cyan)] hover:text-white"
-                  >
-                    <Sparkles size={16} />
-                    See Enriched Content
-                  </button>
-                ) : userRole !== 'learner' && enrichmentAsset ? (
-                  // TRAINERS: Original enrichment button
+                {/* Only show button for trainers */}
+                {userRole !== 'learner' && enrichmentAsset && (
                   <EnrichmentButton
                     asset={enrichmentAsset}
                     onResults={onEnrichmentResults || undefined}
@@ -226,29 +201,29 @@ export default function LessonView({
                     buttonLabel={enrichmentAssets ? 'Refresh assets' : 'Load AI assets'}
                     disabled={!enrichmentAsset}
                   />
-                ) : null}
+                )}
               </div>
               
-              {/* Show enrichment content */}
+              {/* Show enrichment content directly in card */}
               {courseIsMarketplace && isLearner ? (
-                // Marketplace: Show pre-generated content if exists
-                <LessonAssetsPanel assets={hasMarketplaceEnrichment ? marketplaceEnrichmentItems : null} loading={false} error={null} />
+                // Marketplace: Show pre-generated content if exists, or message if not
+                hasMarketplaceEnrichment ? (
+                  <LessonAssetsPanel assets={marketplaceEnrichmentItems} loading={false} error={null} />
+                ) : (
+                  <div className="rounded-lg border p-4 text-center" style={{ 
+                    borderColor: 'var(--border-subtle, var(--border-color))',
+                    backgroundColor: 'var(--bg-secondary)'
+                  }}>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      No enriched content available for this lesson.
+                    </p>
+                  </div>
+                )
               ) : (
                 // Personalized/Trainer: Show dynamically loaded content
                 <LessonAssetsPanel assets={enrichmentAssets} loading={enrichmentLoading} error={enrichmentError} />
               )}
             </div>
-            
-            {/* Marketplace enrichment modal - shows message if no enrichment */}
-            {courseIsMarketplace && isLearner && (
-              <EnrichmentModal
-                open={showMarketplaceEnrichmentModal}
-                onClose={() => setShowMarketplaceEnrichmentModal(false)}
-                items={hasMarketplaceEnrichment ? marketplaceEnrichmentItems : []}
-                title={hasMarketplaceEnrichment ? 'Enriched Content' : undefined}
-                error={!hasMarketplaceEnrichment ? { message: 'No enriched content available for this course.' } : null}
-              />
-            )}
 
             <footer className="flex flex-col gap-4 rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[var(--bg-card)]/90 px-6 py-4 text-sm text-[var(--text-secondary)] backdrop-blur transition-colors md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3 text-sm font-medium">

@@ -271,11 +271,6 @@ export default function LessonPage() {
             currentLessonId={normalizedLessonId}
             userRole={userRole}
             onSelectLesson={(targetLessonId) => navigate(`/course/${courseId}/lesson/${targetLessonId}`)}
-            enrichmentAsset={enrichmentAssetDescriptor}
-            onEnrichmentResults={handleEnrichmentResults}
-            onEnrichmentLoading={handleEnrichmentLoading}
-            onEnrichmentError={handleEnrichmentError}
-            enrichmentAssets={enrichmentAssets}
           />
         </aside>
 

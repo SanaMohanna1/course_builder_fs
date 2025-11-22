@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import {
   ChevronDown,
   ChevronRight,
@@ -7,12 +7,10 @@ import {
   BookOpen,
   CheckCircle2,
   PlayCircle,
-  Lock,
-  Sparkles
+  Lock
 } from 'lucide-react'
-import { isPersonalized, isMarketplace } from '../../utils/courseTypeUtils.js'
+import { isPersonalized } from '../../utils/courseTypeUtils.js'
 import { useApp } from '../../context/AppContext.jsx'
-import EnrichmentButton from '../../features/enrichment/components/EnrichmentButton.jsx'
 
 const normalizeHierarchy = (course) => {
   if (!course) return []
@@ -96,18 +94,9 @@ export default function CourseStructureSidebar({
   learnerProgress = null,
   currentLessonId = null,
   userRole = 'learner',
-  onSelectLesson,
-  enrichmentAsset = null,
-  onEnrichmentResults = null,
-  onEnrichmentLoading = null,
-  onEnrichmentError = null,
-  enrichmentAssets = null
+  onSelectLesson
 }) {
   const { showToast } = useApp()
-  
-  // Check if course is personalized for enrichment button placement
-  const courseIsPersonalized = course ? isPersonalized(course) : false
-  const isLearner = userRole === 'learner'
 
   // Determine if course is personalized
   const isPersonalizedCourse = isPersonalized(course)
@@ -138,10 +127,13 @@ export default function CourseStructureSidebar({
     return lessons
   }, [hierarchy])
   
-  // Auto-expand topics and modules containing the current lesson
-  const getInitialExpanded = useMemo(() => {
+  // Calculate which topics and modules should be expanded based on current lesson
+  const calculateExpandedState = useCallback(() => {
     if (!currentLessonId || hierarchy.length === 0) {
-      return { topics: new Set(hierarchy.map((topic) => topic.id)), modules: new Set() }
+      return { 
+        topics: new Set(hierarchy.map((topic) => topic.id)), 
+        modules: new Set() 
+      }
     }
     
     const topicsSet = new Set()
@@ -168,14 +160,21 @@ export default function CourseStructureSidebar({
     return { topics: topicsSet, modules: modulesSet }
   }, [hierarchy, currentLessonId])
   
-  const [expandedTopics, setExpandedTopics] = useState(() => getInitialExpanded.topics)
-  const [expandedModules, setExpandedModules] = useState(() => getInitialExpanded.modules)
+  const [expandedTopics, setExpandedTopics] = useState(() => {
+    const state = calculateExpandedState()
+    return state.topics
+  })
+  const [expandedModules, setExpandedModules] = useState(() => {
+    const state = calculateExpandedState()
+    return state.modules
+  })
   
-  // Update expanded state when currentLessonId changes
+  // Update expanded state when currentLessonId changes (including URL navigation)
   useEffect(() => {
-    setExpandedTopics(getInitialExpanded.topics)
-    setExpandedModules(getInitialExpanded.modules)
-  }, [currentLessonId, getInitialExpanded])
+    const newState = calculateExpandedState()
+    setExpandedTopics(newState.topics)
+    setExpandedModules(newState.modules)
+  }, [currentLessonId, calculateExpandedState])
 
   const toggleTopic = (topicId) => {
     setExpandedTopics((prev) => {
@@ -264,21 +263,6 @@ export default function CourseStructureSidebar({
           </div>
         </div>
       </div>
-
-      {/* AI Enrichment Button for Personalized Courses - Permanent in Sidebar */}
-      {isLearner && courseIsPersonalized && enrichmentAsset && (
-        <div className="px-5 pb-3 border-b" style={{ borderColor: 'var(--border-subtle, var(--border-color))' }}>
-          <EnrichmentButton
-            asset={enrichmentAsset}
-            onResults={onEnrichmentResults || undefined}
-            onLoading={onEnrichmentLoading || undefined}
-            onError={onEnrichmentError || undefined}
-            buttonLabel="AI Enrich (Course)"
-            disabled={!enrichmentAsset}
-            className="w-full justify-center"
-          />
-        </div>
-      )}
 
       {/* Content */}
       <div className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>

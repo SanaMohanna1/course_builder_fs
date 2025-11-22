@@ -251,11 +251,11 @@ export default function TrainerDashboard() {
                           <button
                             type="button"
                             disabled
-                            title="Course already published"
+                            title="This course is already published."
                             className="btn-trainer-primary flex-1 min-w-[140px] items-center justify-center gap-2 opacity-50 cursor-not-allowed"
                           >
                             <CheckCircle2 className="h-4 w-4" />
-                            Published
+                            Course Already Published
                           </button>
                         )}
                         <Link
